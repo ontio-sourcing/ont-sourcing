@@ -28,7 +28,8 @@
 * [获取存证总条数](#获取存证总条数)
 * [获取存证历史记录](#获取存证历史记录)
 
-* [获取浏览器存证历史记录](#获取浏览器存证历史记录)
+* [浏览器存证历史记录](#浏览器存证历史记录)
+* [浏览器根据hash取证](#浏览器根据hash取证)
 
 ### 司法链接口
 * [司法链存证](#司法链存证)
@@ -821,7 +822,7 @@ method：POST
 | version    | String | 版本号                     
 
 
-### 获取浏览器存证历史记录
+### 浏览器存证历史记录
 
 ```text
 url：/api/v1/contract/explorer
@@ -896,7 +897,88 @@ method：POST
 | result     | String | 成功返回记录，失败返回""
 | version    | String | 版本号              
 
+
+### 浏览器根据hash取证
+
+```text
+url：/api/v1/contract/explorer/hash
+method：POST
+```
+
+- 请求：
+
+```json
+{
+	"hash":"111175b25e49f2767522d332057c3e6bb1144c842dce47913dc8222927999999"
+}
+```
+
+| Field_Name | Type   | Description |
+|:-----------|:-------|:------------|
+| hash   | String | 文件hash或者交易hash   |
+
+- 响应：
+
+```json
+{
+    "result": [
+        {
+            "ontid": "did:ont:Aa1XPapJHGGjHQtN2Hdyb9APv7HfiYxtRz",
+            "companyOntid": "did:ont:Aa1XPapJHGGjHQtN2Hdyb9APv7HfiYxtRz",
+            "detail": "some message about the file ...",
+            "type": "TEXT",
+            "timestamp": "2019-04-22T07:32:57.000+0000",
+            "timestampSign": "950ef......",
+            "filehash": "111175b25e49f2767522d332057c3e6bb1144c842dce47913dc8222927999999",
+            "txhash": "ee973d13c6ed2d8c7391223b4fb6f5c785f402d81d41b02ab7590113cbb00752",
+            "createTime": "2019-04-22T07:32:57.000+0000",
+            "updateTime": null,
+            "height": 1621684
+        },
+        {
+            "ontid": "did:ont:Aa1XPapJHGGjHQtN2Hdyb9APv7HfiY1234",
+            "companyOntid": "did:ont:Aa1XPapJHGGjHQtN2Hdyb9APv7HfiYxtRz",
+            "detail": "some message about the file ...",
+            "type": "TEXT",
+            "timestamp": "2019-04-22T07:32:24.000+0000",
+            "timestampSign": "960ef......",
+            "filehash": "111175b25e49f2767522d332057c3e6bb1144c842dce47913dc8222927999999",
+            "txhash": "1ab4b5b2c6c89b4f1a553b7aef30c3f3ef203a323d23cd383261cc6d0df73870",
+            "createTime": "2019-04-22T07:32:25.000+0000",
+            "updateTime": null,
+            "height": 1621682
+        },
+        {
+            "ontid": "did:ont:Aa1XPapJHGGjHQtN2Hdyb9APv7HfiYxtRz",
+            "companyOntid": "",
+            "detail": "some message about the file ...",
+            "type": "TEXT",
+            "timestamp": "2019-04-22T04:22:55.000+0000",
+            "timestampSign": "950ef......",
+            "filehash": "111175b25e49f2767522d332057c3e6bb1144c842dce47913dc8222927999999",
+            "txhash": "0437084a4f6204aad88fa1507fc13a44f83cecf44fc925692f9bc43f23e52fc3",
+            "createTime": "2019-04-22T04:22:57.000+0000",
+            "updateTime": null,
+            "height": 1621275
+        }
+    ],
+    "error": 0,
+    "desc": "SUCCESS",
+    "action": "selectByOntidAndHash",
+    "version": "1.0.0"
+}
+```
+
+| Field_Name | Type   | Description                   |
+|:-----------|:-------|:------------------------------|
+| error      | int    | 错误码                        |
+| action     | String | 动作标志                      |
+| desc       | String | 成功返回SUCCESS，失败返回错误描述 |
+| result     | String | 成功返回存证记录，失败返回""     |
+| version    | String | 版本号                        |
+  
        
+
 ###  司法链存证
 
 ```text
