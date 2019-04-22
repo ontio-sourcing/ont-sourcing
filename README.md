@@ -557,7 +557,7 @@ method：POST
             "type": "IMAGE",
             "detail": [
                 {
-                    "url": "http://...."
+                    "message": "http://...."
                 }
             ]
         },
@@ -566,7 +566,7 @@ method：POST
             "type": "IMAGE",
             "detail": [
                 {
-                    "url": "http://...."
+                    "message": "http://...."
                 }
             ]
         },
@@ -575,7 +575,7 @@ method：POST
             "type": "IMAGE",
             "detail": [
                 {
-                    "url": "http://...."
+                    "message": "http://...."
                 }
             ]
         }
