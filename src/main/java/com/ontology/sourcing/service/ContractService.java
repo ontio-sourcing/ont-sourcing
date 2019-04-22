@@ -221,7 +221,7 @@ public class ContractService {
     // 跨表添加height信息
     private List<Contract> addHeight(List<Contract> list) {
         //
-        if (list.size() == 0)
+        if (list == null || list.size() == 0)
             return list;
         //
         List<Contract> newlist = new ArrayList<>();
