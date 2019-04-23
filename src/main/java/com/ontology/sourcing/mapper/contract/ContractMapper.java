@@ -14,6 +14,9 @@ public interface ContractMapper {
     int insertSelective(@Param("tableName") String tableName, @Param("record") Contract record);
 
     //
+    void insertBatch(@Param("tableName") String tableName, @Param("contractList") List<Contract> contractList);
+
+    //
     List<Contract> selectByOntidAndHash(@Param("tableName") String tableName, @Param("ontid") String ontid, @Param("hash") String hash);
 
     //

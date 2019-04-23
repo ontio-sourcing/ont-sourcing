@@ -278,6 +278,8 @@ public class ContractController {
             //
             Account payer = GlobalVariable.getInstanceOfAccount(propertiesService.payerPrivateKey);
             //
+            List<Contract> contractList = new ArrayList<>();
+            //
             for (Map<String, Object> item : filelist) {
                 // TODO 稍微错开一点，0.1s
                 Thread.sleep(100L);
@@ -307,11 +309,13 @@ public class ContractController {
                 Map<String, String> map2 = contractService.putContract(contract, payer);
                 String txhash = map2.get("txhash");
                 contract.setTxhash(txhash);
-                //
-                contractService.saveToLocal(company_ontid, contract);
                 // 链同步
                 syncService.confirmTx(txhash);
+                //
+                contractList.add(contract);
             }
+            // mybatis batch insert
+            contractService.saveToLocalBatch(company_ontid, contractList);
             //
             rst.setResult(true);
             rst.setErrorAndDesc(ErrorCode.SUCCESSS);
@@ -520,7 +524,7 @@ public class ContractController {
         String hash = (String) obj.get("hash");
 
         // ontid 也要作为条件，否则查到别人的了
-        List<Contract> list = contractService.selectByHash( hash);
+        List<Contract> list = contractService.selectByHash(hash);
 
         //
         rst.setResult(list);

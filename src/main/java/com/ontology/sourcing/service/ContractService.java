@@ -252,7 +252,7 @@ public class ContractService {
         return record;
     }
 
-    public ContractIndex getIndex(String ontid) {
+    private ContractIndex getIndex(String ontid) {
         ContractOntid record = getRecord(ontid);
         ContractIndex contractIndex = contractIndexMapper.selectByPrimaryKey(record.getContractIndex());
         return contractIndex;
@@ -261,5 +261,10 @@ public class ContractService {
     // 写入数据库
     public void saveToLocal(String ontid, Contract contract) {
         contractMapper.insert(getIndex(ontid).getName(), contract);
+    }
+
+    // 写入数据库，batch insert
+    public void saveToLocalBatch(String ontid, List<Contract> contractList) {
+        contractMapper.insertBatch(getIndex(ontid).getName(), contractList);
     }
 }

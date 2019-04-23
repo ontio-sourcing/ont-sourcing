@@ -100,6 +100,19 @@
 		</trim>
 	</insert>
 
+	<insert id="insertBatch">
+		INSERT INTO ${tableName} (ontid, company_ontid, txhash, filehash, type,
+		timestamp, create_time, update_time,
+		detail, timestamp_sign)
+		VALUES
+		<foreach collection="contractList" item="record" separator=",">
+			(#{record.ontid,jdbcType=VARCHAR}, #{record.companyOntid,jdbcType=VARCHAR}, #{record.txhash,jdbcType=VARCHAR}, #{record.filehash,jdbcType=VARCHAR},
+			#{record.type,jdbcType=VARCHAR},
+			#{record.timestamp,jdbcType=TIMESTAMP}, #{record.createTime,jdbcType=TIMESTAMP}, #{record.updateTime,jdbcType=TIMESTAMP},
+			#{record.detail,jdbcType=LONGVARCHAR}, #{record.timestampSign,jdbcType=LONGVARCHAR})
+		</foreach>
+	</insert>
+
 	<select id="selectByOntidAndHash" parameterType="java.lang.String" resultMap="ResultMapWithBLOBs">
 		select
 		<include refid="Base_Column_List"/>
