@@ -21,7 +21,7 @@ public class PropertiesService {
                              @Value("${com.ontology.sourcing.WALLET_PATH}") String walletPath,
                              @Value("${com.ontology.sourcing.ONTOLOGY_URL}") String ontologyUrl,
                              @Value("${com.ontology.sourcing.ONTID_PUBLIC_KEY}") String ontidPublicKey,
-                             @Value("${com.ontology.sourcing.CONTRACT_CODE}") String contractCode,
+                             @Value("${com.ontology.sourcing.CONTRACT_CODE_ADDRESS}") String codeAddr,
                              @Value("${com.ontology.sourcing.SFL.ACCOUNTID}") String sflAccountId,
                              @Value("${com.ontology.sourcing.SFL.PRIKey}") String sflPriKey) {
         this.TABLE_SIZE_LIMIT = limit;
@@ -33,7 +33,7 @@ public class PropertiesService {
         this.ontologyUrl = ontologyUrl;
         this.ontidPublicKey = ontidPublicKey;
         //
-        this.contractCode = contractCode;
+        this.codeAddr = codeAddr;
         //
         this.sflAccountId = sflAccountId;
         this.sflPriKey = sflPriKey;
@@ -57,7 +57,7 @@ public class PropertiesService {
     public String ontidPublicKey;
 
     // 存证智能合约地址
-    public String contractCode;
+    public String codeAddr;
 
     // 司法链
     public String sflAccountId;

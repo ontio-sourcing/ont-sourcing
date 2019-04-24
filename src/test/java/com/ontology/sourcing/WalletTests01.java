@@ -46,7 +46,7 @@ public class WalletTests01 {
 
     // TODO 反过来由私钥能推出助记词吗？
 
-    // 同一个 私钥，创建出来的 address 和 publicKey 都一样
+    // 同一个 私钥，创建出来的 codeAddr 和 publicKey 都一样
     // passphrase 通过 getGcmDecodedPrivateKey 得到 私钥
     @Test
     public void example03_1() throws Exception {
@@ -59,7 +59,7 @@ public class WalletTests01 {
         System.out.println(acct);
 /*
 {
-    "address":"ALcwsJqdFyPr4sd1bnS5bdnaBYDgfmCsBd",
+    "codeAddr":"ALcwsJqdFyPr4sd1bnS5bdnaBYDgfmCsBd",
     "algorithm":"ECDSA",
     "enc-alg":"aes-256-gcm",
     "hash":"sha256",
@@ -79,7 +79,7 @@ public class WalletTests01 {
         // 再次运行
 /*
 {
-    "address":"ALcwsJqdFyPr4sd1bnS5bdnaBYDgfmCsBd",
+    "codeAddr":"ALcwsJqdFyPr4sd1bnS5bdnaBYDgfmCsBd",
     "algorithm":"ECDSA",
     "enc-alg":"aes-256-gcm",
     "hash":"sha256",
@@ -108,7 +108,7 @@ public class WalletTests01 {
         System.out.println(acct);
 /*
 {
-    "address":"ALcwsJqdFyPr4sd1bnS5bdnaBYDgfmCsBd",
+    "codeAddr":"ALcwsJqdFyPr4sd1bnS5bdnaBYDgfmCsBd",
     "algorithm":"ECDSA",
     "enc-alg":"aes-256-gcm",
     "hash":"sha256",
@@ -133,14 +133,14 @@ public class WalletTests01 {
         String encryptedPrikey = "YfM2prI920MhudiqFvkJPb9pzq1iDHi8pe1i+rhEdcTAVvJ1OLo+xUDDuIgvZz/M";
         String passphrase = "123456";
         String saltStr = "wvvZ52UxshLbQ0+MwAlT7g==";
-        String address = "ALcwsJqdFyPr4sd1bnS5bdnaBYDgfmCsBd";
+        String codeAddr = "ALcwsJqdFyPr4sd1bnS5bdnaBYDgfmCsBd";
          */
 
         /*
         String encryptedPrikey = "B7axc/9hQD6taeRopEIPxF8QKggmmnhpbLwTXHl+10ifm1zdEqN5aP37dkhcWLLP";
         String passphrase = "654321";
         String saltStr = "sLyWi3xAOF0jW8itMdAfGQ==";
-        String address = "ALcwsJqdFyPr4sd1bnS5bdnaBYDgfmCsBd";
+        String codeAddr = "ALcwsJqdFyPr4sd1bnS5bdnaBYDgfmCsBd";
         */
 
         String encryptedPrikey = "BXsX1+P+t1+5RMEe0nRYacE8aynm+9hpyJwkMu41uTCRRe4FBPPh4l2uI+ATC/Pf";

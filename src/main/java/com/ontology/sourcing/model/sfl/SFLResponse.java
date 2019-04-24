@@ -8,7 +8,7 @@ public class SFLResponse {
     @SerializedName("responseData") @Expose private String responseData;
     @SerializedName("success") @Expose private Boolean success;
     @SerializedName("errMessage") @Expose private String errMessage;
-    @SerializedName("code") @Expose private String code;
+    @SerializedName("codeAddr") @Expose private String code;
     @SerializedName("notarySuc") @Expose private Boolean notarySuc;
     @SerializedName("indentifySuc") @Expose private Boolean indentifySuc;
     @SerializedName("downloadSuc") @Expose private Boolean downloadSuc;

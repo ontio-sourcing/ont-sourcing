@@ -1,15 +1,15 @@
 package com.ontology.sourcing.controller;
 
 import ch.qos.logback.classic.Logger;
-import com.github.ontio.account.Account;
 import com.google.gson.Gson;
 import com.ontology.sourcing.dao.contract.Contract;
-import com.ontology.sourcing.mapper.contract.*;
+import com.ontology.sourcing.dao.contract.ContractCompany;
 import com.ontology.sourcing.model.utils.Result;
 import com.ontology.sourcing.service.ContractService;
 import com.ontology.sourcing.service.oauth.OAuthService;
 import com.ontology.sourcing.service.time.bctsp.TspService;
-import com.ontology.sourcing.service.utils.*;
+import com.ontology.sourcing.service.utils.SyncService;
+import com.ontology.sourcing.service.utils.ValidateService;
 import com.ontology.sourcing.utils.GlobalVariable;
 import com.ontology.sourcing.utils.exp.ErrorCode;
 import org.slf4j.LoggerFactory;
@@ -34,35 +34,19 @@ public class ContractController {
     private TspService tspService;
     private SyncService syncService;
     private ValidateService validateService;
-    private PropertiesService propertiesService;
     //
     private OAuthService oauthService;
     private ContractService contractService;
-    private ContractMapper contractMapper;
-    private ContractIndexMapper contractIndexMapper;
-    private ContractOntidMapper contractOntidMapper;
 
     @Autowired
-    public ContractController(TspService tspService,
-                              SyncService syncService,
-                              ValidateService validateService,
-                              PropertiesService propertiesService,
-                              OAuthService oauthService,
-                              ContractService contractService,
-                              ContractMapper contractMapper,
-                              ContractIndexMapper contractIndexMapper,
-                              ContractOntidMapper contractOntidMapper) {
+    public ContractController(TspService tspService, SyncService syncService, ValidateService validateService, OAuthService oauthService, ContractService contractService) {
         //
         this.tspService = tspService;
         this.syncService = syncService;
         this.validateService = validateService;
-        this.propertiesService = propertiesService;
         //
         this.oauthService = oauthService;
         this.contractService = contractService;
-        this.contractMapper = contractMapper;
-        this.contractIndexMapper = contractIndexMapper;
-        this.contractOntidMapper = contractOntidMapper;
     }
 
     //
@@ -120,8 +104,6 @@ public class ContractController {
 
         //
         try {
-            //  TODO
-            Account payer = GlobalVariable.getInstanceOfAccount(propertiesService.payerPrivateKey);
             //
             Map<String, Object> map = tspService.getTimeStampMap(filehash);
             //
@@ -138,7 +120,7 @@ public class ContractController {
             contract.setTimestampSign(timestampSign);
             contract.setCreateTime(new Date());
             //
-            Map<String, String> map2 = contractService.putContract(contract, payer);
+            Map<String, String> map2 = contractService.putContract(contract);
             String txhash = map2.get("txhash");
             contract.setTxhash(txhash);
             //
@@ -155,79 +137,6 @@ public class ContractController {
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
     }
-/*
-    @PostMapping("/company/put")
-    public ResponseEntity<Result> putContractCompany(@RequestBody LinkedHashMap<String, Object> obj) {
-
-        //
-        Result rst = new Result("putContractCompany");
-
-        //
-        Set<String> required = new HashSet<>();
-        required.add("ontid");
-        required.add("companyOntid");
-        required.add("passphrase");
-        required.add("filehash");
-        required.add("detail");
-
-        //
-        try {
-            validateService.validateParamsKeys(obj, required);
-            validateService.validateParamsValues(obj);
-        } catch (Exception e) {
-            e.printStackTrace();
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
-
-        //
-        String ontid = (String) obj.get("ontid");
-        String companyOntid = (String) obj.get("companyOntid");
-        String passphrase = (String) obj.get("passphrase");
-        String filehash = (String) obj.get("filehash");
-        String detail = (String) obj.get("detail");
-
-        //
-        try {
-            //
-            // Account payer = ontidService.getAccountByOntidAndPassword(companyOntid, passphrase);
-            Account payer = null;  // TODO
-            //
-            Map<String, Object> map = tspService.getTimeStampMap(filehash);
-            //
-            long timestamp = (long) map.get("timestamp");
-            String timestampSign = map.get("timestampSign").toString();
-            //
-            Contract contract = new Contract();
-            contract.setOntid(ontid);
-            contract.setCompanyOntid(companyOntid);
-            contract.setFilehash(filehash);
-            contract.setDetail(detail);
-            contract.setTimestamp(new Date(timestamp * 1000L));
-            contract.setTimestampSign(timestampSign);
-            contract.setCreateTime(new Date());
-            //
-            Map<String, String> map2 = contractService.putContract(contract, payer);
-            String txhash = map2.get("txhash");
-            contract.setTxhash(txhash);
-            // 应该要写入该ontid对应的contract_index，而不是CURRENT_CONTRACT_TABLE，否则查询时就可能会跨表了
-            ContractOntid contractOntidRecord = contractOntidMapper.findByOntid(companyOntid);
-            ContractIndex contractIndex = contractIndexMapper.selectByPrimaryKey(contractOntidRecord.getContractIndex());
-            // 写入数据库
-            contractMapper.insert(contractIndex.getName(), contract);
-            // 链同步
-            syncService.confirmTx(txhash);
-            //
-            rst.setResult(true);
-            rst.setErrorAndDesc(ErrorCode.SUCCESSS);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        } catch (Exception e) {
-            e.printStackTrace();
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
-    }
-*/
 
     @PostMapping("/put/batch")
     public ResponseEntity<Result> putContractBatch(@RequestBody LinkedHashMap<String, Object> obj) {
@@ -276,8 +185,6 @@ public class ContractController {
         //
         try {
             //
-            Account payer = GlobalVariable.getInstanceOfAccount(propertiesService.payerPrivateKey);
-            //
             List<Contract> contractList = new ArrayList<>();
             //
             for (Map<String, Object> item : filelist) {
@@ -306,7 +213,7 @@ public class ContractController {
                 contract.setTimestampSign(timestampSign);
                 contract.setCreateTime(new Date());
                 //
-                Map<String, String> map2 = contractService.putContract(contract, payer);
+                Map<String, String> map2 = contractService.putContract(contract);
                 String txhash = map2.get("txhash");
                 contract.setTxhash(txhash);
                 // 链同步
@@ -534,4 +441,139 @@ public class ContractController {
     }
 
 
+    @PostMapping("/company/add")
+    public ResponseEntity<Result> addCompany(@RequestBody LinkedHashMap<String, Object> obj) {
+
+        //
+        Result rst = new Result("addCompany");
+
+        //
+        Set<String> required = new HashSet<>();
+        required.add("ontid");
+        required.add("prikey");
+        required.add("code_addr");
+
+        //
+        try {
+            validateService.validateParamsKeys(obj, required);
+            validateService.validateParamsValues(obj);
+        } catch (Exception e) {
+            e.printStackTrace();
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+
+        //
+        String ontid = (String) obj.get("ontid");
+        String prikey = (String) obj.get("prikey");
+        String code_addr = (String) obj.get("code_addr");
+
+        //
+        ContractCompany existed = contractService.getCompany(ontid);
+        if (existed != null) {
+            rst.setErrorAndDesc(ErrorCode.ONTID_Already_EXIST);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+
+        //
+        ContractCompany company = new ContractCompany();
+        company.setOntid(ontid);
+        company.setPrikey(prikey);
+        company.setCodeAddr(code_addr);
+        company.setCreateTime(new Date());
+        contractService.saveCompany(company);
+
+        //
+        rst.setErrorAndDesc(ErrorCode.SUCCESSS);
+        return new ResponseEntity<>(rst, HttpStatus.OK);
+
+    }
+
+
+    @PostMapping("/company/update")
+    public ResponseEntity<Result> updateCompany(@RequestBody LinkedHashMap<String, Object> obj) {
+
+        //
+        Result rst = new Result("updateCompany");
+
+        //
+        Set<String> required = new HashSet<>();
+        required.add("ontid");
+
+        //
+        try {
+            validateService.validateParamsKeys(obj, required);
+            validateService.validateParamsValues(obj);
+        } catch (Exception e) {
+            e.printStackTrace();
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+
+        //
+        String ontid = (String) obj.get("ontid");
+
+        //
+        String prikey = "";
+        if (obj.containsKey("prikey")) {
+            prikey = (String) obj.get("prikey");
+        }
+        String code_addr = "";
+        if (obj.containsKey("code_addr")) {
+            code_addr = (String) obj.get("code_addr");
+        }
+
+        //
+        ContractCompany existed = contractService.getCompany(ontid);
+        if (existed == null) {
+            rst.setErrorAndDesc(ErrorCode.ONTID_NOT_EXIST);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+
+        //
+        if (!StringUtils.isEmpty(prikey))
+            existed.setPrikey(prikey);
+        if (!StringUtils.isEmpty(code_addr))
+            existed.setCodeAddr(code_addr);
+        existed.setUpdateTime(new Date());
+
+        //
+        contractService.saveCompany(existed);
+
+        //
+        rst.setErrorAndDesc(ErrorCode.SUCCESSS);
+        return new ResponseEntity<>(rst, HttpStatus.OK);
+    }
+
+    @PostMapping("/company/get")
+    public ResponseEntity<Result> getCompany(@RequestBody LinkedHashMap<String, Object> obj) {
+
+        //
+        Result rst = new Result("getCompany");
+
+        //
+        Set<String> required = new HashSet<>();
+        required.add("ontid");
+
+        //
+        try {
+            validateService.validateParamsKeys(obj, required);
+            validateService.validateParamsValues(obj);
+        } catch (Exception e) {
+            e.printStackTrace();
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+
+        //
+        String ontid = (String) obj.get("ontid");
+
+        //
+        ContractCompany company = contractService.getCompany(ontid);
+
+        //
+        rst.setResult(company);
+        rst.setErrorAndDesc(ErrorCode.SUCCESSS);
+        return new ResponseEntity<>(rst, HttpStatus.OK);
+    }
 }

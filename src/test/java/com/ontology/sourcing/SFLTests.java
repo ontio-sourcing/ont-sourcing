@@ -95,7 +95,7 @@ X-Application-Context: application:staging:8080
     "responseData":"fe9b2523-67c1-4b6e-b8d1-6f77b0348040",
     "success":true,
     "errMessage":"",
-    "code":"ACCEPTED",
+    "codeAddr":"ACCEPTED",
     "notarySuc":true,
     "indentifySuc":false,
     "downloadSuc":false,
@@ -143,7 +143,7 @@ X-Application-Context: application:staging:8080
     "responseData":"f39ba350ee88171d43118e24bb44abe8bd6f1a9969a60f9f17b13752d010b7bb",
     "success":true,
     "errMessage":"",
-    "code":"ACCEPTED",
+    "codeAddr":"ACCEPTED",
     "notarySuc":true,
     "indentifySuc":false,
     "downloadSuc":false,
@@ -205,7 +205,7 @@ certUrl: http://colima-oss-pro.oss-cn-hangzhou.aliyuncs.com/762418917523479.pdf?
     "responseData":"1669ebf6a17ccaeeb9356f16d42f5f0b628cb1e8d151cb534dbc26987299f8e3",
     "success":true,
     "errMessage":"",
-    "code":"ACCEPTED",
+    "codeAddr":"ACCEPTED",
     "notarySuc":true,
     "indentifySuc":false,
     "downloadSuc":false,
@@ -240,7 +240,7 @@ X-Application-Context: application:staging:8080
         System.out.println("res b\n" + httpInfo.responseBody);
 /*
 {
-    "code":0,
+    "codeAddr":0,
     "message":"",
     "data":"核验信息与链上信息不符",
     "total":0
@@ -248,7 +248,7 @@ X-Application-Context: application:staging:8080
 */
 /*
 {
-    "code":0,
+    "codeAddr":0,
     "message":"",
     "data":"比对结果一致，数据未被篡改，存证时间:2019-04-17 15:01:08，存证阶段:，存证类型:文本存证，所在区块哈希:da440bbf240d7f458ff0e90e6f2dc94faefa4b803f2dc7a961a72665822b299b",
     "total":0

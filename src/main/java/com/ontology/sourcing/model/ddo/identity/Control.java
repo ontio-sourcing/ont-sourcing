@@ -7,7 +7,7 @@ import java.util.Base64;
 
 public class Control {
 
-    @SerializedName("address") @Expose private String address;
+    @SerializedName("codeAddr") @Expose private String address;
     @SerializedName("algorithm") @Expose private String algorithm;
     @SerializedName("enc-alg") @Expose private String encAlg;
     @SerializedName("hash") @Expose private String hash;

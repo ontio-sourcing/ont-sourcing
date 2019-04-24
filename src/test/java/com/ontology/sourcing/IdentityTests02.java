@@ -35,7 +35,7 @@ public class IdentityTests02 {
 {
     "controls":[
         {
-            "address":"ALcwsJqdFyPr4sd1bnS5bdnaBYDgfmCsBd",
+            "codeAddr":"ALcwsJqdFyPr4sd1bnS5bdnaBYDgfmCsBd",
             "algorithm":"ECDSA",
             "enc-alg":"aes-256-gcm",
             "hash":"sha256",
@@ -67,7 +67,7 @@ public class IdentityTests02 {
     {
       "controls": [
         {
-          "address": "ALcwsJqdFyPr4sd1bnS5bdnaBYDgfmCsBd",
+          "codeAddr": "ALcwsJqdFyPr4sd1bnS5bdnaBYDgfmCsBd",
           "algorithm": "ECDSA",
           "enc-alg": "aes-256-gcm",
           "hash": "sha256",
@@ -112,7 +112,7 @@ public class IdentityTests02 {
 {
     "controls":[
         {
-            "address":"ALcwsJqdFyPr4sd1bnS5bdnaBYDgfmCsBd",
+            "codeAddr":"ALcwsJqdFyPr4sd1bnS5bdnaBYDgfmCsBd",
             "algorithm":"ECDSA",
             "enc-alg":"aes-256-gcm",
             "hash":"sha256",
@@ -148,7 +148,7 @@ public class IdentityTests02 {
 {
     "controls":[
         {
-            "address":"ALcwsJqdFyPr4sd1bnS5bdnaBYDgfmCsBd",
+            "codeAddr":"ALcwsJqdFyPr4sd1bnS5bdnaBYDgfmCsBd",
             "algorithm":"ECDSA",
             "enc-alg":"aes-256-gcm",
             "hash":"sha256",
@@ -179,7 +179,7 @@ public class IdentityTests02 {
     {
       "controls": [
         {
-          "address": "ALcwsJqdFyPr4sd1bnS5bdnaBYDgfmCsBd",
+          "codeAddr": "ALcwsJqdFyPr4sd1bnS5bdnaBYDgfmCsBd",
           "algorithm": "ECDSA",
           "enc-alg": "aes-256-gcm",
           "hash": "sha256",

@@ -33,12 +33,12 @@ public class IdentityTests {
     private com.github.ontio.account.Account payerAccount = GlobalVariable.getInstanceOfAccount("6a62d116e416246f974229eee7d1b0894d8c2ab70446856e85e35b7f5d37adef");
 
     // 要操作的实物的数字身份
-    private String entityIdentityStr = "{\n" + "  \"controls\": [\n" + "    {\n" + "      \"address\": \"ALiQf85m87bggdguYGEBaA4m4YTo764YDW\",\n" + "      \"algorithm\": \"ECDSA\",\n" + "      \"enc-alg\": \"aes-256-gcm\",\n" + "      \"hash\": \"sha256\",\n" + "      \"id\": \"keys-1\",\n" + "      \"key\": \"z+lASc14/m4rlkVqPruD51uPuMfnBdVI2nXhvGG/543KsF4KMGvRWkbQ1SFNEJ1B\",\n" + "      \"parameters\": {\n" + "        \"curve\": \"P-256\"\n" + "      },\n" + "      \"publicKey\": \"03854ec502bcd514ae86329ea848a87e001b3b90500c8fabad2f167d80cf64932b\",\n" + "      \"salt\": \"Ih0CIOgA1Q1aC5Fhj5DV1w==\"\n" + "    }\n" + "  ],\n" + "  \"isDefault\": false,\n" + "  \"label\": \"5a7f1346\",\n" + "  \"lock\": false,\n" + "  \"ontid\": \"did:ont:ALiQf85m87bggdguYGEBaA4m4YTo764YDW\"\n" + "}";
+    private String entityIdentityStr = "{\n" + "  \"controls\": [\n" + "    {\n" + "      \"codeAddr\": \"ALiQf85m87bggdguYGEBaA4m4YTo764YDW\",\n" + "      \"algorithm\": \"ECDSA\",\n" + "      \"enc-alg\": \"aes-256-gcm\",\n" + "      \"hash\": \"sha256\",\n" + "      \"id\": \"keys-1\",\n" + "      \"key\": \"z+lASc14/m4rlkVqPruD51uPuMfnBdVI2nXhvGG/543KsF4KMGvRWkbQ1SFNEJ1B\",\n" + "      \"parameters\": {\n" + "        \"curve\": \"P-256\"\n" + "      },\n" + "      \"publicKey\": \"03854ec502bcd514ae86329ea848a87e001b3b90500c8fabad2f167d80cf64932b\",\n" + "      \"salt\": \"Ih0CIOgA1Q1aC5Fhj5DV1w==\"\n" + "    }\n" + "  ],\n" + "  \"isDefault\": false,\n" + "  \"label\": \"5a7f1346\",\n" + "  \"lock\": false,\n" + "  \"ontid\": \"did:ont:ALiQf85m87bggdguYGEBaA4m4YTo764YDW\"\n" + "}";
     private String entityIdentityPassword = "i1";
     private OntidPojo entityIdentity;
 
     // Control的数字身份
-    private String controlIdentity1Str = "{\n" + "  \"controls\": [\n" + "    {\n" + "      \"address\": \"AGUqccDaZyiP3YxmpxTSTHUvkjX7SPCn92\",\n" + "      \"algorithm\": \"ECDSA\",\n" + "      \"enc-alg\": \"aes-256-gcm\",\n" + "      \"hash\": \"sha256\",\n" + "      \"id\": \"keys-1\",\n" + "      \"key\": \"H1B8+onxoNMtW0cdYykY6REezviB3hef8BeCXwMwogbAupwiFiKqBwV/4+/FzicM\",\n" + "      \"parameters\": {\n" + "        \"curve\": \"P-256\"\n" + "      },\n" + "      \"publicKey\": \"039e628ffdcdb59e69411c1265a5b154ebf8195589bc94705fb2aaca34aa3d852a\",\n" + "      \"salt\": \"Ggb1+pBA3aW+DCnjV7jzxQ==\"\n" + "    }\n" + "  ],\n" + "  \"isDefault\": false,\n" + "  \"label\": \"ae907a60\",\n" + "  \"lock\": false,\n" + "  \"ontid\": \"did:ont:AGUqccDaZyiP3YxmpxTSTHUvkjX7SPCn92\"\n" + "}";
+    private String controlIdentity1Str = "{\n" + "  \"controls\": [\n" + "    {\n" + "      \"codeAddr\": \"AGUqccDaZyiP3YxmpxTSTHUvkjX7SPCn92\",\n" + "      \"algorithm\": \"ECDSA\",\n" + "      \"enc-alg\": \"aes-256-gcm\",\n" + "      \"hash\": \"sha256\",\n" + "      \"id\": \"keys-1\",\n" + "      \"key\": \"H1B8+onxoNMtW0cdYykY6REezviB3hef8BeCXwMwogbAupwiFiKqBwV/4+/FzicM\",\n" + "      \"parameters\": {\n" + "        \"curve\": \"P-256\"\n" + "      },\n" + "      \"publicKey\": \"039e628ffdcdb59e69411c1265a5b154ebf8195589bc94705fb2aaca34aa3d852a\",\n" + "      \"salt\": \"Ggb1+pBA3aW+DCnjV7jzxQ==\"\n" + "    }\n" + "  ],\n" + "  \"isDefault\": false,\n" + "  \"label\": \"ae907a60\",\n" + "  \"lock\": false,\n" + "  \"ontid\": \"did:ont:AGUqccDaZyiP3YxmpxTSTHUvkjX7SPCn92\"\n" + "}";
     private String controlIdentity1Password = "p1";
     private OntidPojo controlIdentity1;
 
@@ -71,7 +71,7 @@ public class IdentityTests {
 {
   "controls": [
     {
-      "address": "ATjTrm7cJwK6yYA6SpQXcuyeoZbHaek1no",
+      "codeAddr": "ATjTrm7cJwK6yYA6SpQXcuyeoZbHaek1no",
       "algorithm": "ECDSA",
       "enc-alg": "aes-256-gcm",
       "hash": "sha256",
@@ -97,7 +97,7 @@ public class IdentityTests {
 {
   "controls": [
     {
-      "address": "AdFY9DejFGdur8hAvwABu5r9DDHGo1XWWx",
+      "codeAddr": "AdFY9DejFGdur8hAvwABu5r9DDHGo1XWWx",
       "algorithm": "ECDSA",
       "enc-alg": "aes-256-gcm",
       "hash": "sha256",
@@ -129,7 +129,7 @@ public class IdentityTests {
 {
   "controls": [
     {
-      "address": "ALiQf85m87bggdguYGEBaA4m4YTo764YDW",
+      "codeAddr": "ALiQf85m87bggdguYGEBaA4m4YTo764YDW",
       "algorithm": "ECDSA",
       "enc-alg": "aes-256-gcm",
       "hash": "sha256",
@@ -331,7 +331,7 @@ public class IdentityTests {
 {
   "controls": [
     {
-      "address": "AGUqccDaZyiP3YxmpxTSTHUvkjX7SPCn92",
+      "codeAddr": "AGUqccDaZyiP3YxmpxTSTHUvkjX7SPCn92",
       "algorithm": "ECDSA",
       "enc-alg": "aes-256-gcm",
       "hash": "sha256",

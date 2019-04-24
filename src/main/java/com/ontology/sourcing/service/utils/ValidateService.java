@@ -202,39 +202,58 @@ public class ValidateService {
         }
 
         // 司法链
-        if (obj.containsKey("user_type")) {
-            String user_type = (String) obj.get("user_type");
-            if (StringUtils.isEmpty(user_type)) {
-                throw new Exception("user_type is empty.");
+        if (obj.containsKey("userType")) {
+            String userType = (String) obj.get("userType");
+            if (StringUtils.isEmpty(userType)) {
+                throw new Exception("userType is empty.");
             }
             //
-            if (!"PERSON".equals(user_type) && !"ENTERPRISE".equals(user_type)) {
-                throw new Exception("user_type is incorrect.");
+            if (!"PERSON".equals(userType) && !"ENTERPRISE".equals(userType)) {
+                throw new Exception("userType is incorrect.");
             }
         }
 
-        if (obj.containsKey("cert_type")) {
-            String cert_type = (String) obj.get("cert_type");
-            if (StringUtils.isEmpty(cert_type)) {
-                throw new Exception("cert_type is empty.");
+        if (obj.containsKey("certType")) {
+            String certType = (String) obj.get("certType");
+            if (StringUtils.isEmpty(certType)) {
+                throw new Exception("certType is empty.");
             }
             //
-            if (!"IDENTITY_CARD".equals(cert_type) && !"UNIFIED_SOCIAL_CREDIT_CODE".equals(cert_type) && !"ENTERPRISE_REGISTERED_NUMBER".equals(cert_type)) {
+            if (!"IDENTITY_CARD".equals(certType) && !"UNIFIED_SOCIAL_CREDIT_CODE".equals(certType) && !"ENTERPRISE_REGISTERED_NUMBER".equals(certType)) {
                 throw new Exception("cert_type is incorrect.");
             }
         }
 
-        if (obj.containsKey("cert_name")) {
-            String cert_name = (String) obj.get("cert_name");
-            if (StringUtils.isEmpty(cert_name)) {
-                throw new Exception("cert_name is empty.");
+        if (obj.containsKey("certName")) {
+            String certName = (String) obj.get("certName");
+            if (StringUtils.isEmpty(certName)) {
+                throw new Exception("certName is empty.");
             }
         }
 
-        if (obj.containsKey("cert_no")) {
-            String cert_no = (String) obj.get("cert_no");
-            if (StringUtils.isEmpty(cert_no)) {
-                throw new Exception("cert_no is empty.");
+        if (obj.containsKey("certNo")) {
+            String certNo = (String) obj.get("certNo");
+            if (StringUtils.isEmpty(certNo)) {
+                throw new Exception("certNo is empty.");
+            }
+        }
+
+        if (obj.containsKey("prikey")) {
+            String prikey = (String) obj.get("prikey");
+            //
+            if (StringUtils.isEmpty(prikey)) {
+                throw new Exception("prikey is empty.");
+            }
+            //
+            if (prikey.length() != 64)
+                throw new Exception("prikey length should be 64.");
+        }
+
+        if (obj.containsKey("code_addr")) {
+            String code = (String) obj.get("code_addr");
+            //
+            if (StringUtils.isEmpty(code)) {
+                throw new Exception("code_addr is empty.");
             }
         }
 

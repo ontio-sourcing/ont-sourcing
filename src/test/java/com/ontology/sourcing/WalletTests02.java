@@ -41,7 +41,7 @@ public class WalletTests02 {
         System.out.println(acct);
 /*
 {
-    "address":"AZsDe5NpCZ4TCyGyaLGrKpoSz3zFY5QrSM",
+    "codeAddr":"AZsDe5NpCZ4TCyGyaLGrKpoSz3zFY5QrSM",
     "algorithm":"ECDSA",
     "enc-alg":"aes-256-gcm",
     "hash":"sha256",
@@ -64,7 +64,7 @@ public class WalletTests02 {
 {
   "accounts": [
     {
-      "address": "AZsDe5NpCZ4TCyGyaLGrKpoSz3zFY5QrSM",
+      "codeAddr": "AZsDe5NpCZ4TCyGyaLGrKpoSz3zFY5QrSM",
       "algorithm": "ECDSA",
       "enc-alg": "aes-256-gcm",
       "hash": "sha256",
@@ -109,7 +109,7 @@ public class WalletTests02 {
         System.out.println(account2);
 /*
 {
-    "address":"AZsDe5NpCZ4TCyGyaLGrKpoSz3zFY5QrSM",
+    "codeAddr":"AZsDe5NpCZ4TCyGyaLGrKpoSz3zFY5QrSM",
     "algorithm":"ECDSA",
     "enc-alg":"aes-256-gcm",
     "hash":"sha256",
@@ -140,7 +140,7 @@ public class WalletTests02 {
         System.out.println(JSON.toJSONString(keystore));
 /*
 {
-    "address":"AZsDe5NpCZ4TCyGyaLGrKpoSz3zFY5QrSM",
+    "codeAddr":"AZsDe5NpCZ4TCyGyaLGrKpoSz3zFY5QrSM",
     "salt":"2a7rH4Z/r1Ou/PcHQA8vTA==",
     "label":"test_label",
     "type":"A",

@@ -31,16 +31,22 @@ public class ContractService {
     private ContractIndexMapper contractIndexMapper;
     private ContractOntidMapper contractOntidMapper;
     private EventMapper eventMapper;
+    private ContractCompanyMapper contractCompanyMapper;
+
     //
     private OntSdk ontSdk;
+
+    // 公共payer和公共合约
     private String codeAddr;
+    private Account payer;
 
     @Autowired
     public ContractService(PropertiesService propertiesService,
                            ContractMapper contractMapper,
                            ContractIndexMapper contractIndexMapper,
                            ContractOntidMapper contractOntidMapper,
-                           EventMapper eventMapper) {
+                           EventMapper eventMapper,
+                           ContractCompanyMapper contractCompanyMapper) {
         //
         this.propertiesService = propertiesService;
         //
@@ -48,16 +54,20 @@ public class ContractService {
         this.contractIndexMapper = contractIndexMapper;
         this.contractOntidMapper = contractOntidMapper;
         this.eventMapper = eventMapper;
+        this.contractCompanyMapper = contractCompanyMapper;
+
         //
         ontSdk = GlobalVariable.getOntSdk(propertiesService.ontologyUrl, propertiesService.walletPath);
-        // 合约哈希/合约地址/contract address
-        codeAddr = Address.AddressFromVmCode(propertiesService.contractCode).toHexString(); // 6864a62235279e4c5c3fba004905f30e2157169a
+
+        // 合约哈希/合约地址/contract codeAddr
+        codeAddr = propertiesService.codeAddr;
+        payer = GlobalVariable.getInstanceOfAccount(propertiesService.payerPrivateKey);
     }
 
-    public Map<String, String> putContract(Contract contract, Account payer) throws Exception {
+    public Map<String, String> putContract(Contract contract) throws Exception {
 
         List paramList = new ArrayList<>();
-        paramList.add("Put".getBytes());
+        paramList.add("putRecord".getBytes());
 
         List args = new ArrayList();
         // key
@@ -68,6 +78,13 @@ public class ContractService {
         //
         paramList.add(args);
         byte[] params = BuildParams.createCodeParamsScript(paramList);
+
+        // 先查询是不是项目方，有没有设置指定的payer地址和合约地址
+        ContractCompany contractCompany = contractCompanyMapper.findByOntid(contract.getCompanyOntid());
+        if (contractCompany != null) {
+            payer = GlobalVariable.getInstanceOfAccount(contractCompany.getPrikey());
+            codeAddr = contractCompany.getCodeAddr();
+        }
 
         //
         Map<String, String> map = invokeContract(Helper.reverse(codeAddr), null, params, payer, 76220L, GlobalVariable.DEFAULT_GAS_PRICE, false);
@@ -84,13 +101,20 @@ public class ContractService {
     public String getContract(Contract contract, Account payer) throws Exception {
 
         List paramList = new ArrayList<>();
-        paramList.add("Get".getBytes());
+        paramList.add("getRecord".getBytes());
 
         List args = new ArrayList();
         args.add(contractToDigestForKey(contract));
 
         paramList.add(args);
         byte[] params = BuildParams.createCodeParamsScript(paramList);
+
+        // 先查询是不是项目方，有没有设置指定的payer地址和合约地址
+        ContractCompany contractCompany = contractCompanyMapper.findByOntid(contract.getCompanyOntid());
+        if (contractCompany != null) {
+            payer = GlobalVariable.getInstanceOfAccount(contractCompany.getPrikey());
+            codeAddr = Address.AddressFromVmCode(contractCompany.getCodeAddr()).toHexString();
+        }
 
         //
         Map<String, String> map = invokeContract(Helper.reverse(codeAddr), null, params, payer, ontSdk.DEFAULT_GAS_LIMIT, GlobalVariable.DEFAULT_GAS_PRICE, true);
@@ -266,5 +290,16 @@ public class ContractService {
     // 写入数据库，batch insert
     public void saveToLocalBatch(String ontid, List<Contract> contractList) {
         contractMapper.insertBatch(getIndex(ontid).getName(), contractList);
+    }
+
+    //
+    public void saveCompany(ContractCompany company) {
+        contractCompanyMapper.save(company);
+    }
+
+    //
+    public ContractCompany getCompany(String ontid) {
+        ContractCompany company = contractCompanyMapper.findByOntid(ontid);
+        return company;
     }
 }
