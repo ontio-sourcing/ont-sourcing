@@ -9,6 +9,8 @@ import com.ontology.sourcing.model.sfl.SFLResponse;
 import com.ontology.sourcing.service.utils.PropertiesService;
 import com.ontology.sourcing.service.utils.SyncService;
 import com.ontology.sourcing.utils.HttpUtil;
+import com.ontology.sourcing.utils.exp.ErrorCode;
+import com.ontology.sourcing.utils.exp.ONTSourcingException;
 import com.ontology.sourcing.utils.sfl.CertUtil;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,6 +91,13 @@ public class SFLService {
 
         SFLResponse response = gson.fromJson(httpInfo.responseBody, SFLResponse.class);
 
+        //
+        if (!response.getSuccess()) {
+            // throw new Exception(response.getErrMessage());
+            throw new ONTSourcingException(response.getErrMessage(), ErrorCode.SFL_ERROR);
+        }
+
+        //
         String token = response.getResponseData();
 
         //

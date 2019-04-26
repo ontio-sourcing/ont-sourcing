@@ -2,9 +2,11 @@ package com.ontology.sourcing.model.utils;
 
 import com.github.ontio.network.exception.RestfulException;
 import com.google.gson.Gson;
-import com.ontology.sourcing.utils.exp.ErrorCode;
 import com.ontology.sourcing.utils.GlobalVariable;
+import com.ontology.sourcing.utils.exp.ErrorCode;
+import com.ontology.sourcing.utils.exp.ONTSourcingException;
 import lombok.Data;
+import org.springframework.util.StringUtils;
 
 @Data
 public class Result {
@@ -34,17 +36,7 @@ public class Result {
     private String Version;
 
     //
-//    public void setErrorAndDesc(Exception e){
-//        ExceptionMsg msg = new Gson().fromJson(e.getMessage(), ExceptionMsg.class);
-//        this.setError(msg.getError());
-//        this.setDesc(msg.getDesc());
-//    }
-    public void setErrorAndDesc(Exception e){
-        this.setError(ErrorCode.BLOCKCHAIN.getId());
-        this.setDesc(e.getMessage());
-    }
-
-    public void setErrorAndDesc(RestfulException e){
+    public void setErrorAndDesc(RestfulException e) {
         RestfulExceptionMsg msg = new Gson().fromJson(e.getMessage(), RestfulExceptionMsg.class);
         this.setError(msg.getError());
         this.setDesc(msg.getDesc());
@@ -52,8 +44,25 @@ public class Result {
     }
 
     //
-    public void setErrorAndDesc(ErrorCode error){
+    public void setErrorAndDesc(ErrorCode error) {
         this.setError(error.getId());
         this.setDesc(error.getMessage());
+    }
+
+    //
+    public void setErrorAndDesc(Exception e) {
+        this.setError(ErrorCode.INTERNAL_SERVER_ERROR.getId());
+        this.setDesc(e.getMessage());
+    }
+
+    //
+    public void setErrorAndDesc(ONTSourcingException e) {
+        //
+        this.setError(e.getErrorCode().getId());
+        //
+        if (StringUtils.isEmpty(e.getMessage()))
+            this.setDesc(e.getErrorCode().getMessage());
+        else
+            this.setDesc(e.getMessage());
     }
 }

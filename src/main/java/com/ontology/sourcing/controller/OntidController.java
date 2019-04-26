@@ -283,8 +283,8 @@ public class OntidController {
             return new ResponseEntity<>(rst, HttpStatus.OK);
         } catch (ExistedException e) {
             e.printStackTrace();
-            rst.setError(ErrorCode.ONTID_PubKey_Already_EXIST.getId());
-            rst.setDesc(ErrorCode.ONTID_PubKey_Already_EXIST.getMessage());
+            rst.setError(ErrorCode.ONTID_PubKey_EXIST.getId());
+            rst.setDesc(ErrorCode.ONTID_PubKey_EXIST.getMessage());
             return new ResponseEntity<>(rst, HttpStatus.OK);
         } catch (RestfulException e) {
             e.printStackTrace();

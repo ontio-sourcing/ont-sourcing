@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 public interface ContractOntidMapper extends JpaRepository<ContractOntid, Integer> {
 
     ContractOntid findByOntid(String ontid);
+
+    ContractOntid findFirstByOntidOrderByCreateTimeAsc(String ontid);
 }

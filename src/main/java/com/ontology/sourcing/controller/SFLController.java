@@ -8,6 +8,7 @@ import com.ontology.sourcing.model.utils.Result;
 import com.ontology.sourcing.service.SFLService;
 import com.ontology.sourcing.service.utils.ValidateService;
 import com.ontology.sourcing.utils.exp.ErrorCode;
+import com.ontology.sourcing.utils.exp.ONTSourcingException;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -123,6 +124,10 @@ public class SFLController {
             //
             rst.setResult(true);
             rst.setErrorAndDesc(ErrorCode.SUCCESSS);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        } catch (ONTSourcingException e) {
+            e.printStackTrace();
+            rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();

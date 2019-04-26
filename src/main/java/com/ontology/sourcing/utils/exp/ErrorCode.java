@@ -8,11 +8,14 @@ public enum ErrorCode {
     PARAMS(61001, "INVALID_PARAMS"),
     //
     ONTID_NOT_EXIST(71001, "ONTID_NOT_EXIST"),
-    ONTID_Already_EXIST(71002, "ONTID_Already_EXIST"),
-    ONTID_PubKey_Already_EXIST(71003, "ONTID_PubKey_Already_EXIST"),
+    ONTID_EXIST(71002, "ONTID_EXIST"),
+    ONTID_PubKey_EXIST(71003, "ONTID_PubKey_EXIST"),
     //
     BLOCKCHAIN(81001, "BLOCKCHAIN_ERROR"),
-    BLOCKCHAIN_CONFIRM_TIMEOUT(81002, "BLOCKCHAIN_CONFIRM_TIMEOUT");
+    //
+    SFL_ERROR(90001, "司法链接口调用失败"),
+    //
+    INTERNAL_SERVER_ERROR(100000, "");
 
     //
     private final int id;

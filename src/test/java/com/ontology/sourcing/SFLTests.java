@@ -49,7 +49,8 @@ public class SFLTests {
         iden.put("userType", "PERSON");
         iden.put("certName", "刘猛");
         iden.put("certType", "IDENTITY_CARD");
-        iden.put("certNo", "412827199405182010");
+        // iden.put("certNo", "412827199405182010");
+        iden.put("certNo", "412827199405180000");
         obj.put("customer", iden);
 
         obj.put("timestamp", timestamp);
@@ -90,6 +91,19 @@ Connection: keep-alive
 X-Application-Context: application:staging:8080
  */
         System.out.println(httpInfo.responseBody);
+/*
+{
+    "responseData":null,
+    "success":false,
+    "errMessage":"Invalid ID card Number",
+    "code":"BAD_REQUEST",
+    "notarySuc":false,
+    "suc":false,
+    "indentifySuc":false,
+    "downloadSuc":false
+}
+*/
+
 /*
 {
     "responseData":"fe9b2523-67c1-4b6e-b8d1-6f77b0348040",

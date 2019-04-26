@@ -260,13 +260,15 @@ public class ContractService {
 
     //
     public ContractOntid getRecord(String ontid) {
-        //
-        ContractOntid existed = contractOntidMapper.findByOntid(ontid);
+
+        // TODO 这里存在一个很大bug，若同一时间一个ontid发来多个请求，在数据库记录任何一个之前，都会返回null，于是后面都会创建并写入数据库，同一个ontid就会有多条记录
+        //        ContractOntid existed = contractOntidMapper.findByOntid(ontid);
+        ContractOntid existed = contractOntidMapper.findFirstByOntidOrderByCreateTimeAsc(ontid);
         //
         if (existed != null) {
             return existed;
         }
-        // 应该要写入该ontid对应的contract_index，而不是CURRENT_CONTRACT_TABLE，否则查询时就可能会跨表了
+        //
         ContractOntid record = new ContractOntid();
         record.setOntid(ontid);
         record.setCreateTime(new Date());

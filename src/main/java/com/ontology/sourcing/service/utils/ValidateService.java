@@ -233,9 +233,24 @@ public class ValidateService {
 
         if (obj.containsKey("certNo")) {
             String certNo = (String) obj.get("certNo");
+            //
             if (StringUtils.isEmpty(certNo)) {
                 throw new Exception("certNo is empty.");
             }
+            //
+            if (certNo.length() != 15 && certNo.length() != 18) {
+                throw new Exception("certNo length incorrect.");
+            }
+
+            // TODO 其它类型的证件号
+            // if (obj.containsKey("certType")) {
+            //     String certType = (String) obj.get("certType");
+            //     if ("IDENTITY_CARD".equals(certType)) {
+            //         if (certNo.length() != 15 && certNo.length() != 18) {
+            //             throw new Exception("certNo length incorrect.");
+            //         }
+            //     }
+            // }
         }
 
         if (obj.containsKey("prikey")) {
@@ -257,5 +272,44 @@ public class ValidateService {
             }
         }
 
+        //
+        if (obj.containsKey("filelist")) {
+            ArrayList<Map<String, Object>> filelist = (ArrayList<Map<String, Object>>) obj.get("filelist");
+            //
+            if (filelist.size() == 0) {
+                throw new Exception("filelist contains no elements.");
+            }
+            // TODO
+            if (filelist.size() >= 30) {
+                throw new Exception("filelist contains too many elements. max is 30.");
+            }
+            //
+            for (Map<String, Object> item : filelist) {
+                // 检查 key
+                if (!item.containsKey("filehash")) {
+                    throw new Exception("param filehash is missing.");
+                }
+                if (!item.containsKey("type")) {
+                    throw new Exception("param type is missing.");
+                }
+                if (!item.containsKey("detail")) {
+                    throw new Exception("param detail is missing.");
+                }
+                // 检查 value
+                if (item.containsKey("filehash")) {
+                    String filehash = item.get("filehash").toString();
+                    validateHash(filehash);
+                }
+                if (item.containsKey("type")) {
+                    String type = item.get("type").toString();
+                    if (!ContractTypes.contains(type)) {
+                        throw new Exception("type " + type + " is incorrect.");
+                    }
+                }
+                if (item.containsKey("detail")) {
+                    // ...
+                }
+            }
+        }
     }
 }

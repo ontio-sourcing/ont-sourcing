@@ -277,7 +277,7 @@ CREATE TABLE `tbl_contract_company`
     `id`          int(11)      NOT NULL AUTO_INCREMENT,
     `ontid`       varchar(128) NOT NULL,
     `prikey`      varchar(128) NOT NULL COMMENT '私钥，必须和合约中的地址相对应',
-    `address`     varchar(128) NOT NULL COMMENT '智能合约地址',
+    `code_addr`     varchar(128) NOT NULL COMMENT '智能合约地址',
     `create_time` datetime     NOT NULL,
     `update_time` datetime DEFAULT NULL,
     PRIMARY KEY (`id`),

@@ -471,7 +471,7 @@ public class ContractController {
         //
         ContractCompany existed = contractService.getCompany(ontid);
         if (existed != null) {
-            rst.setErrorAndDesc(ErrorCode.ONTID_Already_EXIST);
+            rst.setErrorAndDesc(ErrorCode.ONTID_EXIST);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
 

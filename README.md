@@ -35,6 +35,9 @@
 * [司法链存证](#司法链存证)
 * [司法链取证](#司法链取证)
 
+### 错误码
+* [错误码](#错误码)
+
 ## 接口规范
 
 ### 创建ontid
@@ -536,21 +539,21 @@ method：POST
             "filehash": "e81475b25e49f2767522d332057c3e6bb1144c842dce47913dc8222927777777",
             "type": "INDEX",
             "detail": [
-                {
-                    "name": "img1",
-                    "hash": "e81475b25e49f2767522d332057c3e6bb1144c842dce47913dc8222927888888",
-                    "message": ""
-                },
-                {
-                    "name": "img2",
-                    "hash": "e81475b25e49f2767522d332057c3e6bb1144c842dce47913dc8222927999999",
-                    "message": ""
-                },
-                {
-                    "name": "img3",
-                    "hash": "e81475b25e49f2767522d332057c3e6bb1144c842dce47913dc8222927000000",
-                    "message": ""
-                }
+                  {
+                      "textLine": [
+                          "2d校园",
+                          "文本",
+                          " 2d校园",
+                          "文本",
+                          "2d校园",
+                          "文本"
+                      ],
+                      "imageList": [
+                          "56e481f7a93a924813440bee96b68f0742b014ed426b7535ad35d072984b2c0f",
+                          "56e481f7a93a924813440bee96b68f0742b014ed426b7535ad35d072984b2c0f",
+                          "56e481f7a93a924813440bee96b68f0742b014ed426b7535ad35d072984b2c0f"
+                      ]
+                  }
             ]
         },
         {
@@ -588,7 +591,7 @@ method：POST
 |:-----------|:-------|:------------|
 | access_token   | String | access_token|
 | user_ontid   | String | 空表示自己存证，否则表示被存证    |
-| filelist   | String | 批量文件    |
+| filelist   | String | 批量文件(总数不能超过30条)    |
 
 - 响应：
 
@@ -808,7 +811,7 @@ method：POST
     ],
     "error": 0,
     "desc": "SUCCESS",
-    "action": getExplorerHistory,
+    "action": "getExplorerHistory",
     "version": "1.0.0"
 }
 ```
@@ -834,7 +837,7 @@ method：POST
 ```json
 {
     "pageNum": 1,
-    "pageSize": 10
+    "pageSize": 3
 }
 ```
 
@@ -849,43 +852,49 @@ method：POST
 {
     "result": [
         {
-            "ontid": "did:ont:AdsCrp9dQy1D6aoFxjDCNm1hnq3Zajq9GE",
+            "ontid": "did:ont:Aa1XPapJHGGjHQtN2Hdyb9APv7HfiYxtRz",
+            "companyOntid": "did:ont:Aa1XPapJHGGjHQtN2Hdyb9APv7HfiYxtRz",
             "detail": "some message about the file ...",
-            "timestamp": "2019-04-12T09:22:58.000+0000",
-            "timestampSign": "960ef049308207...",
-            "filehash": "e81475b25e49f2767522d332057c3e6bb1144c842dce47913dc8222927999999",
-            "txhash": "2cbe57e08cc467e2fc1bc6a2271052315be74b2b24d03e0d4bff72bae4f1e332",
-            "createTime": "2019-04-12T09:22:59.000+0000",
+            "type": "TEXT",
+            "timestamp": "2019-04-24T09:22:35.000+0000",
+            "timestampSign": "960ef0...",
+            "filehash": "111175b25e49f2767522d332057c3e6bb1144c842dce47913dc8222927999999",
+            "txhash": "7116936d9992ce4cbb7f3531d4e3e1807201cc6163d9d5958e375f27d604889a",
+            "createTime": "2019-04-24T09:22:35.000+0000",
             "updateTime": null,
-            "height": 1603800
+            "height": 1628962
         },
         {
-            "ontid": "did:ont:AdsCrp9dQy1D6aoFxjDCNm1hnq3Zajq9GE",
-            "detail": "some message about the file ...",
-            "timestamp": "2019-04-12T09:00:56.000+0000",
-            "timestampSign": "960ef049308207...",
-            "filehash": "e81475b25e49f2767522d332057c3e6bb1144c842dce47913dc8222927102c67",
-            "txhash": "5ef7a22bba79353763d7fcd5968cc13e7b8a948021e63034ba8dd437f037f062",
-            "createTime": "2019-04-12T09:00:57.000+0000",
+            "ontid": "did:ont:Aa1XPapJHGGjHQtN2Hdyb9APv7HfiY7890",
+            "companyOntid": "did:ont:Aa1XPapJHGGjHQtN2Hdyb9APv7HfiYxtRz",
+            "detail": "[{\"url\":\"http://....\"}]",
+            "type": "IMAGE",
+            "timestamp": "2019-04-23T03:49:20.000+0000",
+            "timestampSign": "960ef0...",
+            "filehash": "e81475b25e49f2767522d332057c3e6bb1144c842dce47913dc8222927000000",
+            "txhash": "ef12912c68d20812acb08a0ab6a0809c85f95ebef1bd8315a3e5f891e3d12688",
+            "createTime": "2019-04-23T03:49:22.000+0000",
             "updateTime": null,
-            "height": 1603800
+            "height": 1624385
         },
         {
-            "ontid": "did:ont:AdsCrp9dQy1D6aoFxjDCNm1hnq3Zajq9GE",
-            "detail": "some message about the file ...",
-            "timestamp": "2019-04-12T08:35:19.000+0000",
-            "timestampSign": "960ef049308207...",
-            "filehash": "e81475b25e49f2767522d332057c3e6bb1144c842dce47913dc8222927102c67",
-            "txhash": "05960f894360bbfd544ea5767176371cdbff9b083cfabf34e1a20e413f81c7a1",
-            "createTime": "2019-04-12T08:35:20.000+0000",
+            "ontid": "did:ont:Aa1XPapJHGGjHQtN2Hdyb9APv7HfiY7890",
+            "companyOntid": "did:ont:Aa1XPapJHGGjHQtN2Hdyb9APv7HfiYxtRz",
+            "detail": "[{\"name\":\"img1\",\"hash\":\"e81475b25e49f2767522d332057c3e6bb1144c842dce47913dc8222927888888\",\"message\":\"\"},{\"name\":\"img2\",\"hash\":\"e81475b25e49f2767522d332057c3e6bb1144c842dce47913dc8222927999999\",\"message\":\"\"},{\"name\":\"img3\",\"hash\":\"e81475b25e49f2767522d332057c3e6bb1144c842dce47913dc8222927000000\",\"message\":\"\"}]",
+            "type": "INDEX",
+            "timestamp": "2019-04-23T03:49:20.000+0000",
+            "timestampSign": "960ef0...",
+            "filehash": "e81475b25e49f2767522d332057c3e6bb1144c842dce47913dc8222927777777",
+            "txhash": "89e9ba952dc618229f7ab575c5c85863783fad26a1e65790be843481436cfe07",
+            "createTime": "2019-04-23T03:49:21.000+0000",
             "updateTime": null,
-            "height": 1603800
+            "height": 1624385
         }
     ],
     "error": 0,
     "desc": "SUCCESS",
-    "action": "getHistory",
-    "version": "1.0.0"
+    "version": "1.0.0",
+    "action": "getExplorer"
 }
 ```
 
@@ -1091,3 +1100,17 @@ method：POST
 | desc       | String | 成功返回SUCCESS，失败返回错误描述 |
 | result     | String | 成功返回存证记录，失败返回""     |
 | version    | String | 版本号  
+
+
+## 错误码
+
+| 返回代码  | 描述信息   | 备注                   |
+|:-----------|:-------|:------------------------------|
+| 0      | SUCCESS | 成功 |
+| 61001      | INVALID_PARAMS | 参数错误 |
+| 71001      | ONTID_EXIST | ontid错误 |
+| 71002      | ONTID_NOT_EXIST | ontid错误 |
+| 80001      | BLOCKCHAIN_ERROR | 本体链错误 |
+| 90001      | SFL_ERROR | 司法链错误 |
+| 100000      | INTERNAL_SERVER_ERROR | 服务器内部错误 |
+
