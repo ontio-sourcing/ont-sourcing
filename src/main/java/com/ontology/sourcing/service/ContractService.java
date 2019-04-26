@@ -251,8 +251,12 @@ public class ContractService {
         List<Contract> newlist = new ArrayList<>();
         for (Contract c : list) {
             Event e = eventMapper.findByTxhash(c.getTxhash());
-            Integer height = e.getHeight();
-            c.setHeight(height);
+            if (e != null) {
+                Integer height = e.getHeight();
+                c.setHeight(height);
+            } else {
+                c.setHeight(0);  // TODO
+            }
             newlist.add(c);
         }
         return newlist;
