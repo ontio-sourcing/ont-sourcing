@@ -1,4 +1,4 @@
-package com.ontology.sourcing.utils;
+package com.ontology.sourcing.util;
 
 import okhttp3.*;
 import okio.Buffer;

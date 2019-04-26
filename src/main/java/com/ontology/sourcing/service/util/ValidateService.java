@@ -1,10 +1,10 @@
-package com.ontology.sourcing.service.utils;
+package com.ontology.sourcing.service.util;
 
 import com.ontology.sourcing.dao.contract.ContractTypes;
 import com.ontology.sourcing.dao.ddo.ActionOntid;
 import com.ontology.sourcing.mapper.ddo.ActionOntidMapper;
 import com.ontology.sourcing.service.oauth.OAuthService;
-import com.ontology.sourcing.utils.exp.ErrorCode;
+import com.ontology.sourcing.util.exp.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;

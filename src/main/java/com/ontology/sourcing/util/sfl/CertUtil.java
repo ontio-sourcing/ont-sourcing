@@ -1,4 +1,4 @@
-package com.ontology.sourcing.utils.sfl;
+package com.ontology.sourcing.util.sfl;
 
 import java.io.BufferedReader;
 import java.io.StringReader;

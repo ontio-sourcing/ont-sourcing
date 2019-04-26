@@ -3,7 +3,7 @@ package com.ontology.sourcing;
 import com.github.ontio.OntSdk;
 import com.github.ontio.sdk.info.IdentityInfo;
 import com.github.ontio.sdk.wallet.Identity;
-import com.ontology.sourcing.utils.GlobalVariable;
+import com.ontology.sourcing.util.GlobalVariable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;

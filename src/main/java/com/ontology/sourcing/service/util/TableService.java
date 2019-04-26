@@ -1,11 +1,11 @@
-package com.ontology.sourcing.service.utils;
+package com.ontology.sourcing.service.util;
 
 import ch.qos.logback.classic.Logger;
 import com.ontology.sourcing.dao.ddo.ActionIndex;
 import com.ontology.sourcing.dao.contract.ContractIndex;
 import com.ontology.sourcing.mapper.contract.ContractIndexMapper;
 import com.ontology.sourcing.mapper.ddo.ActionIndexMapper;
-import com.ontology.sourcing.utils.GlobalVariable;
+import com.ontology.sourcing.util.GlobalVariable;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;

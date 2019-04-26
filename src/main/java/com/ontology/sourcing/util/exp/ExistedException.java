@@ -1,4 +1,4 @@
-package com.ontology.sourcing.utils.exp;
+package com.ontology.sourcing.util.exp;
 
 public class ExistedException extends Exception {
 

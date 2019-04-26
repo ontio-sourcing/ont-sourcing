@@ -15,9 +15,9 @@ import com.ontology.sourcing.mapper.ddo.*;
 import com.ontology.sourcing.model.ddo.DDOPojo;
 import com.ontology.sourcing.model.ddo.Owner;
 import com.ontology.sourcing.model.ddo.identity.OntidPojo;
-import com.ontology.sourcing.service.utils.PropertiesService;
-import com.ontology.sourcing.utils.GlobalVariable;
-import com.ontology.sourcing.utils.exp.ExistedException;
+import com.ontology.sourcing.service.util.PropertiesService;
+import com.ontology.sourcing.util.GlobalVariable;
+import com.ontology.sourcing.util.exp.ExistedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

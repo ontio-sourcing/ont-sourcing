@@ -1,7 +1,7 @@
 package com.ontology.sourcing;
 
-import com.ontology.sourcing.utils.HttpUtil;
-import com.ontology.sourcing.utils.sfl.CertUtil;
+import com.ontology.sourcing.util.HttpUtil;
+import com.ontology.sourcing.util.sfl.CertUtil;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;

@@ -1,4 +1,4 @@
-package com.ontology.sourcing.utils;
+package com.ontology.sourcing.util;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;

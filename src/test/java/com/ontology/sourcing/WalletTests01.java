@@ -5,7 +5,7 @@ import com.github.ontio.common.Helper;
 import com.github.ontio.crypto.MnemonicCode;
 import com.github.ontio.crypto.SignatureScheme;
 import com.github.ontio.sdk.wallet.Account;
-import com.ontology.sourcing.utils.GlobalVariable;
+import com.ontology.sourcing.util.GlobalVariable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;

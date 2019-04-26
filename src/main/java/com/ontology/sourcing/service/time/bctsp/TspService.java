@@ -1,7 +1,7 @@
 package com.ontology.sourcing.service.time.bctsp;
 
-import com.ontology.sourcing.service.utils.PropertiesService;
-import com.ontology.sourcing.utils.CodecUtil;
+import com.ontology.sourcing.service.util.PropertiesService;
+import com.ontology.sourcing.util.CodecUtil;
 import org.apache.commons.codec.DecoderException;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;

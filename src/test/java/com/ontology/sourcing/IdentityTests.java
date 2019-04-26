@@ -10,7 +10,7 @@ import com.google.gson.Gson;
 import com.ontology.sourcing.mapper.EventMapper;
 import com.ontology.sourcing.model.ddo.DDOPojo;
 import com.ontology.sourcing.model.ddo.identity.OntidPojo;
-import com.ontology.sourcing.utils.GlobalVariable;
+import com.ontology.sourcing.util.GlobalVariable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

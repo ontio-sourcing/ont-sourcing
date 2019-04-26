@@ -1,4 +1,4 @@
-package com.ontology.sourcing.utils;
+package com.ontology.sourcing.util;
 
 import com.github.ontio.crypto.Digest;
 

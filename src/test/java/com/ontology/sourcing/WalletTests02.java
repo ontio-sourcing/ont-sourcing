@@ -7,7 +7,7 @@ import com.github.ontio.sdk.exception.SDKException;
 import com.github.ontio.sdk.wallet.Account;
 import com.github.ontio.sdk.wallet.Scrypt;
 import com.google.gson.Gson;
-import com.ontology.sourcing.utils.GlobalVariable;
+import com.ontology.sourcing.util.GlobalVariable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;

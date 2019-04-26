@@ -2,10 +2,10 @@ package com.ontology.sourcing.controller;
 
 import ch.qos.logback.classic.Logger;
 import com.google.gson.Gson;
-import com.ontology.sourcing.model.utils.ExceptionMsg;
-import com.ontology.sourcing.model.utils.Result;
+import com.ontology.sourcing.model.util.ExceptionMsg;
+import com.ontology.sourcing.model.util.Result;
 import com.ontology.sourcing.service.WalletService;
-import com.ontology.sourcing.utils.exp.ErrorCode;
+import com.ontology.sourcing.util.exp.ErrorCode;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

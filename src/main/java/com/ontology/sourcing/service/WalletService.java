@@ -3,8 +3,8 @@ package com.ontology.sourcing.service;
 import com.github.ontio.OntSdk;
 import com.github.ontio.common.Helper;
 import com.github.ontio.sdk.wallet.Account;
-import com.ontology.sourcing.service.utils.PropertiesService;
-import com.ontology.sourcing.utils.GlobalVariable;
+import com.ontology.sourcing.service.util.PropertiesService;
+import com.ontology.sourcing.util.GlobalVariable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

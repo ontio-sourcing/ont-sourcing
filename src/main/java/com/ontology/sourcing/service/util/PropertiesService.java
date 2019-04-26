@@ -1,4 +1,4 @@
-package com.ontology.sourcing.service.utils;
+package com.ontology.sourcing.service.util;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

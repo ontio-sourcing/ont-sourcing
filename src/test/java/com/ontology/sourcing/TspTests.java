@@ -1,7 +1,7 @@
 package com.ontology.sourcing;
 
 import com.ontology.sourcing.service.time.bctsp.TspService;
-import com.ontology.sourcing.utils.CodecUtil;
+import com.ontology.sourcing.util.CodecUtil;
 import org.apache.commons.codec.DecoderException;
 import org.bouncycastle.tsp.*;
 import org.junit.Test;

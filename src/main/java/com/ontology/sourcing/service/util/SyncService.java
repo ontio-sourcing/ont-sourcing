@@ -1,4 +1,4 @@
-package com.ontology.sourcing.service.utils;
+package com.ontology.sourcing.service.util;
 
 import com.alibaba.fastjson.JSON;
 import com.github.ontio.OntSdk;
@@ -10,8 +10,8 @@ import com.ontology.sourcing.mapper.ddo.ActionOntidMapper;
 import com.ontology.sourcing.mapper.sfl.SFLNotaryMapper;
 import com.ontology.sourcing.model.ddo.DDOPojo;
 import com.ontology.sourcing.service.OntidService;
-import com.ontology.sourcing.utils.GlobalVariable;
-import com.ontology.sourcing.utils.HttpUtil;
+import com.ontology.sourcing.util.GlobalVariable;
+import com.ontology.sourcing.util.HttpUtil;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
