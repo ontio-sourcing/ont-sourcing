@@ -1,16 +1,17 @@
 package com.ontology.sourcing;
 
 import com.alibaba.fastjson.JSON;
-import com.github.ontio.OntSdk;
 import com.github.ontio.account.Account;
 import com.github.ontio.common.Address;
 import com.github.ontio.common.Helper;
 import com.github.ontio.core.transaction.Transaction;
 import com.github.ontio.sdk.exception.SDKException;
 import com.github.ontio.smartcontract.neovm.abi.BuildParams;
+import com.ontology.sourcing.service.util.ChainService;
 import com.ontology.sourcing.util.GlobalVariable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -20,9 +21,9 @@ import java.util.*;
 @SpringBootTest
 public class ContractTests03 {
 
-    //
-    private OntSdk ontSdk = GlobalVariable.getOntSdk("http://polaris1.ont.io", "/Volumes/Data/_work/201802_Ontology/ONTSouring/ont-sourcing/config/wallet.json");
-
+    @Autowired
+    ChainService chainService;
+    
     // 付款的数字钱包
     private com.github.ontio.account.Account payerAccount = GlobalVariable.getInstanceOfAccount("6a62d116e416246f974229eee7d1b0894d8c2ab70446856e85e35b7f5d37adef");
 
@@ -49,7 +50,7 @@ public class ContractTests03 {
         byte[] params = BuildParams.createCodeParamsScript(paramList);
 
         //
-        Map<String, String> map = invokeContractPreExec(Helper.reverse(codeAddr), null, params, payerAccount, ontSdk.DEFAULT_GAS_LIMIT, GlobalVariable.DEFAULT_GAS_PRICE);
+        Map<String, String> map = invokeContractPreExec(Helper.reverse(codeAddr), null, params, payerAccount, chainService.ontSdk.DEFAULT_GAS_LIMIT, GlobalVariable.DEFAULT_GAS_PRICE);
 
         //
         String txhash = map.get("txhash");
@@ -107,7 +108,7 @@ public class ContractTests03 {
         byte[] params = BuildParams.createCodeParamsScript(paramList);
 
         //
-        Map<String, String> map = invokeContractPreExec(Helper.reverse(codeAddr), null, params, payerAccount, ontSdk.DEFAULT_GAS_LIMIT, GlobalVariable.DEFAULT_GAS_PRICE);
+        Map<String, String> map = invokeContractPreExec(Helper.reverse(codeAddr), null, params, payerAccount, chainService.ontSdk.DEFAULT_GAS_LIMIT, GlobalVariable.DEFAULT_GAS_PRICE);
 
         //
         String txhash = map.get("txhash");
@@ -164,15 +165,15 @@ public class ContractTests03 {
         //
         Map<String, String> map = new HashMap<String, String>();
 
-        Transaction tx = ontSdk.vm().makeInvokeCodeTransaction(codeAddr, method, params, payerAcct.getAddressU160().toBase58(), gaslimit, gasprice);
+        Transaction tx = chainService.ontSdk.vm().makeInvokeCodeTransaction(codeAddr, method, params, payerAcct.getAddressU160().toBase58(), gaslimit, gasprice);
         System.out.println(tx);
         // com.github.ontio.core.payload.InvokeCode@fecc2faa
 
         //
-        ontSdk.addSign(tx, payerAcct);
+        chainService.ontSdk.addSign(tx, payerAcct);
 
         //
-        Object result = ontSdk.getConnect().sendRawTransactionPreExec(tx.toHexString());
+        Object result = chainService.ontSdk.getConnect().sendRawTransactionPreExec(tx.toHexString());
 
         //
         String txhash = tx.hash().toString();

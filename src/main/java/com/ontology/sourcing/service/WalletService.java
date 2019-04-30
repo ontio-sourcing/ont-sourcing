@@ -1,10 +1,8 @@
 package com.ontology.sourcing.service;
 
-import com.github.ontio.OntSdk;
 import com.github.ontio.common.Helper;
 import com.github.ontio.sdk.wallet.Account;
-import com.ontology.sourcing.service.util.PropertiesService;
-import com.ontology.sourcing.util.GlobalVariable;
+import com.ontology.sourcing.service.util.ChainService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,15 +10,12 @@ import org.springframework.stereotype.Service;
 public class WalletService {
 
     //
-    private PropertiesService propertiesService;
-    private OntSdk ontSdk;
+    private ChainService chainService;
 
     @Autowired
-    public WalletService(PropertiesService propertiesService) {
+    public WalletService(ChainService chainService) {
         //
-        this.propertiesService = propertiesService;
-        //
-        ontSdk = GlobalVariable.getOntSdk(propertiesService.ontologyUrl, propertiesService.walletPath);
+        this.chainService = chainService;
     }
 
 
@@ -30,10 +25,10 @@ public class WalletService {
         Account walletAccount;
 
         //
-        walletAccount = ontSdk.getWalletMgr().createAccount(pwd);
+        walletAccount = chainService.ontSdk.getWalletMgr().createAccount(pwd);
 
         //
-        com.github.ontio.account.Account account = ontSdk.getWalletMgr().getAccount(walletAccount.address, pwd);
+        com.github.ontio.account.Account account = chainService.ontSdk.getWalletMgr().getAccount(walletAccount.address, pwd);
         String privateKey = Helper.toHexString(account.serializePrivateKey());
 
         //

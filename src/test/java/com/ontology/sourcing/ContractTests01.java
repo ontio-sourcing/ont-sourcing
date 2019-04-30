@@ -8,9 +8,11 @@ import com.github.ontio.common.Helper;
 import com.github.ontio.core.transaction.Transaction;
 import com.github.ontio.sdk.exception.SDKException;
 import com.github.ontio.smartcontract.neovm.abi.BuildParams;
+import com.ontology.sourcing.service.util.ChainService;
 import com.ontology.sourcing.util.GlobalVariable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -21,8 +23,9 @@ import java.util.List;
 @SpringBootTest
 public class ContractTests01 {
 
-    //
-    private OntSdk ontSdk = GlobalVariable.getOntSdk("http://polaris1.ont.io", "/Volumes/Data/_work/201802_Ontology/ONTSouring/ont-sourcing/config/wallet.json");
+    @Autowired
+    ChainService chainService;
+
 
     // 付款的数字钱包
     private com.github.ontio.account.Account payerAccount = GlobalVariable.getInstanceOfAccount("6a62d116e416246f974229eee7d1b0894d8c2ab70446856e85e35b7f5d37adef");
@@ -56,7 +59,7 @@ public class ContractTests01 {
         System.out.println(Helper.reverse(codeAddr));  // 02efae944c429910f62f0c51eb37136d36beed16
 
         //
-        String result = invokeContractPreExec(Helper.reverse(codeAddr), null, params, payerAccount, ontSdk.DEFAULT_GAS_LIMIT, GlobalVariable.DEFAULT_GAS_PRICE);
+        String result = invokeContractPreExec(Helper.reverse(codeAddr), null, params, payerAccount, chainService.ontSdk.DEFAULT_GAS_LIMIT, GlobalVariable.DEFAULT_GAS_PRICE);
         System.out.println(result);
         // {"Notify":[],"State":1,"Gas":20000,"Result":"736f6d65206d657373616765202e2e2e"}
 
@@ -79,12 +82,12 @@ public class ContractTests01 {
             throw new SDKException("gaslimit or gasprice should not be less than 0");
         }
 
-        Transaction tx = ontSdk.vm().makeInvokeCodeTransaction(codeAddr, method, params, payerAcct.getAddressU160().toBase58(), gaslimit, gasprice);
+        Transaction tx = chainService.ontSdk.vm().makeInvokeCodeTransaction(codeAddr, method, params, payerAcct.getAddressU160().toBase58(), gaslimit, gasprice);
         System.out.println(tx);
         // com.github.ontio.core.payload.InvokeCode@fecc2faa
 
         //
-        ontSdk.addSign(tx, payerAcct);
+        chainService.ontSdk.addSign(tx, payerAcct);
         //  MultiSign
         //        Account account = new Account(Helper.hexToBytes("274b0b664d9c1e993c1d62a42f78ba84c379e332aa1d050ce9c1840820acee8b"),SignatureScheme.SHA256WITHECDSA);
         //        Account account2 = new Account(Helper.hexToBytes("67ae8a3731709d8c820c03b200b9552ec61e6634cbcaf8a6a1f9d8f9f0f608"),SignatureScheme.SHA256WITHECDSA);
@@ -92,7 +95,7 @@ public class ContractTests01 {
         //        ontSdk.addMultiSign(tx,2,new byte[][]{account.serializePublicKey(),account2.serializePublicKey()},account2);
 
         //
-        Object result = ontSdk.getConnect().sendRawTransactionPreExec(tx.toHexString());
+        Object result = chainService.ontSdk.getConnect().sendRawTransactionPreExec(tx.toHexString());
         // result = ontSdk.getConnect().sendRawTransaction(tx.toHexString());  // TODO 返回的是 boolean
 
         //

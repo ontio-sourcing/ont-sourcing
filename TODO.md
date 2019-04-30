@@ -74,3 +74,17 @@ passphrase
 司法链 accessToken
 
 司法链证书url会失效
+
+增加company要密码
+
+批量，如果很多条，for循环不要凑成1条
+
+将ontid设为unique
+https://stackoverflow.com/questions/1361340/how-to-insert-if-not-exists-in-mysql
+
+TableService
+第一次，还没建好表，就查，CURRENT_CONTRACT_TABLE_NAME值为""
+
+司法链，姓名没有验证
+
+OntidService, 4次尝试

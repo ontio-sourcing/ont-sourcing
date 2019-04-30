@@ -188,9 +188,7 @@ public class ContractController {
             List<Contract> contractList = new ArrayList<>();
             //
             for (Map<String, Object> item : filelist) {
-                // TODO 稍微错开一点，0.1s
-                Thread.sleep(100L);
-                // TODO 参数检验
+                //
                 String filehash = item.get("filehash").toString();
                 String type = item.get("type").toString();
                 ArrayList<Map<String, String>> detailList = (ArrayList<Map<String, String>>) item.get("detail");
@@ -222,6 +220,8 @@ public class ContractController {
                 contractList.add(contract);
             }
             // mybatis batch insert
+            // 单条长度大概 4KB，30条，一个sql语句size大概为120KB
+            // TODO 检查 max_allowed_packet
             contractService.saveToLocalBatch(company_ontid, contractList);
             //
             rst.setResult(true);

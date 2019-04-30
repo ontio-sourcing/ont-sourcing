@@ -1,17 +1,18 @@
 package com.ontology.sourcing.service;
 
 import com.alibaba.fastjson.JSON;
-import com.github.ontio.OntSdk;
 import com.github.ontio.account.Account;
 import com.github.ontio.common.Address;
 import com.github.ontio.common.Helper;
 import com.github.ontio.core.transaction.Transaction;
+import com.github.ontio.network.exception.ConnectorException;
 import com.github.ontio.sdk.exception.SDKException;
 import com.github.ontio.smartcontract.neovm.abi.BuildParams;
 import com.ontology.sourcing.dao.Event;
 import com.ontology.sourcing.dao.contract.*;
 import com.ontology.sourcing.mapper.EventMapper;
 import com.ontology.sourcing.mapper.contract.*;
+import com.ontology.sourcing.service.util.ChainService;
 import com.ontology.sourcing.service.util.PropertiesService;
 import com.ontology.sourcing.util.CryptoUtil;
 import com.ontology.sourcing.util.GlobalVariable;
@@ -19,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.io.IOException;
 import java.util.*;
 
 @Service
@@ -26,6 +28,7 @@ public class ContractService {
 
     //
     private PropertiesService propertiesService;
+    private ChainService chainService;
     //
     private ContractMapper contractMapper;
     private ContractIndexMapper contractIndexMapper;
@@ -33,15 +36,13 @@ public class ContractService {
     private EventMapper eventMapper;
     private ContractCompanyMapper contractCompanyMapper;
 
-    //
-    private OntSdk ontSdk;
-
     // 公共payer和公共合约
     private String codeAddr;
     private Account payer;
 
     @Autowired
     public ContractService(PropertiesService propertiesService,
+                           ChainService chainService,
                            ContractMapper contractMapper,
                            ContractIndexMapper contractIndexMapper,
                            ContractOntidMapper contractOntidMapper,
@@ -49,15 +50,13 @@ public class ContractService {
                            ContractCompanyMapper contractCompanyMapper) {
         //
         this.propertiesService = propertiesService;
+        this.chainService = chainService;
         //
         this.contractMapper = contractMapper;
         this.contractIndexMapper = contractIndexMapper;
         this.contractOntidMapper = contractOntidMapper;
         this.eventMapper = eventMapper;
         this.contractCompanyMapper = contractCompanyMapper;
-
-        //
-        ontSdk = GlobalVariable.getOntSdk(propertiesService.ontologyUrl, propertiesService.walletPath);
 
         // 合约哈希/合约地址/contract codeAddr
         codeAddr = propertiesService.codeAddr;
@@ -117,7 +116,7 @@ public class ContractService {
         }
 
         //
-        Map<String, String> map = invokeContract(Helper.reverse(codeAddr), null, params, payer, ontSdk.DEFAULT_GAS_LIMIT, GlobalVariable.DEFAULT_GAS_PRICE, true);
+        Map<String, String> map = invokeContract(Helper.reverse(codeAddr), null, params, payer, chainService.ontSdk.DEFAULT_GAS_LIMIT, GlobalVariable.DEFAULT_GAS_PRICE, true);
 
         //
         String txhash = map.get("txhash");
@@ -147,12 +146,12 @@ public class ContractService {
         Map<String, String> map = new HashMap<String, String>();
 
         //
-        Transaction tx = ontSdk.vm().makeInvokeCodeTransaction(codeAddr, method, params, payerAcct.getAddressU160().toBase58(), gaslimit, gasprice);
+        Transaction tx = chainService.ontSdk.vm().makeInvokeCodeTransaction(codeAddr, method, params, payerAcct.getAddressU160().toBase58(), gaslimit, gasprice);
         // System.out.println(tx);
         // com.github.ontio.core.payload.InvokeCode@fecc2faa
 
         //
-        ontSdk.addSign(tx, payerAcct);
+        chainService.ontSdk.addSign(tx, payerAcct);
 
         //
         String rawdata = tx.toHexString();
@@ -164,13 +163,43 @@ public class ContractService {
         //
         if (preExec) {
 
-            Object result = ontSdk.getConnect().sendRawTransactionPreExec(rawdata);
-            map.put("result", result.toString());
+            for (int retry = 0; retry < 5; retry++) {
+                //
+                Object result = null;
+                try {
+                    result = chainService.ontSdk.getConnect().sendRawTransactionPreExec(rawdata);
+                } catch (ConnectorException | IOException e) {
+                    e.printStackTrace();
+                    //
+                    chainService.switchOntSdk();
+                    //
+                    continue;
+                }
+                //
+                map.put("result", result.toString());
+                //
+                break;
+            }
 
         } else {
 
-            boolean result = ontSdk.getConnect().sendRawTransaction(rawdata);
-            map.put("result", Boolean.toString(result));
+            for (int retry = 0; retry < 5; retry++) {
+                //
+                boolean result = false;
+                try {
+                    result = chainService.ontSdk.getConnect().sendRawTransaction(rawdata);
+                } catch (ConnectorException | IOException e) {
+                    e.printStackTrace();
+                    //
+                    chainService.switchOntSdk();
+                    //
+                    continue;
+                }
+                //
+                map.put("result", Boolean.toString(result));
+                //
+                break;
+            }
         }
 
         //
@@ -262,11 +291,10 @@ public class ContractService {
         return newlist;
     }
 
-    //
-    public ContractOntid getRecord(String ontid) {
+    // TODO @Transactional  ??
+    private ContractOntid getRecord(String ontid) {
 
-        // TODO 这里存在一个很大bug，若同一时间一个ontid发来多个请求，在数据库记录任何一个之前，都会返回null，于是后面都会创建并写入数据库，同一个ontid就会有多条记录
-        //        ContractOntid existed = contractOntidMapper.findByOntid(ontid);
+        //
         ContractOntid existed = contractOntidMapper.findFirstByOntidOrderByCreateTimeAsc(ontid);
         //
         if (existed != null) {
@@ -277,7 +305,11 @@ public class ContractService {
         record.setOntid(ontid);
         record.setCreateTime(new Date());
         record.setContractIndex(GlobalVariable.CURRENT_CONTRACT_TABLE_INDEX);
-        contractOntidMapper.save(record);
+
+        // TODO 这里存在一个很大bug，若同一时间一个ontid发来多个请求，在数据库记录任何一个之前，都会返回null，于是后面都会创建并写入数据库，同一个ontid就会有多条记录
+        //        ContractOntid existed = contractOntidMapper.findByOntid(ontid);
+        // contractOntidMapper.save(record);
+        contractOntidMapper.saveIfIgnore(ontid, record.getContractIndex(), record.getCreateTime());
         //
         return record;
     }

@@ -1,9 +1,9 @@
 #
 APPNAME="ont-sourcing-0.0.1-SNAPSHOT.jar"
-APPLOCATION="/root/ont-sourcing/target/ont-sourcing-0.0.1-SNAPSHOT.jar"
+APPLOCATION="/home/ubuntu/ont-sourcing/target/ont-sourcing-0.0.1-SNAPSHOT.jar"
 APPENV="remotetest"
 APPPORT=7088
-LOGLOCATION="/root/ont-sourcing/log/all.log"
+LOGLOCATION="/home/ubuntu/ont-sourcing/log/all.log"
 
 # touch /root/ont-sourcing/log/all.log
 

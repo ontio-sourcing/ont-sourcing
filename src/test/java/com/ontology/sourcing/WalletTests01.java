@@ -1,13 +1,14 @@
 package com.ontology.sourcing;
 
-import com.github.ontio.OntSdk;
 import com.github.ontio.common.Helper;
 import com.github.ontio.crypto.MnemonicCode;
 import com.github.ontio.crypto.SignatureScheme;
 import com.github.ontio.sdk.wallet.Account;
+import com.ontology.sourcing.service.util.ChainService;
 import com.ontology.sourcing.util.GlobalVariable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -18,7 +19,8 @@ import java.util.Base64;
 public class WalletTests01 {
 
     //
-    private OntSdk ontSdk = GlobalVariable.getOntSdk("http://polaris1.ont.io", "/Volumes/Data/_work/201802_Ontology/ONTSouring/ont-sourcing/config/wallet.json");
+    @Autowired
+    ChainService chainService;
 
     // 付款的数字钱包
     private com.github.ontio.account.Account payerAccount = GlobalVariable.getInstanceOfAccount("6a62d116e416246f974229eee7d1b0894d8c2ab70446856e85e35b7f5d37adef");
@@ -55,7 +57,7 @@ public class WalletTests01 {
         String prikey = "0fb11f6ece9b9cba55936965c0eef8c15819bc74d7588c1feb3217b8948e1854";
         String label = "test_label_01";
         //
-        Account acct = ontSdk.getWalletMgr().createAccountFromPriKey(label, passphrase, prikey);
+        Account acct = chainService.ontSdk.getWalletMgr().createAccountFromPriKey(label, passphrase, prikey);
         System.out.println(acct);
 /*
 {
@@ -104,7 +106,7 @@ public class WalletTests01 {
         String prikey = "0fb11f6ece9b9cba55936965c0eef8c15819bc74d7588c1feb3217b8948e1854";
         String label = "test_label_01";
         //
-        Account acct = ontSdk.getWalletMgr().createAccountFromPriKey(label, passphrase, prikey);
+        Account acct = chainService.ontSdk.getWalletMgr().createAccountFromPriKey(label, passphrase, prikey);
         System.out.println(acct);
 /*
 {
@@ -166,9 +168,9 @@ public class WalletTests01 {
     @Test
     public void example05() {
         //
-        Account account = ontSdk.getWalletMgr().getWallet().getAccount("ALcwsJqdFyPr4sd1bnS5bdnaBYDgfmCsBd");
+        Account account = chainService.ontSdk.getWalletMgr().getWallet().getAccount("ALcwsJqdFyPr4sd1bnS5bdnaBYDgfmCsBd");
         System.out.println(account);
         // null
-        // 因为 ontSdk 没有设置 钱包文件，之前的操作都没有写入 钱包文件
+        // 因为 chainService.ontSdk 没有设置 钱包文件，之前的操作都没有写入 钱包文件
     }
 }

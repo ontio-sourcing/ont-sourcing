@@ -1,11 +1,12 @@
 package com.ontology.sourcing;
 
-import com.github.ontio.OntSdk;
 import com.github.ontio.sdk.info.IdentityInfo;
 import com.github.ontio.sdk.wallet.Identity;
+import com.ontology.sourcing.service.util.ChainService;
 import com.ontology.sourcing.util.GlobalVariable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -16,7 +17,9 @@ import java.util.Base64;
 public class IdentityTests02 {
 
     //
-    private OntSdk ontSdk = GlobalVariable.getOntSdk("http://polaris1.ont.io", "/Volumes/Data/_work/201802_Ontology/ONTSouring/ont-sourcing/config/wallet.json");
+    @Autowired
+    ChainService chainService;
+
 
     // 付款的数字钱包
     private com.github.ontio.account.Account payerAccount = GlobalVariable.getInstanceOfAccount("6a62d116e416246f974229eee7d1b0894d8c2ab70446856e85e35b7f5d37adef");
@@ -29,7 +32,7 @@ public class IdentityTests02 {
         String passphrase = "123456";
         String prikey = "0fb11f6ece9b9cba55936965c0eef8c15819bc74d7588c1feb3217b8948e1854";
         //
-        Identity identity = ontSdk.getWalletMgr().createIdentityFromPriKey(passphrase, prikey);
+        Identity identity = chainService.ontSdk.getWalletMgr().createIdentityFromPriKey(passphrase, prikey);
         System.out.println(identity);
 /*
 {
@@ -55,7 +58,7 @@ public class IdentityTests02 {
 }
  */
         //
-        ontSdk.getWalletMgr().writeWallet();
+        chainService.ontSdk.getWalletMgr().writeWallet();
 /*
 // wallet_test.json
 {
@@ -106,7 +109,7 @@ public class IdentityTests02 {
         String passphrase = "123456";
 
         //
-        Identity identity = ontSdk.getWalletMgr().getWallet().getIdentity(ontid);
+        Identity identity = chainService.ontSdk.getWalletMgr().getWallet().getIdentity(ontid);
         System.out.println(identity);
 /*
 {
@@ -142,7 +145,7 @@ public class IdentityTests02 {
         byte[] salt = Base64.getDecoder().decode("lQPiKF2I61nKUJxpTugDdA==");
 
         //
-        Identity identity = ontSdk.getWalletMgr().importIdentity(encryptedPrikey, passphrase, salt, address);
+        Identity identity = chainService.ontSdk.getWalletMgr().importIdentity(encryptedPrikey, passphrase, salt, address);
         System.out.println(identity);
 /*
 {
@@ -167,7 +170,7 @@ public class IdentityTests02 {
     "ontid":"did:ont:ALcwsJqdFyPr4sd1bnS5bdnaBYDgfmCsBd"
 }
  */
-        ontSdk.getWalletMgr().writeWallet();
+        chainService.ontSdk.getWalletMgr().writeWallet();
 /*
 // wallet_test_01.json
 {
@@ -218,7 +221,7 @@ public class IdentityTests02 {
         String passphrase = "123456";
         byte[] salt = Base64.getDecoder().decode("lQPiKF2I61nKUJxpTugDdA==");
         //
-        IdentityInfo identityInfo = ontSdk.getWalletMgr().getIdentityInfo(ontid, passphrase, salt);
+        IdentityInfo identityInfo = chainService.ontSdk.getWalletMgr().getIdentityInfo(ontid, passphrase, salt);
         System.out.println(identityInfo);
 /*
 {

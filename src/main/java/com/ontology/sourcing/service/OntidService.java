@@ -1,7 +1,6 @@
 package com.ontology.sourcing.service;
 
 import com.alibaba.fastjson.JSON;
-import com.github.ontio.OntSdk;
 import com.github.ontio.common.Helper;
 import com.github.ontio.core.ontid.Attribute;
 import com.github.ontio.crypto.SignatureScheme;
@@ -15,6 +14,7 @@ import com.ontology.sourcing.mapper.ddo.*;
 import com.ontology.sourcing.model.ddo.DDOPojo;
 import com.ontology.sourcing.model.ddo.Owner;
 import com.ontology.sourcing.model.ddo.identity.OntidPojo;
+import com.ontology.sourcing.service.util.ChainService;
 import com.ontology.sourcing.service.util.PropertiesService;
 import com.ontology.sourcing.util.GlobalVariable;
 import com.ontology.sourcing.util.exp.ExistedException;
@@ -29,13 +29,12 @@ public class OntidService {
 
     private Gson gson = new Gson();
 
-    private OntSdk ontSdk;
-
     // 付款的数字钱包
     private com.github.ontio.account.Account payerAccount;
 
     //
     private PropertiesService propertiesService;
+    private ChainService chainService;
     //
     private ActionOntidMapper actionOntidMapper;
     private ActionMapper actionMapper;
@@ -43,15 +42,20 @@ public class OntidService {
 
     //
     @Autowired
-    public OntidService(ActionOntidMapper actionOntidMapper, ActionMapper actionMapper, ActionIndexMapper actionIndexMapper, PropertiesService propertiesService) {
+    public OntidService(ActionOntidMapper actionOntidMapper,
+                        ActionMapper actionMapper,
+                        ActionIndexMapper actionIndexMapper,
+                        PropertiesService propertiesService,
+                        ChainService chainService) {
         //
         this.actionOntidMapper = actionOntidMapper;
         this.actionMapper = actionMapper;
         this.actionIndexMapper = actionIndexMapper;
         //
         this.propertiesService = propertiesService;
+        this.chainService = chainService;
+
         //
-        ontSdk = GlobalVariable.getOntSdk(propertiesService.ontologyUrl, propertiesService.walletPath);
         payerAccount = GlobalVariable.getInstanceOfAccount(propertiesService.payerPrivateKey);
     }
 
@@ -62,10 +66,11 @@ public class OntidService {
         Map<String, String> map = new HashMap<String, String>();
 
         // 创建数字身份 identity
-        Identity identity = ontSdk.getWalletMgr().createIdentity(password);
+        Identity identity = chainService.ontSdk.getWalletMgr().createIdentity(password);
 
         // 链上：注册 identity
-        String rsp = ontSdk.nativevm().ontId().sendRegister(identity, password, payerAccount, ontSdk.DEFAULT_GAS_LIMIT, GlobalVariable.DEFAULT_GAS_PRICE);  // 会将身份信息写入钱包文件
+        String rsp = chainService.ontSdk.nativevm().ontId()
+                                        .sendRegister(identity, password, payerAccount, chainService.ontSdk.DEFAULT_GAS_LIMIT, GlobalVariable.DEFAULT_GAS_PRICE);  // 会将身份信息写入钱包文件
         map.put("txhash", rsp);
 
         //
@@ -94,13 +99,13 @@ public class OntidService {
         Attribute[] attributes = jsonToAttributes(attributeJson);
 
         //
-        String rsp = ontSdk.nativevm().ontId().sendAddAttributes(ontid,
-                                                                 password,
-                                                                 ontidPojo.getControls().get(0).getSalt(),
-                                                                 attributes,
-                                                                 this.payerAccount,
-                                                                 ontSdk.DEFAULT_GAS_LIMIT,
-                                                                 GlobalVariable.DEFAULT_GAS_PRICE);
+        String rsp = chainService.ontSdk.nativevm().ontId().sendAddAttributes(ontid,
+                                                                              password,
+                                                                              ontidPojo.getControls().get(0).getSalt(),
+                                                                              attributes,
+                                                                              this.payerAccount,
+                                                                              chainService.ontSdk.DEFAULT_GAS_LIMIT,
+                                                                              GlobalVariable.DEFAULT_GAS_PRICE);
         map.put("txhash", rsp);
 
         //
@@ -117,13 +122,13 @@ public class OntidService {
         OntidPojo ontidPojo = getPojoByOntid(ontid);
 
         //
-        String rsp = ontSdk.nativevm().ontId().sendRemoveAttribute(ontid,
-                                                                   password,
-                                                                   ontidPojo.getControls().get(0).getSalt(),
-                                                                   path_key,
-                                                                   this.payerAccount,
-                                                                   ontSdk.DEFAULT_GAS_LIMIT,
-                                                                   GlobalVariable.DEFAULT_GAS_PRICE);
+        String rsp = chainService.ontSdk.nativevm().ontId().sendRemoveAttribute(ontid,
+                                                                                password,
+                                                                                ontidPojo.getControls().get(0).getSalt(),
+                                                                                path_key,
+                                                                                this.payerAccount,
+                                                                                chainService.ontSdk.DEFAULT_GAS_LIMIT,
+                                                                                GlobalVariable.DEFAULT_GAS_PRICE);
         map.put("txhash", rsp);
 
         //
@@ -148,13 +153,13 @@ public class OntidService {
         }
 
         //
-        String rsp = ontSdk.nativevm().ontId().sendAddPubKey(ontidPojo.getOntid(),
-                                                             ontidPassword,
-                                                             ontidPojo.getControls().get(0).getSalt(),
-                                                             controlPojo.getControls().get(0).getPublicKey(),
-                                                             payerAccount,
-                                                             ontSdk.DEFAULT_GAS_LIMIT,
-                                                             GlobalVariable.DEFAULT_GAS_PRICE);
+        String rsp = chainService.ontSdk.nativevm().ontId().sendAddPubKey(ontidPojo.getOntid(),
+                                                                          ontidPassword,
+                                                                          ontidPojo.getControls().get(0).getSalt(),
+                                                                          controlPojo.getControls().get(0).getPublicKey(),
+                                                                          payerAccount,
+                                                                          chainService.ontSdk.DEFAULT_GAS_LIMIT,
+                                                                          GlobalVariable.DEFAULT_GAS_PRICE);
         map.put("txhash", rsp);
 
         //
@@ -174,7 +179,12 @@ public class OntidService {
         com.github.ontio.account.Account controlAccount = getAccountByOntidAndPassword(controlOntid, controlPassword);
 
         //
-        String rsp = ontSdk.nativevm().ontId().sendAddAttributes(ontid, controlAccount, attributes, this.payerAccount, ontSdk.DEFAULT_GAS_LIMIT, GlobalVariable.DEFAULT_GAS_PRICE);
+        String rsp = chainService.ontSdk.nativevm().ontId().sendAddAttributes(ontid,
+                                                                              controlAccount,
+                                                                              attributes,
+                                                                              this.payerAccount,
+                                                                              chainService.ontSdk.DEFAULT_GAS_LIMIT,
+                                                                              GlobalVariable.DEFAULT_GAS_PRICE);
         map.put("txhash", rsp);
 
         //
@@ -191,7 +201,12 @@ public class OntidService {
         com.github.ontio.account.Account controlAccount = getAccountByOntidAndPassword(controlOntid, controlPassword);
 
         //
-        String rsp = ontSdk.nativevm().ontId().sendRemoveAttribute(ontid, controlAccount, path_key, this.payerAccount, ontSdk.DEFAULT_GAS_LIMIT, GlobalVariable.DEFAULT_GAS_PRICE);
+        String rsp = chainService.ontSdk.nativevm().ontId().sendRemoveAttribute(ontid,
+                                                                                controlAccount,
+                                                                                path_key,
+                                                                                this.payerAccount,
+                                                                                chainService.ontSdk.DEFAULT_GAS_LIMIT,
+                                                                                GlobalVariable.DEFAULT_GAS_PRICE);
         map.put("txhash", rsp);
 
         //
@@ -201,7 +216,7 @@ public class OntidService {
     //
     public DDOPojo getDDO(String ontid) throws Exception {
         //
-        String ddoStr = ontSdk.nativevm().ontId().sendGetDDO(ontid);
+        String ddoStr = chainService.ontSdk.nativevm().ontId().sendGetDDO(ontid);
         DDOPojo ddoPojo = gson.fromJson(ddoStr, DDOPojo.class);
         //
         return ddoPojo;
@@ -256,7 +271,7 @@ public class OntidService {
         //
         OntidPojo controlPojo = getPojoByOntid(ontid);
         //
-        IdentityInfo identityInfo = ontSdk.getWalletMgr().getIdentityInfo(ontid, ontidPassword, controlPojo.getControls().get(0).getSalt());
+        IdentityInfo identityInfo = chainService.ontSdk.getWalletMgr().getIdentityInfo(ontid, ontidPassword, controlPojo.getControls().get(0).getSalt());
         //
         String priKey = com.github.ontio.account.Account.getGcmDecodedPrivateKey(identityInfo.encryptedPrikey,
                                                                                  ontidPassword,

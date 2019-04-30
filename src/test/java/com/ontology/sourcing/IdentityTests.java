@@ -1,6 +1,5 @@
 package com.ontology.sourcing;
 
-import com.github.ontio.OntSdk;
 import com.github.ontio.common.Helper;
 import com.github.ontio.core.ontid.Attribute;
 import com.github.ontio.crypto.SignatureScheme;
@@ -10,6 +9,7 @@ import com.google.gson.Gson;
 import com.ontology.sourcing.mapper.EventMapper;
 import com.ontology.sourcing.model.ddo.DDOPojo;
 import com.ontology.sourcing.model.ddo.identity.OntidPojo;
+import com.ontology.sourcing.service.util.ChainService;
 import com.ontology.sourcing.util.GlobalVariable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,7 +27,8 @@ public class IdentityTests {
     private Gson gson = new Gson();
 
     //
-    private OntSdk ontSdk = GlobalVariable.getOntSdk("http://polaris1.ont.io", "/Volumes/Data/_work/201802_Ontology/ONTSouring/ont-sourcing/config/wallet.json");
+    @Autowired
+    ChainService chainService;
 
     // 付款的数字钱包
     private com.github.ontio.account.Account payerAccount = GlobalVariable.getInstanceOfAccount("6a62d116e416246f974229eee7d1b0894d8c2ab70446856e85e35b7f5d37adef");
@@ -43,7 +44,8 @@ public class IdentityTests {
     private OntidPojo controlIdentity1;
 
 
-    @Autowired EventMapper eventMapper;
+    @Autowired
+    EventMapper eventMapper;
 
     public IdentityTests() {
 
@@ -65,7 +67,7 @@ public class IdentityTests {
 
         try {
             // 创建 identity1
-            Identity identity1 = ontSdk.getWalletMgr().createIdentity("i1");
+            Identity identity1 = chainService.ontSdk.getWalletMgr().createIdentity("i1");
             System.out.println(identity1);
 /*
 {
@@ -91,7 +93,7 @@ public class IdentityTests {
 }
  */
 
-            Identity identity2 = ontSdk.getWalletMgr().createIdentity("i2");
+            Identity identity2 = chainService.ontSdk.getWalletMgr().createIdentity("i2");
             System.out.println(identity2);
 /*
 {
@@ -158,7 +160,7 @@ public class IdentityTests {
         // 创建 identity1
         Identity identity1 = null;
         try {
-            identity1 = ontSdk.getWalletMgr().createIdentity(i_password);
+            identity1 = chainService.ontSdk.getWalletMgr().createIdentity(i_password);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -166,7 +168,8 @@ public class IdentityTests {
 
         // 链上：注册 identity1
         try {
-            String rsp = ontSdk.nativevm().ontId().sendRegister(identity1, i_password, payerAccount, ontSdk.DEFAULT_GAS_LIMIT, GlobalVariable.DEFAULT_GAS_PRICE);
+            String rsp = chainService.ontSdk.nativevm().ontId()
+                                            .sendRegister(identity1, i_password, payerAccount, chainService.ontSdk.DEFAULT_GAS_LIMIT, GlobalVariable.DEFAULT_GAS_PRICE);
             map.put("txhash", rsp);
         } catch (Exception e) {
             e.printStackTrace();
@@ -207,13 +210,13 @@ public class IdentityTests {
             attributes[0] = new Attribute("key1".getBytes(), "String".getBytes(), "value1".getBytes());
 
             //
-            String rsp = ontSdk.nativevm().ontId().sendAddAttributes(entityIdentity.getOntid(),
-                                                                     entityIdentityPassword,
-                                                                     entityIdentity.getControls().get(0).getSalt(),
-                                                                     attributes,
-                                                                     this.payerAccount,
-                                                                     ontSdk.DEFAULT_GAS_LIMIT,
-                                                                     500);
+            String rsp = chainService.ontSdk.nativevm().ontId().sendAddAttributes(entityIdentity.getOntid(),
+                                                                                  entityIdentityPassword,
+                                                                                  entityIdentity.getControls().get(0).getSalt(),
+                                                                                  attributes,
+                                                                                  this.payerAccount,
+                                                                                  chainService.ontSdk.DEFAULT_GAS_LIMIT,
+                                                                                  500);
             System.out.println(rsp);
             //
             readDDO(entityIdentity.getOntid());
@@ -269,13 +272,13 @@ public class IdentityTests {
  */
         //
         try {
-            String rsp = ontSdk.nativevm().ontId().sendRemoveAttribute(entityIdentity.getOntid(),
-                                                                       entityIdentityPassword,
-                                                                       entityIdentity.getControls().get(0).getSalt(),
-                                                                       "key1",
-                                                                       payerAccount,
-                                                                       ontSdk.DEFAULT_GAS_LIMIT,
-                                                                       500);
+            String rsp = chainService.ontSdk.nativevm().ontId().sendRemoveAttribute(entityIdentity.getOntid(),
+                                                                                    entityIdentityPassword,
+                                                                                    entityIdentity.getControls().get(0).getSalt(),
+                                                                                    "key1",
+                                                                                    payerAccount,
+                                                                                    chainService.ontSdk.DEFAULT_GAS_LIMIT,
+                                                                                    500);
             System.out.println(rsp);
             // 33d7d9df0e34dda70f08681b3655033236c8750dfeefd83bc99e16eeb579d691
         } catch (Exception e) {
@@ -311,7 +314,7 @@ public class IdentityTests {
         String ddoStr = "";
         //
         try {
-            ddoStr = ontSdk.nativevm().ontId().sendGetDDO(ontid);
+            ddoStr = chainService.ontSdk.nativevm().ontId().sendGetDDO(ontid);
             System.out.println(ddoStr);
             DDOPojo ddoPojo = gson.fromJson(ddoStr, DDOPojo.class);
             System.out.println(ddoPojo);
@@ -393,18 +396,19 @@ public class IdentityTests {
         //
         IdentityInfo controlIdentity1Info = new IdentityInfo();
         try {
-            controlIdentity1Info = ontSdk.getWalletMgr().getIdentityInfo(controlIdentity1.getOntid(), controlIdentity1Password, controlIdentity1.getControls().get(0).getSalt());
+            controlIdentity1Info = chainService.ontSdk.getWalletMgr()
+                                                      .getIdentityInfo(controlIdentity1.getOntid(), controlIdentity1Password, controlIdentity1.getControls().get(0).getSalt());
         } catch (Exception e) {
             e.printStackTrace();
         }
         try {
-            String rsp = ontSdk.nativevm().ontId().sendAddPubKey(entityIdentity.getOntid(),
-                                                                 entityIdentityPassword,
-                                                                 entityIdentity.getControls().get(0).getSalt(),
-                                                                 controlIdentity1Info.pubkey,
-                                                                 payerAccount,
-                                                                 ontSdk.DEFAULT_GAS_LIMIT,
-                                                                 GlobalVariable.DEFAULT_GAS_PRICE);
+            String rsp = chainService.ontSdk.nativevm().ontId().sendAddPubKey(entityIdentity.getOntid(),
+                                                                              entityIdentityPassword,
+                                                                              entityIdentity.getControls().get(0).getSalt(),
+                                                                              controlIdentity1Info.pubkey,
+                                                                              payerAccount,
+                                                                              chainService.ontSdk.DEFAULT_GAS_LIMIT,
+                                                                              GlobalVariable.DEFAULT_GAS_PRICE);
             //
             System.out.println(rsp);
             // 1e7356035a7bbc080cc5440542236b363036438b3af66cdd3195149c35df7032
@@ -475,8 +479,9 @@ public class IdentityTests {
             attributes[0] = new Attribute("key1".getBytes(), "String".getBytes(), "value1".getBytes());
 
             //
-            IdentityInfo controlIdentity1Info = ontSdk.getWalletMgr()
-                                                      .getIdentityInfo(controlIdentity1.getOntid(), controlIdentity1Password, controlIdentity1.getControls().get(0).getSalt());
+            IdentityInfo controlIdentity1Info = chainService.ontSdk.getWalletMgr().getIdentityInfo(controlIdentity1.getOntid(),
+                                                                                                   controlIdentity1Password,
+                                                                                                   controlIdentity1.getControls().get(0).getSalt());
 
             System.out.println(controlIdentity1Info.encryptedPrikey);
             // H1B8+onxoNMtW0cdYykY6REezviB3hef8BeCXwMwogbAupwiFiKqBwV/4+/FzicM
@@ -495,12 +500,12 @@ public class IdentityTests {
             com.github.ontio.account.Account controlAccount = new com.github.ontio.account.Account(Helper.hexToBytes(priKey), SignatureScheme.SHA256WITHECDSA);
 
             //
-            String rsp = ontSdk.nativevm().ontId().sendAddAttributes(entityIdentity.getOntid(),
-                                                                     controlAccount,
-                                                                     attributes,
-                                                                     this.payerAccount,
-                                                                     ontSdk.DEFAULT_GAS_LIMIT,
-                                                                     GlobalVariable.DEFAULT_GAS_PRICE);
+            String rsp = chainService.ontSdk.nativevm().ontId().sendAddAttributes(entityIdentity.getOntid(),
+                                                                                  controlAccount,
+                                                                                  attributes,
+                                                                                  this.payerAccount,
+                                                                                  chainService.ontSdk.DEFAULT_GAS_LIMIT,
+                                                                                  GlobalVariable.DEFAULT_GAS_PRICE);
             System.out.println(rsp);
             // ae86ed81c2adb1a50ecdad7c4e7927f217633ff6f3590270a221522078dad994
 

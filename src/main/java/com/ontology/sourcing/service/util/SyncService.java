@@ -1,7 +1,7 @@
 package com.ontology.sourcing.service.util;
 
 import com.alibaba.fastjson.JSON;
-import com.github.ontio.OntSdk;
+import com.github.ontio.network.exception.ConnectorException;
 import com.ontology.sourcing.dao.Event;
 import com.ontology.sourcing.dao.ddo.ActionOntid;
 import com.ontology.sourcing.dao.sfl.SFLNotary;
@@ -10,8 +10,8 @@ import com.ontology.sourcing.mapper.ddo.ActionOntidMapper;
 import com.ontology.sourcing.mapper.sfl.SFLNotaryMapper;
 import com.ontology.sourcing.model.ddo.DDOPojo;
 import com.ontology.sourcing.service.OntidService;
-import com.ontology.sourcing.util.GlobalVariable;
 import com.ontology.sourcing.util.HttpUtil;
+import com.ontology.sourcing.util.ThreadUtil;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,69 +19,79 @@ import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.concurrent.Executors;
 
 @Service
 public class SyncService {
 
     //
-    private PropertiesService propertiesService;
-    private OntSdk ontSdk;
-
-    //
     private EventMapper eventMapper;
     private ActionOntidMapper actionOntidMapper;
-    private OntidService ontidService;
     //
-    SFLNotaryMapper sflNotaryMapper;
+    private SFLNotaryMapper sflNotaryMapper;
+    //
+    private OntidService ontidService;
+    private ChainService chainService;
 
     @Autowired
-    public SyncService(EventMapper eventMapper,
-                       ActionOntidMapper actionOntidMapper,
-                       OntidService ontidService,
-                       PropertiesService propertiesService,
-                       SFLNotaryMapper sflNotaryMapper) {
+    public SyncService(EventMapper eventMapper, ActionOntidMapper actionOntidMapper, SFLNotaryMapper sflNotaryMapper, OntidService ontidService, ChainService chainService) {
         this.eventMapper = eventMapper;
         this.actionOntidMapper = actionOntidMapper;
-        this.ontidService = ontidService;
-        //
-        this.propertiesService = propertiesService;
-        ontSdk = GlobalVariable.getOntSdk(propertiesService.ontologyUrl, propertiesService.walletPath);
         //
         this.sflNotaryMapper = sflNotaryMapper;
+        //
+        this.ontidService = ontidService;
+        this.chainService = chainService;
     }
 
     public void confirmTxAndDDO(String ontid, String txhash) {
-        Executors.newCachedThreadPool().submit(new Runnable() {
+
+        ThreadUtil.getInstance().submit(new Runnable() {
+
             @Override
             public void run() {
-                try {
-                    Thread.sleep(6 * 1000);
-                    Object event = ontSdk.getConnect().getSmartCodeEvent(txhash);
-                    while (event == null || StringUtils.isEmpty(event)) {
-                        // sdk.addAttributes(ontId,password,key,valueType,value);
+
+                for (int retry = 0; retry < 5; retry++) {
+
+                    try {
                         Thread.sleep(6 * 1000);
-                        event = ontSdk.getConnect().getSmartCodeEvent(txhash);
+                        Object event = chainService.ontSdk.getConnect().getSmartCodeEvent(txhash);
+                        while (event == null || StringUtils.isEmpty(event)) {
+                            // sdk.addAttributes(ontId,password,key,valueType,value);
+                            Thread.sleep(6 * 1000);
+                            event = chainService.ontSdk.getConnect().getSmartCodeEvent(txhash);
+                        }
+                        // 获取交易所在的区块高度
+                        int height = chainService.ontSdk.getConnect().getBlockHeightByTxHash(txhash);
+                        //
+                        String eventStr = JSON.toJSONString(event);
+                        Event record = new Event();
+                        record.setTxhash(txhash);
+                        record.setEvent(eventStr);
+                        record.setHeight(height);
+                        record.setCreateTime(new Date());
+                        eventMapper.save(record);
+                        //
+                        DDOPojo ddoPojo = ontidService.getDDO(ontid);
+                        // 更新本地的DDO
+                        ActionOntid actionOntidRecord = actionOntidMapper.findByOntid(ontid);
+                        actionOntidRecord.setDdo(JSON.toJSONString(ddoPojo));
+                        actionOntidRecord.setUpdateTime(new Date());
+                        actionOntidMapper.save(actionOntidRecord);
+                        //
+                        break;
+                    } catch (ConnectorException | IOException e) {
+                        //
+                        e.printStackTrace();
+                        //
+                        chainService.switchOntSdk();
+                        //
+                        continue;
+                    } catch (Exception e) {
+                        //
+                        e.printStackTrace();
+                        //
+                        break;
                     }
-                    // 获取交易所在的区块高度
-                    int height = ontSdk.getConnect().getBlockHeightByTxHash(txhash);
-                    //
-                    String eventStr = JSON.toJSONString(event);
-                    Event record = new Event();
-                    record.setTxhash(txhash);
-                    record.setEvent(eventStr);
-                    record.setHeight(height);
-                    record.setCreateTime(new Date());
-                    eventMapper.save(record);
-                    //
-                    DDOPojo ddoPojo = ontidService.getDDO(ontid);
-                    // 更新本地的DDO
-                    ActionOntid actionOntidRecord = actionOntidMapper.findByOntid(ontid);
-                    actionOntidRecord.setDdo(JSON.toJSONString(ddoPojo));
-                    actionOntidRecord.setUpdateTime(new Date());
-                    actionOntidMapper.save(actionOntidRecord);
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
             }
         });
@@ -89,29 +99,46 @@ public class SyncService {
     }
 
     public void confirmTx(String txhash) {
-        Executors.newCachedThreadPool().submit(new Runnable() {
+
+        ThreadUtil.getInstance().submit(new Runnable() {
+
             @Override
             public void run() {
-                try {
-                    Thread.sleep(6 * 1000);
-                    Object event = ontSdk.getConnect().getSmartCodeEvent(txhash);
-                    while (event == null || StringUtils.isEmpty(event)) {
-                        // sdk.addAttributes(ontId,password,key,valueType,value);
+
+                for (int retry = 0; retry < 5; retry++) {
+                    try {
                         Thread.sleep(6 * 1000);
-                        event = ontSdk.getConnect().getSmartCodeEvent(txhash);
+                        Object event = chainService.ontSdk.getConnect().getSmartCodeEvent(txhash);
+                        while (event == null || StringUtils.isEmpty(event)) {
+                            // sdk.addAttributes(ontId,password,key,valueType,value);
+                            Thread.sleep(6 * 1000);
+                            event = chainService.ontSdk.getConnect().getSmartCodeEvent(txhash);
+                        }
+                        // 获取交易所在的区块高度
+                        int height = chainService.ontSdk.getConnect().getBlockHeightByTxHash(txhash);
+                        //
+                        String eventStr = JSON.toJSONString(event);
+                        Event record = new Event();
+                        record.setTxhash(txhash);
+                        record.setEvent(eventStr);
+                        record.setHeight(height);
+                        record.setCreateTime(new Date());
+                        eventMapper.save(record);
+                        //
+                        break;
+                    } catch (ConnectorException | IOException e) {
+                        //
+                        e.printStackTrace();
+                        //
+                        chainService.switchOntSdk();
+                        //
+                        continue;
+                    } catch (Exception e) {
+                        //
+                        e.printStackTrace();
+                        //
+                        break;
                     }
-                    // 获取交易所在的区块高度
-                    int height = ontSdk.getConnect().getBlockHeightByTxHash(txhash);
-                    //
-                    String eventStr = JSON.toJSONString(event);
-                    Event record = new Event();
-                    record.setTxhash(txhash);
-                    record.setEvent(eventStr);
-                    record.setHeight(height);
-                    record.setCreateTime(new Date());
-                    eventMapper.save(record);
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
             }
         });
@@ -119,9 +146,12 @@ public class SyncService {
     }
 
     public void confirmTxSFL(String txhash, String filehash) {
-        Executors.newCachedThreadPool().submit(new Runnable() {
+
+        ThreadUtil.getInstance().submit(new Runnable() {
+
             @Override
             public void run() {
+
                 //
                 JSONObject obj = new JSONObject();
                 obj.put("content", filehash);
@@ -157,6 +187,5 @@ public class SyncService {
                 }
             }
         });
-
     }
 }

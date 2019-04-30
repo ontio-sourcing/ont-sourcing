@@ -1,14 +1,15 @@
 package com.ontology.sourcing;
 
-import com.github.ontio.OntSdk;
 import com.github.ontio.account.Account;
 import com.github.ontio.common.Address;
 import com.github.ontio.common.Helper;
 import com.github.ontio.crypto.SignatureScheme;
 import com.github.ontio.sdk.wallet.Identity;
+import com.ontology.sourcing.service.util.ChainService;
 import com.ontology.sourcing.util.GlobalVariable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -17,7 +18,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 public class IdentityTests01 {
 
     //
-    private OntSdk ontSdk = GlobalVariable.getOntSdk("http://polaris1.ont.io", "/Volumes/Data/_work/201802_Ontology/ONTSouring/ont-sourcing/config/wallet.json");
+    @Autowired
+    ChainService chainService;
+
 
     // 付款的数字钱包
     private com.github.ontio.account.Account payerAccount = GlobalVariable.getInstanceOfAccount("6a62d116e416246f974229eee7d1b0894d8c2ab70446856e85e35b7f5d37adef");
@@ -44,7 +47,7 @@ public class IdentityTests01 {
         String passphrase = "123456";
         String prikey = "0fb11f6ece9b9cba55936965c0eef8c15819bc74d7588c1feb3217b8948e1854";
         //
-        Identity identity = ontSdk.getWalletMgr().createIdentityFromPriKey(passphrase, prikey);
+        Identity identity = chainService.ontSdk.getWalletMgr().createIdentityFromPriKey(passphrase, prikey);
         System.out.println(identity);
 /*
 {

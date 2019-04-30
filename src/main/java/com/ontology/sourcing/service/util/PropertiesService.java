@@ -11,26 +11,28 @@ public class PropertiesService {
     public final int TABLE_SIZE_DETECT_INTERVAL;
 
     // 时间戳
-    public final String[] TIMESTAMP_URL_ARRAY;
+    public final String[] TIMESTAMP_URL_LIST;
 
     @Autowired
     public PropertiesService(@Value("${com.ontology.sourcing.TABLE_SIZE_LIMIT}") int limit,
                              @Value("${com.ontology.sourcing.TABLE_SIZE_DETECT_INTERVAL}") int interval,
-                             @Value("${com.ontology.sourcing.TIMESTAMP_URL_ARRAY}") String[] array,
+                             @Value("${com.ontology.sourcing.TIMESTAMP_URL_LIST}") String[] timestampUrlList,
                              @Value("${com.ontology.sourcing.PAYER_PRIVATE_KEY}") String payerPrivateKey,
                              @Value("${com.ontology.sourcing.WALLET_PATH}") String walletPath,
-                             @Value("${com.ontology.sourcing.ONTOLOGY_URL}") String ontologyUrl,
+                             @Value("${com.ontology.sourcing.ONTOLOGY_URL_LIST}") String[] ontologyUrlList,
                              @Value("${com.ontology.sourcing.ONTID_PUBLIC_KEY}") String ontidPublicKey,
                              @Value("${com.ontology.sourcing.CONTRACT_CODE_ADDRESS}") String codeAddr,
                              @Value("${com.ontology.sourcing.SFL.ACCOUNTID}") String sflAccountId,
                              @Value("${com.ontology.sourcing.SFL.PRIKey}") String sflPriKey) {
+        //
         this.TABLE_SIZE_LIMIT = limit;
         this.TABLE_SIZE_DETECT_INTERVAL = interval;
-        this.TIMESTAMP_URL_ARRAY = array;
+        //
+        this.TIMESTAMP_URL_LIST = timestampUrlList;
         //
         this.payerPrivateKey = payerPrivateKey;
         this.walletPath = walletPath;
-        this.ontologyUrl = ontologyUrl;
+        this.ontologyUrlList = ontologyUrlList;
         this.ontidPublicKey = ontidPublicKey;
         //
         this.codeAddr = codeAddr;
@@ -47,7 +49,7 @@ public class PropertiesService {
 
 
     //
-    public final String ontologyUrl;
+    public final String[] ontologyUrlList;
 
 
     /**

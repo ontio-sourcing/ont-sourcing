@@ -43,15 +43,15 @@ public class TspService {
     private int index = 0;
 
     private String getNextUrlByIndex(int index) {
-        return propertiesService.TIMESTAMP_URL_ARRAY[index];
+        return propertiesService.TIMESTAMP_URL_LIST[index];
     }
 
     private String getNextUrl() {
-        return propertiesService.TIMESTAMP_URL_ARRAY[getNextIndex()];
+        return propertiesService.TIMESTAMP_URL_LIST[getNextIndex()];
     }
 
     private int getNextIndex() {
-        if (index + 1 == propertiesService.TIMESTAMP_URL_ARRAY.length) {
+        if (index + 1 == propertiesService.TIMESTAMP_URL_LIST.length) {
             index = -1;
         }
         return ++index;
@@ -65,7 +65,7 @@ public class TspService {
         while (true) {
 
             //
-            if (timeStampResponse != null || retry >= propertiesService.TIMESTAMP_URL_ARRAY.length) {
+            if (timeStampResponse != null || retry >= propertiesService.TIMESTAMP_URL_LIST.length) {
                 break;
             }
 

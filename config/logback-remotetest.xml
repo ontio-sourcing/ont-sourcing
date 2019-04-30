@@ -6,7 +6,7 @@
 
 	<!-- 日志根目录-->
 	<springProperty scope="context" name="LOG_HOME" source="log.home"
-	                defaultValue="/root/ont-sourcing/log"/>
+	                defaultValue="/home/ubuntu/ont-sourcing/log"/>
 
 	<!-- 日志级别 -->
 	<springProperty scope="context" name="LOG_ROOT_LEVEL" source="log.level" defaultValue="DEBUG"/>

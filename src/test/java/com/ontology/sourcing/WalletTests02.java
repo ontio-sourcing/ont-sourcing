@@ -1,15 +1,16 @@
 package com.ontology.sourcing;
 
 import com.alibaba.fastjson.JSON;
-import com.github.ontio.OntSdk;
 import com.github.ontio.common.WalletQR;
 import com.github.ontio.sdk.exception.SDKException;
 import com.github.ontio.sdk.wallet.Account;
 import com.github.ontio.sdk.wallet.Scrypt;
 import com.google.gson.Gson;
+import com.ontology.sourcing.service.util.ChainService;
 import com.ontology.sourcing.util.GlobalVariable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -23,11 +24,12 @@ public class WalletTests02 {
     private Gson gson = new Gson();
 
     //
-    private OntSdk ontSdk = GlobalVariable.getOntSdk("http://polaris1.ont.io", "/Volumes/Data/_work/201802_Ontology/ONTSouring/ont-sourcing/config/wallet.json");
+    @Autowired
+    ChainService chainService;
 
     // 付款的数字钱包
     private com.github.ontio.account.Account payerAccount = GlobalVariable.getInstanceOfAccount("6a62d116e416246f974229eee7d1b0894d8c2ab70446856e85e35b7f5d37adef");
-    
+
     // cool orbit donor annual fix achieve rigid rival lumber obscure cliff castle
     // 51437e5a77201e8ca68f3c2fa474b2373e38da6ed31a7bf23e1594b49406b13e
     @Test
@@ -37,7 +39,7 @@ public class WalletTests02 {
         String prikey = "51437e5a77201e8ca68f3c2fa474b2373e38da6ed31a7bf23e1594b49406b13e";
         String label = "test_label";
         //
-        Account acct = ontSdk.getWalletMgr().createAccountFromPriKey(label, passphrase, prikey);
+        Account acct = chainService.ontSdk.getWalletMgr().createAccountFromPriKey(label, passphrase, prikey);
         System.out.println(acct);
 /*
 {
@@ -58,7 +60,7 @@ public class WalletTests02 {
 }
  */
         //
-        ontSdk.getWalletMgr().writeWallet();
+        chainService.ontSdk.getWalletMgr().writeWallet();
 /*
 // wallet_test.json
 {
@@ -101,11 +103,11 @@ public class WalletTests02 {
     public void example02() throws SDKException {
 
         // 查询 钱包文件 中不存在的 地址
-        Account account1 = ontSdk.getWalletMgr().getWallet().getAccount("ALcwsJqdFyPr4sd1bnS5bdnaBYDgfmCsBd");
+        Account account1 = chainService.ontSdk.getWalletMgr().getWallet().getAccount("ALcwsJqdFyPr4sd1bnS5bdnaBYDgfmCsBd");
         System.out.println(account1);  // null
 
         //
-        Account account2 = ontSdk.getWalletMgr().getWallet().getAccount("AZsDe5NpCZ4TCyGyaLGrKpoSz3zFY5QrSM");
+        Account account2 = chainService.ontSdk.getWalletMgr().getWallet().getAccount("AZsDe5NpCZ4TCyGyaLGrKpoSz3zFY5QrSM");
         System.out.println(account2);
 /*
 {
@@ -132,7 +134,7 @@ public class WalletTests02 {
     @Test
     public void example04() throws Exception {
         //
-        Account account = ontSdk.getWalletMgr().getWallet().getAccount("AZsDe5NpCZ4TCyGyaLGrKpoSz3zFY5QrSM");
+        Account account = chainService.ontSdk.getWalletMgr().getWallet().getAccount("AZsDe5NpCZ4TCyGyaLGrKpoSz3zFY5QrSM");
 
         // 通过 数字资产账户 获取 keystore
         Scrypt scrypt = new Scrypt();
@@ -169,7 +171,7 @@ public class WalletTests02 {
     @Test
     public void example05() throws SDKException {
         //
-        List<Account> accounts = ontSdk.getWalletMgr().getWallet().getAccounts();
+        List<Account> accounts = chainService.ontSdk.getWalletMgr().getWallet().getAccounts();
         Account account = accounts.get(0);
         String addr = account.address;
         //

@@ -288,6 +288,12 @@ CREATE TABLE `tbl_contract_company`
 ALTER TABLE `tbl_action_ontid` CHANGE `keystore` `keystore` TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;
 ALTER TABLE `tbl_action_ontid` CHANGE `ddo` `ddo` TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;
 
+
+ALTER TABLE `tbl_sfl_notary` ADD INDEX(`cert_no`);
+ALTER TABLE `tbl_sfl_notary` ADD INDEX(`filehash`);
+ALTER TABLE `tbl_sfl_notary` ADD INDEX(`txhash`);
+
+
 /*!40101 SET CHARACTER_SET_CLIENT = @OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS = @OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION = @OLD_COLLATION_CONNECTION */;
