@@ -56,6 +56,32 @@ public class ContractController {
         logger.info("ContractController PostConstruct start ...");
     }
 
+    @PostMapping("/token/check")
+    public ResponseEntity<Result> checkToken(@RequestBody LinkedHashMap<String, Object> obj) {
+
+        //
+        Result rst = new Result("checkToken");
+
+        //
+        Set<String> required = new HashSet<>();
+        required.add("access_token");
+
+        //
+        try {
+            validateService.validateParamsKeys(obj, required);
+            validateService.validateParamsValues(obj);
+        } catch (Exception e) {
+            e.printStackTrace();
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+
+        //
+        rst.setResult(true);
+        rst.setErrorAndDesc(ErrorCode.SUCCESSS);
+        return new ResponseEntity<>(rst, HttpStatus.OK);
+    }
+
 
     @PostMapping("/put")
     public ResponseEntity<Result> putContract(@RequestBody LinkedHashMap<String, Object> obj) {
@@ -452,6 +478,8 @@ public class ContractController {
         required.add("ontid");
         required.add("prikey");
         required.add("code_addr");
+        //
+        required.add("ont_password");
 
         //
         try {
@@ -499,6 +527,8 @@ public class ContractController {
         //
         Set<String> required = new HashSet<>();
         required.add("ontid");
+        //
+        required.add("ont_password");
 
         //
         try {
@@ -554,6 +584,8 @@ public class ContractController {
         //
         Set<String> required = new HashSet<>();
         required.add("ontid");
+        //
+        required.add("ont_password");
 
         //
         try {

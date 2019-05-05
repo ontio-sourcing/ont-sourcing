@@ -23,7 +23,8 @@ public class PropertiesService {
                              @Value("${com.ontology.sourcing.ONTID_PUBLIC_KEY}") String ontidPublicKey,
                              @Value("${com.ontology.sourcing.CONTRACT_CODE_ADDRESS}") String codeAddr,
                              @Value("${com.ontology.sourcing.SFL.ACCOUNTID}") String sflAccountId,
-                             @Value("${com.ontology.sourcing.SFL.PRIKey}") String sflPriKey) {
+                             @Value("${com.ontology.sourcing.SFL.PRIKey}") String sflPriKey,
+                             @Value("${com.ontology.sourcing.ONT_PASSWORD}") String ontPassword) {
         //
         this.TABLE_SIZE_LIMIT = limit;
         this.TABLE_SIZE_DETECT_INTERVAL = interval;
@@ -39,6 +40,8 @@ public class PropertiesService {
         //
         this.sflAccountId = sflAccountId;
         this.sflPriKey = sflPriKey;
+        //
+        this.ontPassword = ontPassword;
     }
 
     // 付款的数字钱包
@@ -64,4 +67,7 @@ public class PropertiesService {
     // 司法链
     public String sflAccountId;
     public String sflPriKey;
+
+    // 项目方添加定制的合约和付款秘钥，需要这个密码进行验证
+    public String ontPassword;
 }

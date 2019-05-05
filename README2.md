@@ -26,7 +26,8 @@ method：POST
 {
 	"ontid":"did:ont:AdsCrp9dQy1D6aoFxjDCNm1hnq3Zajq9GE",
 	"prikey":"6a62d116e416246f974229eee7d1b0894d8c2ab70446856e85e35b7f5d37adef",
-	"code_addr":"6864a62235279e4c5c3fba004905f30e2157169a"
+	"code_addr":"6864a62235279e4c5c3fba004905f30e2157169a",
+	"ont_password": "123456"
 }
 ```
 
@@ -35,6 +36,7 @@ method：POST
 | ontid   | String | 项目方ontid    |
 | prikey   | String | 项目方私钥    |
 | code_addr   | String | 智能合约地址（合约中的地址需与付款账号地址一致）    |
+| ont_password   | String | 口令（必需）    |
 
 - 响应：
 
@@ -68,13 +70,15 @@ method：POST
 
 ```json
 {
-	"ontid":"did:ont:AdsCrp9dQy1D6aoFxjDCNm1hnq3Zajq9GE"
+	"ontid":"did:ont:AdsCrp9dQy1D6aoFxjDCNm1hnq3Zajq9GE",
+	"ont_password": "123456"
 }
 ```
 
 | Field_Name | Type   | Description |
 |:-----------|:-------|:------------|
 | ontid   | String | 项目方ontid    |
+| ont_password   | String | 口令（必需）    |
 
 
 - 响应：
@@ -119,7 +123,8 @@ method：POST
 {
 	"ontid":"did:ont:AdsCrp9dQy1D6aoFxjDCNm1hnq3Zajq9GE",
 	"prikey":"12345616e416246f974229eee7d1b0894d8c2ab70446856e85e35b7f5d37adef",
-	"code_addr":"12345679e4c5c3fba004905f30e2157169a"
+	"code_addr":"12345679e4c5c3fba004905f30e2157169a",
+	"ont_password": "123456"
 }
 ```
 
@@ -128,6 +133,7 @@ method：POST
 | ontid   | String | 项目方ontid    |
 | prikey   | String | 项目方私钥    |
 | code_addr   | String | 智能合约地址（合约中的地址需与付款账号地址一致）    |
+| ont_password   | String | 口令（必需）    |
 
 - 响应：
 

@@ -20,6 +20,8 @@
 
 ### 存证接口
 
+* [验证access_token](#验证access_token)
+
 * [存证](#存证)
 * [批量存证](#批量存证)
 
@@ -471,6 +473,45 @@ method：POST
 | result     | String | 成功返回记录，失败返回""
 | version    | String | 版本号                     
 
+### 验证access_token
+
+```text
+url：/api/v1/contract/token/check
+method：POST
+```
+
+- 请求：
+
+```json
+{
+	"access_token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJhdWQiOiJkaWQ6b250OkFNdmpVV1o2Y25BQVVzQk43dWpBQnRMUzlHbWVoOFNQU2oiLCJpc3MiOiJkaWQ6b250OkFhdlJRcVhlOVByYVY1dFlnQnF2VjRiVXE4TFNzdmpjV1MiLCJleHAiOjE1NTU5OTMzNjAsImlhdCI6MTU1NTkwNjk2MCwianRpIjoiMTYwY2FkNjNmZTdkNGY5MTk3NGFjZjQzYWNlMzkzNmYiLCJjb250ZW50Ijp7InR5cGUiOiJhY2Nlc3NfdG9rZW4iLCJvbnRpZCI6ImRpZDpvbnQ6QWExWFBhcEpIR0dqSFF0TjJIZHliOUFQdjdIZmlZeHRSeiJ9fQ.MDE5MzE3ODk4ODU2MGQ5NGQ3MTBmZTc2Mzg1ZWE0OWRiMmRjZjczZmU2NjAyYjU0NjI2YWE0MmJmZWYwYTFkYTE0ODI5YWVmYTJjNjNlMTA5N2Y2ZjM0YTJlMTJmOGYwNWNmYzRhZWI3NzlkOWEwMWY2NDY1Y2VjYWM1MzNjYjk5Ng"
+}
+```
+
+| Field_Name | Type   | Description |
+|:-----------|:-------|:------------|
+| access_token   | String | access_token    |
+
+
+- 响应：
+
+```json
+{
+    "result": true,
+    "error": 0,
+    "action": "checkToken",
+    "desc": "SUCCESS",
+    "version": "1.0.0"
+}
+```
+
+| Field_Name | Type   | Description                   |
+|:-----------|:-------|:------------------------------|
+| error      | int    | 错误码                        |
+| action     | String | 动作标志                      |
+| desc       | String | 成功返回SUCCESS，失败返回错误描述 |
+| result     | String | 成功返回true，失败返回""     |
+| version    | String | 版本号                        |
 
 
 ### 存证

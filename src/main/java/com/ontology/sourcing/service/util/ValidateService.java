@@ -19,14 +19,16 @@ public class ValidateService {
 
     //
     private OAuthService oauthService;
+    private PropertiesService propertiesService;
 
     //
     @Autowired
-    public ValidateService(ActionOntidMapper actionOntidMapper, OAuthService oauthService) {
+    public ValidateService(ActionOntidMapper actionOntidMapper, OAuthService oauthService, PropertiesService propertiesService) {
         //
         this.actionOntidMapper = actionOntidMapper;
         //
         this.oauthService = oauthService;
+        this.propertiesService = propertiesService;
     }
 
     // TODO 只有ontid账户托管才需要检查
@@ -309,6 +311,19 @@ public class ValidateService {
                 if (item.containsKey("detail")) {
                     // ...
                 }
+            }
+        }
+
+        //
+        if (obj.containsKey("ont_password")) {
+            String ont_password = (String) obj.get("ont_password");
+            //
+            if (StringUtils.isEmpty(ont_password)) {
+                throw new Exception("ont_password is empty.");
+            }
+            //
+            if (!propertiesService.ontPassword.equals(ont_password)) {
+                throw new Exception("ont_password is incorrect.");
             }
         }
     }
