@@ -626,7 +626,7 @@ public class ContractController {
         //
         Set<String> required = new HashSet<>();
         required.add("phone_cn");
-        required.add("password");
+        // required.add("password");
 
         //
         try {
@@ -640,11 +640,12 @@ public class ContractController {
 
         //
         String phone_cn = (String) obj.get("phone_cn");
-        String password = (String) obj.get("password");
+        // String password = (String) obj.get("password");
 
         //
         try {
-            String ontid = ontidServerService.registerPhoneWithoutCode(phone_cn, password);
+            // String ontid = ontidServerService.registerPhoneWithoutCode(phone_cn, password);
+            String ontid = ontidServerService.registerPhoneWithoutCode(phone_cn);
             rst.setResult(ontid);
             rst.setErrorAndDesc(ErrorCode.SUCCESSS);
             return new ResponseEntity<>(rst, HttpStatus.OK);

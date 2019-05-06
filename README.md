@@ -486,15 +486,13 @@ method：POST
 
 ```json
 {
-	"phone_cn":"86*18612341234",
-	"password":"12345678"
+	"phone_cn":"86*18612341234"
 }
 ```
 
 | Field_Name | Type   | Description |
 |:-----------|:-------|:------------|
 | phone_cn   | String |  中国大陆手机号（格式必须为86*18612341234）    |
-| password   | String |  密码    |
 
 
 - 响应：

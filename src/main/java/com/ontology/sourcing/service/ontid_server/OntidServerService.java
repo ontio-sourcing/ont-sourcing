@@ -2,20 +2,19 @@ package com.ontology.sourcing.service.ontid_server;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.ontology.sourcing.util.HttpUtil;
 import com.ontology.sourcing.util._codec.Base64ConvertUtil;
 import com.ontology.sourcing.util._crypt.*;
 import com.ontology.sourcing.util._hash.HMACSha256;
 import com.ontology.sourcing.util._hash.MD5Utils;
+import okhttp3.*;
+import okio.Buffer;
 import org.junit.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
-import org.springframework.http.client.BufferingClientHttpRequestFactory;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
-import java.util.Arrays;
 import java.util.UUID;
 
 @Service
@@ -32,12 +31,15 @@ public class OntidServerService {
     //
     private final String appId;
     private final String appSecret;
+    //
+    private final String phonePassword;
 
     @Autowired
     public OntidServerService(@Value("${com.ontology.sourcing.ontid.app.id}") String appId,
                               @Value("${com.ontology.sourcing.ontid.app.secret}") String appSecret,
                               @Value("${com.ontology.sourcing.ontid.app.host}") String host,
                               @Value("${com.ontology.sourcing.ontid.app.path.register}") String pathRegister,
+                              @Value("${com.ontology.sourcing.ontid.app.phone.password}") String phonePassword,
                               AESUtil utilAES,
                               RSAUtil utilRSA) {
         //
@@ -47,11 +49,29 @@ public class OntidServerService {
         this.host = host;
         this.pathRegister = pathRegister;
         //
+        this.phonePassword = phonePassword;
+        //
         this.utilAES = utilAES;
         this.utilRSA = utilRSA;
     }
 
-    public String registerPhoneWithoutCode(String phone, String password) throws Exception {
+    // public String registerPhoneWithoutCode(String phone, String password) throws Exception {
+    //
+    //     //
+    //     final String URI = host + pathRegister;
+    //
+    //     //
+    //     JSONObject jsonObject = new JSONObject();
+    //     jsonObject.put("phone", phone);
+    //     jsonObject.put("password", password);
+    //     String json = JSON.toJSONString(jsonObject);
+    //
+    //     //
+    //     String ontid = postHmac(URI, jsonObject);
+    //     return ontid;
+    // }
+
+    public String registerPhoneWithoutCode(String phone) throws Exception {
 
         //
         final String URI = host + pathRegister;
@@ -59,7 +79,7 @@ public class OntidServerService {
         //
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("phone", phone);
-        jsonObject.put("password", password);
+        jsonObject.put("password", phonePassword);
         String json = JSON.toJSONString(jsonObject);
 
         //
@@ -80,6 +100,8 @@ public class OntidServerService {
             Assert.fail();
         }
         String enJson = utilAES.encryptData(key, JSON.toJSONString(json));
+        // ug/3zPp6fCYzfNL71bmQlgqP+nsOUOQd8K0x2Pq+zXqaQnpoH7YgrF3jRMty4dsUkeOrsK0K5/vbxnXkGLbXOA==
+
         RequestBean requestBean = new RequestBean(enJson);
 
         //hmac
@@ -98,28 +120,81 @@ public class OntidServerService {
         String authHMAC = String.format("ont:%s:%s:%s:%s", appId, signature, nonce, requestTimeStamp);
 
         //
-        final HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", authHMAC);
-        headers.set("Secure-Key", enKey);
-        headers.setAccept(Arrays.asList(new MediaType("application", "ontid.manage.api.v1+json")));
-        headers.setContentType(new MediaType("application", "ontid.manage.api.v1+json"));
+        // final HttpHeaders headers = new HttpHeaders();
+        // headers.set("Authorization", authHMAC);
+        // headers.set("Secure-Key", enKey);
+        // headers.setAccept(Arrays.asList(new MediaType("application", "ontid.manage.api.v1+json")));
+        // headers.setContentType(new MediaType("application", "ontid.manage.api.v1+json"));
 
         //
-        RestTemplate restTemplate = new RestTemplate(new BufferingClientHttpRequestFactory(new SimpleClientHttpRequestFactory()));
-        final HttpEntity<RequestBean> entity = new HttpEntity<RequestBean>(requestBean, headers);
+        HttpUtil.HttpInfo httpInfo = new HttpUtil.HttpInfo();
+        //
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("data", enJson);
+        //
+        String c_type = String.valueOf(new MediaType("application", "ontid.manage.api.v1+json"));
+        //
+        RequestBody body = RequestBody.create(okhttp3.MediaType.get(c_type), jsonObject.toString());
+        //
+        Request.Builder builder = new Request.Builder();
+        builder.addHeader("Authorization", authHMAC);
+        builder.addHeader("Secure-Key", enKey);
+        builder.addHeader("Accept", c_type);
+        builder.addHeader("Content-Type", c_type);
+        Request request = builder.url(URI).post(body).build();
 
         //
-        ResponseEntity<Result> response = restTemplate.postForEntity(URI, entity, Result.class);
+        // RestTemplate restTemplate = new RestTemplate(new BufferingClientHttpRequestFactory(new SimpleClientHttpRequestFactory()));
+        // final HttpEntity<RequestBean> entity = new HttpEntity<RequestBean>(requestBean, headers);
+
+        /*
+        RequestBean(data=ug/3zPp6fCYzfNL71bmQlgqP+nsOUOQd8K0x2Pq+zXqaQnpoH7YgrF3jRMty4dsUkeOrsK0K5/vbxnXkGLbXOA==)
+         */
 
         //
-        String ontid = (String) response.getBody().Result;
+        // ResponseEntity<Result> response = restTemplate.postForEntity(URI, entity, Result.class);
 
         //
-        // System.out.println("http code:" + response.getStatusCode().value());
-        // System.out.println(ontid);
+        httpInfo.requestHeaders = request.headers();
+        // https://stackoverflow.com/questions/28696964/okhttp-how-to-log-request-body
+        if (request.body() != null) {
+            final Request copy = request.newBuilder().build();
+            final Buffer buffer = new Buffer();
+            if (copy.body() != null) {
+                copy.body().writeTo(buffer);
+            }
+            httpInfo.requestBody = buffer.readUtf8();
+        }
 
         //
-        return ontid;
+        OkHttpClient client = new OkHttpClient();
+        try (Response response = client.newCall(request).execute()) {
+            httpInfo.responseHeaders = response.headers();
+            if (response.body() != null) {
+                httpInfo.responseBody = response.body().string();
+            }
+        }
+
+        //
+        String result = httpInfo.responseBody.toString();
+
+/*
+{
+  "action" : "registerInnerPhone",
+  "error" : 61002,
+  "desc" : "FAIL, user already exist.",
+  "result" : "",
+  "version" : "v1"
+}
+ */
+
+        //
+        org.json.JSONObject object = new org.json.JSONObject(result);
+        if (object.getInt("error") == 0) {
+            String ontid = object.getString("result");
+            return ontid;
+        } else {
+            throw new Exception(object.getString("desc"));
+        }
     }
-
 }

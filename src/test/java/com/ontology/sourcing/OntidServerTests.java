@@ -18,7 +18,7 @@ public class OntidServerTests {
     public void example01() {
 
         try {
-            ontidServerService.registerPhoneWithoutCode("86*18616347300", "12345678");
+            ontidServerService.registerPhoneWithoutCode("86*18616347300");
         } catch (Exception e) {
             e.printStackTrace();
         }
