@@ -1,6 +1,7 @@
-package com.ontology.sourcing.util;
+package com.ontology.sourcing.util._codec;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 /**
@@ -34,7 +35,7 @@ public class Base64ConvertUtil {
     }
 
     public static byte[] decodeAndReturnBytes(String str) throws UnsupportedEncodingException {
-        byte[] decodeBytes = Base64.getDecoder().decode(str.getBytes("utf-8"));
+        byte[] decodeBytes = Base64.getDecoder().decode(str.getBytes(StandardCharsets.UTF_8));
         return decodeBytes;
     }
 

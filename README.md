@@ -20,6 +20,8 @@
 
 ### 存证接口
 
+* [手机号注册ontid](#手机号注册ontid)
+
 * [验证access_token](#验证access_token)
 
 * [存证](#存证)
@@ -472,6 +474,50 @@ method：POST
 | desc       | String | 成功返回SUCCESS，失败返回错误描述 |
 | result     | String | 成功返回记录，失败返回""
 | version    | String | 版本号                     
+
+
+### 手机号注册ontid
+```text
+url：/api/v1/contract/ontid/register
+method：POST
+```
+
+- 请求：
+
+```json
+{
+	"phone_cn":"86*18612341234",
+	"password":"12345678"
+}
+```
+
+| Field_Name | Type   | Description |
+|:-----------|:-------|:------------|
+| phone_cn   | String |  中国大陆手机号（格式必须为86*18612341234）    |
+| password   | String |  密码    |
+
+
+- 响应：
+
+```json
+{
+    "result": "did:ont:AbJDcQKcmj1RWJqzURUPSiujHAm6WmsDJu",
+    "error": 0,
+    "action": "registerOntid",
+    "version": "1.0.0",
+    "desc": "SUCCESS"
+}
+```
+
+| Field_Name | Type   | Description                   |
+|:-----------|:-------|:------------------------------|
+| error      | int    | 错误码                        |
+| action     | String | 动作标志                      |
+| desc       | String | 成功返回SUCCESS，失败返回错误描述 |
+| result     | String | 成功返回ontid，失败返回""     |
+| version    | String | 版本号                        |
+
+
 
 ### 验证access_token
 

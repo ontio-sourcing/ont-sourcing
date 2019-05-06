@@ -14,7 +14,7 @@ import com.ontology.sourcing.mapper.EventMapper;
 import com.ontology.sourcing.mapper.contract.*;
 import com.ontology.sourcing.service.util.ChainService;
 import com.ontology.sourcing.service.util.PropertiesService;
-import com.ontology.sourcing.util.CryptoUtil;
+import com.ontology.sourcing.util._hash.Sha256Util;
 import com.ontology.sourcing.util.GlobalVariable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -209,13 +209,13 @@ public class ContractService {
     // 发到链上的key
     public String contractToDigestForKey(Contract contract) {
         String k = contract.getOntid() + contract.getCompanyOntid() + contract.getFilehash() + contract.getTimestamp();
-        return CryptoUtil.sha256(k);
+        return Sha256Util.sha256(k);
     }
 
     // 发到链上的value
     public String contractToDigestForValue(Contract contract) {
         String v = contract.getOntid() + contract.getCompanyOntid() + contract.getDetail() + contract.getTimestamp() + contract.getTimestampSign();
-        return CryptoUtil.sha256(v);
+        return Sha256Util.sha256(v);
     }
 
     // 后期如果需要验证

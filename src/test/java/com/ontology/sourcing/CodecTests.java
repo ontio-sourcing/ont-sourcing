@@ -11,7 +11,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest
 public class CodecTests {
 
-    // org.apache.commons.codec.binary.Hex
+    // org.apache.commons._codec.binary.Hex
     @Test
     public void example01() {
         String foo = "I am a string";

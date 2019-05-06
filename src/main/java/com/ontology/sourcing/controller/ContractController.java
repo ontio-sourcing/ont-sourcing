@@ -7,6 +7,7 @@ import com.ontology.sourcing.dao.contract.ContractCompany;
 import com.ontology.sourcing.model.util.Result;
 import com.ontology.sourcing.service.ContractService;
 import com.ontology.sourcing.service.oauth.OAuthService;
+import com.ontology.sourcing.service.ontid_server.OntidServerService;
 import com.ontology.sourcing.service.time.bctsp.TspService;
 import com.ontology.sourcing.service.util.SyncService;
 import com.ontology.sourcing.service.util.ValidateService;
@@ -37,9 +38,15 @@ public class ContractController {
     //
     private OAuthService oauthService;
     private ContractService contractService;
+    private OntidServerService ontidServerService;
 
     @Autowired
-    public ContractController(TspService tspService, SyncService syncService, ValidateService validateService, OAuthService oauthService, ContractService contractService) {
+    public ContractController(TspService tspService,
+                              SyncService syncService,
+                              ValidateService validateService,
+                              OAuthService oauthService,
+                              ContractService contractService,
+                              OntidServerService ontidServerService) {
         //
         this.tspService = tspService;
         this.syncService = syncService;
@@ -47,6 +54,7 @@ public class ContractController {
         //
         this.oauthService = oauthService;
         this.contractService = contractService;
+        this.ontidServerService = ontidServerService;
     }
 
     //
@@ -607,5 +615,43 @@ public class ContractController {
         rst.setResult(company);
         rst.setErrorAndDesc(ErrorCode.SUCCESSS);
         return new ResponseEntity<>(rst, HttpStatus.OK);
+    }
+
+    @PostMapping("/ontid/register")
+    public ResponseEntity<Result> registerOntid(@RequestBody LinkedHashMap<String, Object> obj) {
+
+        //
+        Result rst = new Result("registerOntid");
+
+        //
+        Set<String> required = new HashSet<>();
+        required.add("phone_cn");
+        required.add("password");
+
+        //
+        try {
+            validateService.validateParamsKeys(obj, required);
+            validateService.validateParamsValues(obj);
+        } catch (Exception e) {
+            e.printStackTrace();
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+
+        //
+        String phone_cn = (String) obj.get("phone_cn");
+        String password = (String) obj.get("password");
+
+        //
+        try {
+            String ontid = ontidServerService.registerPhoneWithoutCode(phone_cn, password);
+            rst.setResult(ontid);
+            rst.setErrorAndDesc(ErrorCode.SUCCESSS);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
     }
 }

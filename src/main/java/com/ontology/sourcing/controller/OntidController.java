@@ -9,7 +9,7 @@ import com.ontology.sourcing.model.util.Result;
 import com.ontology.sourcing.service.OntidService;
 import com.ontology.sourcing.service.util.SyncService;
 import com.ontology.sourcing.service.util.ValidateService;
-import com.ontology.sourcing.util.CryptoUtil;
+import com.ontology.sourcing.util._hash.Sha256Util;
 import com.ontology.sourcing.util.GlobalVariable;
 import com.ontology.sourcing.util.exp.ErrorCode;
 import com.ontology.sourcing.util.exp.ExistedException;
@@ -99,7 +99,7 @@ public class OntidController {
             // 写入本地表
             ActionOntid record = new ActionOntid();
             record.setUsername(username);
-            record.setPassword(CryptoUtil.sha256(password));
+            record.setPassword(Sha256Util.sha256(password));
             record.setOntid(ontid);
             record.setKeystore(keystore);
             record.setTxhash(txhash);

@@ -326,5 +326,21 @@ public class ValidateService {
                 throw new Exception("ont_password is incorrect.");
             }
         }
+
+        //
+        if (obj.containsKey("phone_cn")) {
+            String phone_cn = (String) obj.get("phone_cn");
+            if (StringUtils.isEmpty(phone_cn)) {
+                throw new Exception("phone_cn is empty.");
+            }
+            //
+            if (!StringUtils.startsWithIgnoreCase(phone_cn, "86*")) {
+                throw new Exception("phone_cn should start with 86* then phone number.");
+            }
+            //
+            if (phone_cn.length() != 14) {
+                throw new Exception("phone_cn length is incorrect.");
+            }
+        }
     }
 }

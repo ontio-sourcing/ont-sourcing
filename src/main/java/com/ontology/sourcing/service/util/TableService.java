@@ -6,7 +6,6 @@ import com.ontology.sourcing.dao.contract.ContractIndex;
 import com.ontology.sourcing.mapper.contract.ContractIndexMapper;
 import com.ontology.sourcing.mapper.ddo.ActionIndexMapper;
 import com.ontology.sourcing.util.GlobalVariable;
-import com.ontology.sourcing.util.ThreadUtil;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
