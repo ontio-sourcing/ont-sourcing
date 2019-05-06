@@ -341,6 +341,11 @@ public class ValidateService {
             if (phone_cn.length() != 14) {
                 throw new Exception("phone_cn length is incorrect.");
             }
+            //
+            String s = phone_cn.replace("86*", "");
+            if (!s.matches("^[0-9]*$") || !StringUtils.startsWithIgnoreCase(s, "1")) {
+                throw new Exception("phone_cn is incorrect.");
+            }
         }
     }
 }
