@@ -14,8 +14,8 @@ import com.ontology.sourcing.mapper.EventMapper;
 import com.ontology.sourcing.mapper.contract.*;
 import com.ontology.sourcing.service.util.ChainService;
 import com.ontology.sourcing.service.util.PropertiesService;
-import com.ontology.sourcing.util._hash.Sha256Util;
 import com.ontology.sourcing.util.GlobalVariable;
+import com.ontology.sourcing.util._hash.Sha256Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -79,13 +79,14 @@ public class ContractService {
         byte[] params = BuildParams.createCodeParamsScript(paramList);
 
         // 先查询是不是项目方，有没有设置指定的payer地址和合约地址
-        ContractCompany contractCompany = contractCompanyMapper.findByOntid(contract.getCompanyOntid());
+        String c_ontid = contract.getCompanyOntid();
+        ContractCompany contractCompany = contractCompanyMapper.findByOntid(c_ontid);
         if (contractCompany != null) {
             payer = GlobalVariable.getInstanceOfAccount(contractCompany.getPrikey());
             codeAddr = contractCompany.getCodeAddr();
         } else {
             // TODO
-            throw new Exception("项目方地址列表中找不到该ontid.");
+            throw new Exception("项目方地址列表中找不到该ontid..." + c_ontid);
         }
 
         //
