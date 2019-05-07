@@ -99,7 +99,7 @@ public class OntidController {
             // 写入本地表
             ActionOntid record = new ActionOntid();
             record.setUsername(username);
-            record.setPassword(Sha256Util.sha256(password));
+            record.setPassword(Sha256Util.sha256(password));  // todo bscrypt
             record.setOntid(ontid);
             record.setKeystore(keystore);
             record.setTxhash(txhash);

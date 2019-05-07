@@ -171,6 +171,7 @@
 	<build>
 
 		<resources>
+
 			<resource>
 				<directory>${project.basedir}/src/main/resources</directory>
 				<!--<filtering>true</filtering>-->
@@ -182,15 +183,16 @@
 				</includes>
 			</resource>
 
-			<resource>
-				<directory>${project.basedir}/config</directory>
-			</resource>
-			<resource>
-				<directory>src/main/java</directory>
-				<includes>
-					<include>**/*.xml</include>
-				</includes>
-			</resource>
+<!--			<resource>-->
+<!--				<directory>${project.basedir}/config</directory>-->
+<!--			</resource>-->
+<!--			<resource>-->
+<!--				<directory>src/main/java</directory>-->
+<!--				<includes>-->
+<!--					<include>**/*.xml</include>-->
+<!--				</includes>-->
+<!--			</resource>-->
+
 		</resources>
 
 		<plugins>

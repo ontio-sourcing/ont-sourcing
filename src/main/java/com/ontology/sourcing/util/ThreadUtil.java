@@ -35,6 +35,8 @@ public class ThreadUtil {
                     // TODO：若设的值过小，可能会被执行reject策略
                     int lbq_size = 1000;
 
+                    // TODO 加队列
+
                     //
                     ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(corePoolSize, maximumPoolSize, 1, TimeUnit.MINUTES, new LinkedBlockingQueue<>(lbq_size));
                     threadPoolExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.AbortPolicy());
