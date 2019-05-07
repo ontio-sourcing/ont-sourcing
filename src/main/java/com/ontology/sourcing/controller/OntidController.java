@@ -2,6 +2,7 @@ package com.ontology.sourcing.controller;
 
 import ch.qos.logback.classic.Logger;
 import com.github.ontio.network.exception.RestfulException;
+import com.lambdaworks.crypto.SCryptUtil;
 import com.ontology.sourcing.dao.ddo.*;
 import com.ontology.sourcing.mapper.ddo.*;
 import com.ontology.sourcing.model.ddo.DDOPojo;
@@ -9,7 +10,6 @@ import com.ontology.sourcing.model.util.Result;
 import com.ontology.sourcing.service.OntidService;
 import com.ontology.sourcing.service.util.SyncService;
 import com.ontology.sourcing.service.util.ValidateService;
-import com.ontology.sourcing.util._hash.Sha256Util;
 import com.ontology.sourcing.util.GlobalVariable;
 import com.ontology.sourcing.util.exp.ErrorCode;
 import com.ontology.sourcing.util.exp.ExistedException;
@@ -99,7 +99,7 @@ public class OntidController {
             // 写入本地表
             ActionOntid record = new ActionOntid();
             record.setUsername(username);
-            record.setPassword(Sha256Util.sha256(password));  // todo bscrypt
+            record.setPassword(SCryptUtil.scrypt(password, GlobalVariable.scrypt_N, GlobalVariable.scrypt_r, GlobalVariable.scrypt_p));
             record.setOntid(ontid);
             record.setKeystore(keystore);
             record.setTxhash(txhash);

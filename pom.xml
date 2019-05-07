@@ -165,6 +165,13 @@
 			<version>3.14.1</version>
 		</dependency>
 
+		<!--  -->
+		<dependency>
+			<groupId>com.lambdaworks</groupId>
+			<artifactId>scrypt</artifactId>
+			<version>1.4.0</version>
+		</dependency>
+
 
 	</dependencies>
 
@@ -183,15 +190,15 @@
 				</includes>
 			</resource>
 
-<!--			<resource>-->
-<!--				<directory>${project.basedir}/config</directory>-->
-<!--			</resource>-->
-<!--			<resource>-->
-<!--				<directory>src/main/java</directory>-->
-<!--				<includes>-->
-<!--					<include>**/*.xml</include>-->
-<!--				</includes>-->
-<!--			</resource>-->
+			<!--			<resource>-->
+			<!--				<directory>${project.basedir}/config</directory>-->
+			<!--			</resource>-->
+			<!--			<resource>-->
+			<!--				<directory>src/main/java</directory>-->
+			<!--				<includes>-->
+			<!--					<include>**/*.xml</include>-->
+			<!--				</includes>-->
+			<!--			</resource>-->
 
 		</resources>
 

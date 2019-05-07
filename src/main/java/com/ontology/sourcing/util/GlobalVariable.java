@@ -37,4 +37,9 @@ public class GlobalVariable {
         return instanceOfAccount;
     }
 
+    //
+    public static Integer scrypt_N = 16384;
+    public static Integer scrypt_r = 8;
+    public static Integer scrypt_p = 1;
+
 }
