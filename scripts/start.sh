@@ -1,3 +1,7 @@
+# 编译
+# mvn clean install -Dmaven.test.skip=true
+
+# 部署运行
 #
 APPNAME="ont-sourcing-0.0.1-SNAPSHOT.jar"
 APPLOCATION="/home/ubuntu/ont-sourcing/target/ont-sourcing-0.0.1-SNAPSHOT.jar"
