@@ -9,6 +9,7 @@ import com.ontology.sourcing.util._hash.HMACSha256;
 import com.ontology.sourcing.util._hash.MD5Utils;
 import okhttp3.*;
 import okio.Buffer;
+import org.json.JSONException;
 import org.junit.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -190,11 +191,18 @@ public class OntidServerService {
 
         //
         org.json.JSONObject object = new org.json.JSONObject(result);
-        if (object.getInt("error") == 0) {
-            String ontid = object.getString("result");
-            return ontid;
-        } else {
-            throw new Exception(object.getString("desc"));
+        //
+        try {
+            int err = object.getInt("error");
+            if (err == 0) {
+                String ontid = object.getString("result");
+                return ontid;
+            } else {
+                throw new Exception(object.getString("desc"));
+            }
+        } catch (JSONException e) {
+            throw new Exception("ontid_server " + object.getString("error"));
         }
+
     }
 }
