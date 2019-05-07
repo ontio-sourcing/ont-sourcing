@@ -47,9 +47,10 @@ public class OAuthService {
             throw new Exception("Token signature verify error");
         }
 
-        if (jwt.getExpiresAt().before(new Date())) {
-            throw new Exception("Token expiration verify error");
-        }
+        // TODO：搞成永不过期了
+        // if (jwt.getExpiresAt().before(new Date())) {
+        //     throw new Exception("Token expiration verify error");
+        // }
 
         //
         //        String s = "did:ont:" + account.getAddressU160().toBase58();

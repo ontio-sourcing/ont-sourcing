@@ -83,6 +83,9 @@ public class ContractService {
         if (contractCompany != null) {
             payer = GlobalVariable.getInstanceOfAccount(contractCompany.getPrikey());
             codeAddr = contractCompany.getCodeAddr();
+        } else {
+            // TODO
+            throw new Exception("项目方地址列表中找不到该ontid.");
         }
 
         //
