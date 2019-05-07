@@ -1,14 +1,19 @@
 package com.ontology.sourcing;
 
+import com.ontology.sourcing.util._codec.Base64ConvertUtil;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.io.UnsupportedEncodingException;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
+@TestPropertySource(locations = "file:/Volumes/Data/_work/201802_Ontology/ONTSouring/ont-sourcing/config/application-dev.properties")
 public class CodecTests {
 
     // org.apache.commons._codec.binary.Hex
@@ -69,6 +74,14 @@ public class CodecTests {
             data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4) + Character.digit(s.charAt(i + 1), 16));
         }
         return data;
+    }
+
+    @Test
+    public void example05() throws UnsupportedEncodingException {
+        String afterBase64 = Base64ConvertUtil
+                .encode("");
+        System.out.println(afterBase64);
+
     }
 
 }
