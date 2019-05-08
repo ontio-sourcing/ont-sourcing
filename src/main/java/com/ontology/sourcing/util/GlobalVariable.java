@@ -24,17 +24,24 @@ public class GlobalVariable {
     private static Account instanceOfAccount = null;
 
     public static synchronized Account getInstanceOfAccount(String payerPrivateKey) {
-        if (instanceOfAccount == null) {
-            try {
-                // 方法一，当时设置的passphrase若已被记录到钱包文件中，所以必须对应
-                // instanceOfAccount = getOntSdk().getWalletMgr().getAccount(payerAddress, payerPassphrase);
-                // 方法二，直接从私钥
-                instanceOfAccount = new Account(Helper.hexToBytes(payerPrivateKey), SignatureScheme.SHA256WITHECDSA);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        // if (instanceOfAccount == null) {
+        //     try {
+        //         // 方法一，当时设置的passphrase若已被记录到钱包文件中，所以必须对应
+        //         // instanceOfAccount = getOntSdk().getWalletMgr().getAccount(payerAddress, payerPassphrase);
+        //         // 方法二，直接从私钥
+        //         instanceOfAccount = new Account(Helper.hexToBytes(payerPrivateKey), SignatureScheme.SHA256WITHECDSA);
+        //     } catch (Exception e) {
+        //         e.printStackTrace();
+        //     }
+        // }
+        // return instanceOfAccount;
+
+        try {
+            return new Account(Helper.hexToBytes(payerPrivateKey), SignatureScheme.SHA256WITHECDSA);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return instanceOfAccount;
+        return null;
     }
 
     //

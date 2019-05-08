@@ -84,10 +84,14 @@ public class ContractService {
         if (contractCompany != null) {
             payer = GlobalVariable.getInstanceOfAccount(contractCompany.getPrikey());
             codeAddr = contractCompany.getCodeAddr();
+            // String s1 = payer.getAddressU160().toBase58();
         } else {
             // TODO
             throw new Exception("项目方地址列表中找不到该ontid..." + c_ontid);
         }
+
+        //
+        // String s2 = payer.getAddressU160().toBase58();
 
         //
         Map<String, String> map = invokeContract(Helper.reverse(codeAddr), null, params, payer, 76220L, GlobalVariable.DEFAULT_GAS_PRICE, false);
@@ -156,6 +160,8 @@ public class ContractService {
 
         //
         chainService.ontSdk.addSign(tx, payerAcct);
+
+        // String s = payerAcct.getAddressU160().toBase58();
 
         //
         String rawdata = tx.toHexString();

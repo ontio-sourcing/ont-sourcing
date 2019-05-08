@@ -1,5 +1,6 @@
 package com.ontology.sourcing.service.util;
 
+import ch.qos.logback.classic.Logger;
 import com.alibaba.fastjson.JSON;
 import com.github.ontio.network.exception.ConnectorException;
 import com.ontology.sourcing.dao.Event;
@@ -13,6 +14,7 @@ import com.ontology.sourcing.service.OntidService;
 import com.ontology.sourcing.util.HttpUtil;
 import com.ontology.sourcing.util.ThreadUtil;
 import org.json.JSONObject;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -22,6 +24,9 @@ import java.util.Date;
 
 @Service
 public class SyncService {
+
+    //
+    private Logger logger = (Logger) LoggerFactory.getLogger(SyncService.class);
 
     //
     private EventMapper eventMapper;
@@ -128,7 +133,9 @@ public class SyncService {
                         break;
                     } catch (ConnectorException | IOException e) {
                         //
-                        e.printStackTrace();
+                        // e.printStackTrace();
+                        logger.error(e.getMessage());
+
                         //
                         chainService.switchOntSdk();
                         //
