@@ -882,11 +882,11 @@ method：POST
 
 ```json
 {
-    "result": "",
+    "version": "1.0.0",
     "error": 0,
-    "desc": "SUCCESS",
-    "action": "",
-    "version": "1.0.0"
+    "action": "deleteByOntidAndHash",
+    "result": true,
+    "desc": "SUCCESS"
 }
 ```
 
@@ -895,7 +895,7 @@ method：POST
 | error      | int    | 错误码                        |
 | action     | String | 动作标志                      |
 | desc       | String | 成功返回SUCCESS，失败返回错误描述 |
-| result     | String | 成功返回""     |
+| result     | String | 成功返回true     |
 | version    | String | 版本号                        |
 
 
