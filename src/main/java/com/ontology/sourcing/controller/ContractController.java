@@ -17,6 +17,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,6 +42,8 @@ public class ContractController {
     private OAuthService oauthService;
     private ContractService contractService;
     private OntidServerService ontidServerService;
+    //
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @Autowired
     public ContractController(TspService tspService,
@@ -46,7 +51,8 @@ public class ContractController {
                               ValidateService validateService,
                               OAuthService oauthService,
                               ContractService contractService,
-                              OntidServerService ontidServerService) {
+                              OntidServerService ontidServerService,
+                              KafkaTemplate<String, Object> kafkaTemplate) {
         //
         this.tspService = tspService;
         this.syncService = syncService;
@@ -55,6 +61,8 @@ public class ContractController {
         this.oauthService = oauthService;
         this.contractService = contractService;
         this.ontidServerService = ontidServerService;
+        //
+        this.kafkaTemplate = kafkaTemplate;
     }
 
     //
@@ -90,9 +98,355 @@ public class ContractController {
         return new ResponseEntity<>(rst, HttpStatus.OK);
     }
 
-
     @PostMapping("/contract")
     public ResponseEntity<Result> putContract(@RequestBody LinkedHashMap<String, Object> obj) {
+
+        //
+        Result rst = new Result("putContract1");
+
+        //
+        Set<String> required = new HashSet<>();
+        required.add("access_token");
+        required.add("user_ontid");  // 空表示自己上传；不空表示被别人上传
+        required.add("filehash");
+        required.add("detail");
+        required.add("type");
+
+        //
+        try {
+            validateService.validateParamsKeys(obj, required);
+            validateService.validateParamsValues(obj);
+        } catch (Exception e) {
+            e.printStackTrace();
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+
+        //
+        String access_token = (String) obj.get("access_token");
+        String user_ontid = (String) obj.get("user_ontid");
+        String filehash = (String) obj.get("filehash");
+        //
+        ArrayList<Object> detailList = (ArrayList<Object>) obj.get("detail");
+        String detail = gson.toJson(detailList);
+        //
+        String type = (String) obj.get("type");
+
+        //
+        String company_ontid = "";
+        try {
+            company_ontid = oauthService.getContentUser(access_token);
+        } catch (Exception e) {
+            e.printStackTrace();
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+
+        //
+        if (StringUtils.isEmpty(user_ontid))
+            user_ontid = company_ontid;
+
+        //
+        try {
+            //
+            Contract contract = new Contract();
+            contract.setOntid(user_ontid);
+            contract.setCompanyOntid(company_ontid);
+            contract.setFilehash(filehash);
+            contract.setDetail(detail);
+            contract.setType(type);
+            contract.setCreateTime(new Date());
+            //
+            kafkaTemplate.send(GlobalVariable.myTopic1, gson.toJson(contract, Contract.class));
+            //
+            rst.setResult(true);
+            rst.setErrorAndDesc(ErrorCode.SUCCESSS);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+    }
+
+    /*
+    @KafkaListener(topics = {GlobalVariable.myTopic1})
+    public void kafkaListener01(ConsumerRecord<String, String> record, Acknowledgment ack) {
+        //
+        Contract contract = gson.fromJson(record.value(), Contract.class);
+
+        //
+        String filehash = contract.getFilehash();
+        String company_ontid = contract.getCompanyOntid();
+
+        //
+        logger.debug("start processing filehash {} from mq ...", filehash);
+
+        try {
+            //
+            Map<String, Object> map = tspService.getTimeStampMap(filehash);
+            //
+            long timestamp = (long) map.get("timestamp");
+            String timestampSign = map.get("timestampSign").toString();
+            //
+            contract.setTimestamp(new Date(timestamp * 1000L));
+            contract.setTimestampSign(timestampSign);
+            //
+            Map<String, String> map2 = contractService.putContract(contract);
+            String txhash = map2.get("txhash");
+            contract.setTxhash(txhash);
+            //
+            contractService.saveToLocal(company_ontid, contract); // TODO 批量入库
+            // 链同步
+            syncService.confirmTx(txhash);
+            //
+            logger.debug("finish processing filehash {}.", filehash);
+        } catch (Exception e) {
+            // e.printStackTrace();
+            logger.error(e.getMessage());
+        }
+
+        //
+        ack.acknowledge();
+    }
+    */
+
+    @KafkaListener(topics = {GlobalVariable.myTopic1})
+    public void kafkaListener02(List<String> list, Acknowledgment ack) {
+
+        //
+        logger.info("start fetching {} from mq ...", list.size());
+        if (list.size() <= 0)
+            return;
+
+        //
+        List<Contract> c_list = new ArrayList<>();
+        List<Contract> other_list = new ArrayList<>();
+
+        //
+        String first = list.get(0);
+        Contract first_contract = gson.fromJson(first, Contract.class);
+        String first_ontid = first_contract.getCompanyOntid();
+
+
+        //
+        for (String message : list) {
+
+            //
+            Contract contract = gson.fromJson(message, Contract.class);
+
+            //
+            String filehash = contract.getFilehash();
+            String company_ontid = contract.getCompanyOntid();
+
+            //
+            logger.debug("start processing filehash {} from mq ...", filehash);
+
+            //
+            try {
+                //
+                Map<String, Object> map = tspService.getTimeStampMap(filehash);
+                //
+                long timestamp = (long) map.get("timestamp");
+                String timestampSign = map.get("timestampSign").toString();
+                //
+                contract.setTimestamp(new Date(timestamp * 1000L));
+                contract.setTimestampSign(timestampSign);
+                //
+                Map<String, String> map2 = contractService.putContract(contract);
+                String txhash = map2.get("txhash");
+                contract.setTxhash(txhash);
+                //
+                if (contract.getCompanyOntid().equals(first_ontid)) {
+                    c_list.add(contract);
+                } else {
+                    other_list.add(contract);
+                }
+                // 链同步
+                syncService.confirmTx(txhash);
+            } catch (Exception e) {
+                // e.printStackTrace();
+                logger.error(e.getMessage());
+                // TODO
+                return;
+            }
+
+            //
+            logger.debug("finish processing contract {},{}.", company_ontid, filehash);
+        }
+
+        //
+        contractService.saveToLocalBatch(first_ontid, c_list);
+
+        //
+        for (Contract c : other_list) {
+            contractService.saveToLocal(c.getCompanyOntid(), c);
+        }
+
+        //
+        ack.acknowledge();
+    }
+
+    @PostMapping("/contracts")
+    public ResponseEntity<Result> putContractBatch(@RequestBody LinkedHashMap<String, Object> obj) {
+
+        //
+        Result rst = new Result("putContractBatch");
+
+        //
+        Set<String> required = new HashSet<>();
+        required.add("access_token");
+        required.add("user_ontid");
+        required.add("filelist");
+
+        //
+        try {
+            validateService.validateParamsKeys(obj, required);
+            validateService.validateParamsValues(obj);
+        } catch (Exception e) {
+            e.printStackTrace();
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+
+        //
+        String access_token = (String) obj.get("access_token");
+        String user_ontid = (String) obj.get("user_ontid");
+
+        //
+        String company_ontid = "";
+        try {
+            company_ontid = oauthService.getContentUser(access_token);
+        } catch (Exception e) {
+            e.printStackTrace();
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+
+        //
+        if (StringUtils.isEmpty(user_ontid))
+            user_ontid = company_ontid;
+
+
+        // TODO
+        ArrayList<Map<String, Object>> filelist = (ArrayList<Map<String, Object>>) obj.get("filelist");
+
+        //
+        try {
+            //
+            List<Contract> contractList = new ArrayList<>();
+            //
+            for (Map<String, Object> item : filelist) {
+                //
+                String filehash = item.get("filehash").toString();
+                String type = item.get("type").toString();
+                ArrayList<Object> detailList = (ArrayList<Object>) item.get("detail");
+                String detail = gson.toJson(detailList);
+                // System.out.println(detail);
+
+                //
+                Contract contract = new Contract();
+                contract.setCompanyOntid(company_ontid);
+                contract.setOntid(user_ontid);
+                contract.setFilehash(filehash);
+                contract.setDetail(detail);
+                contract.setType(type);
+                contract.setCreateTime(new Date());
+                //
+                kafkaTemplate.send(GlobalVariable.myTopic1, gson.toJson(contract, Contract.class));
+            }
+            //
+            rst.setResult(true);
+            rst.setErrorAndDesc(ErrorCode.SUCCESSS);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+    }
+
+    @PostMapping("/contracts/custom")
+    public ResponseEntity<Result> putContractBatchCustom(@RequestBody LinkedHashMap<String, Object> obj) {
+
+        //
+        Result rst = new Result("putContractBatchCustom");
+
+        //
+        Set<String> required = new HashSet<>();
+        required.add("access_token");
+        required.add("user_ontid");
+        required.add("filelist");
+
+        //
+        try {
+            validateService.validateParamsKeys(obj, required);
+            validateService.validateParamsValues(obj);
+        } catch (Exception e) {
+            e.printStackTrace();
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+
+        //
+        String access_token = (String) obj.get("access_token");
+        String user_ontid = (String) obj.get("user_ontid");
+
+        //
+        String company_ontid = "";
+        try {
+            company_ontid = oauthService.getContentUser(access_token);
+        } catch (Exception e) {
+            e.printStackTrace();
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+
+        //
+        if (StringUtils.isEmpty(user_ontid))
+            user_ontid = company_ontid;
+
+
+        // TODO
+        ArrayList<Map<String, Object>> filelist = (ArrayList<Map<String, Object>>) obj.get("filelist");
+
+        //
+        try {
+            //
+            List<Contract> contractList = new ArrayList<>();
+            //
+            for (Map<String, Object> item : filelist) {
+                //
+                String filehash = item.get("filehash").toString();
+                String type = item.get("type").toString();
+                ArrayList<Map<String, Object>> detailList = (ArrayList<Map<String, Object>>) item.get("detail");
+                String detail = gson.toJson(detailList);
+                // System.out.println(detail);
+
+                //
+                Contract contract = new Contract();
+                contract.setCompanyOntid(company_ontid);
+                contract.setOntid(user_ontid);
+                contract.setFilehash(filehash);
+                contract.setDetail(detail);
+                contract.setType(type);
+                contract.setCreateTime(new Date());
+                //
+                kafkaTemplate.send(GlobalVariable.myTopic1, gson.toJson(contract, Contract.class));
+            }
+            //
+            rst.setResult(true);
+            rst.setErrorAndDesc(ErrorCode.SUCCESSS);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+    }
+
+    @PostMapping("/contract1")
+    public ResponseEntity<Result> putContract1(@RequestBody LinkedHashMap<String, Object> obj) {
 
         //
         Result rst = new Result("putContract");
@@ -153,9 +507,10 @@ public class ContractController {
             contract.setFilehash(filehash);
             contract.setDetail(detail);
             contract.setType(type);
+            contract.setCreateTime(new Date());
+            //
             contract.setTimestamp(new Date(timestamp * 1000L));
             contract.setTimestampSign(timestampSign);
-            contract.setCreateTime(new Date());
             //
             Map<String, String> map2 = contractService.putContract(contract);
             String txhash = map2.get("txhash");
@@ -175,8 +530,8 @@ public class ContractController {
         }
     }
 
-    @PostMapping("/contracts")
-    public ResponseEntity<Result> putContractBatch(@RequestBody LinkedHashMap<String, Object> obj) {
+    @PostMapping("/contracts1")
+    public ResponseEntity<Result> putContractBatch1(@RequestBody LinkedHashMap<String, Object> obj) {
 
         //
         Result rst = new Result("putContractBatch");
@@ -272,8 +627,8 @@ public class ContractController {
     }
 
 
-    @PostMapping("/contracts/custom")
-    public ResponseEntity<Result> putContractBatchCustom(@RequestBody LinkedHashMap<String, Object> obj) {
+    @PostMapping("/contracts/custom1")
+    public ResponseEntity<Result> putContractBatchCustom1(@RequestBody LinkedHashMap<String, Object> obj) {
 
         //
         Result rst = new Result("putContractBatchCustom");
