@@ -268,10 +268,9 @@ public class ContractService {
     }
 
     //
-    public List<Contract> deleteByOntidAndHash(String ontid, String hash) {
+    public void deleteByOntidAndHash(String ontid, String hash) {
         String tableName = getIndex(ontid).getName();
-        List<Contract> list = contractMapper.deleteByOntidAndHash(tableName, ontid, hash);
-        return addHeight(list);
+        contractMapper.deleteByOntidAndHash(tableName, ontid, hash);
     }
 
     //
