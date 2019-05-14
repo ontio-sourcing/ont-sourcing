@@ -24,7 +24,7 @@ import javax.annotation.PostConstruct;
 import java.util.*;
 
 @RestController
-@RequestMapping("/api/v1/contract/")
+@RequestMapping("/api/v1/")
 public class ContractController {
 
     //
@@ -64,7 +64,7 @@ public class ContractController {
         logger.info("ContractController PostConstruct start ...");
     }
 
-    @PostMapping("/token/check")
+    @PostMapping("/contract/token/check")
     public ResponseEntity<Result> checkToken(@RequestBody LinkedHashMap<String, Object> obj) {
 
         //
@@ -91,7 +91,7 @@ public class ContractController {
     }
 
 
-    @PostMapping("/put")
+    @PostMapping("/contract")
     public ResponseEntity<Result> putContract(@RequestBody LinkedHashMap<String, Object> obj) {
 
         //
@@ -119,7 +119,10 @@ public class ContractController {
         String access_token = (String) obj.get("access_token");
         String user_ontid = (String) obj.get("user_ontid");
         String filehash = (String) obj.get("filehash");
-        String detail = (String) obj.get("detail");
+        //
+        ArrayList<Object> detailList = (ArrayList<Object>) obj.get("detail");
+        String detail = gson.toJson(detailList);
+        //
         String type = (String) obj.get("type");
 
         //
@@ -172,7 +175,7 @@ public class ContractController {
         }
     }
 
-    @PostMapping("/put/batch")
+    @PostMapping("/contracts")
     public ResponseEntity<Result> putContractBatch(@RequestBody LinkedHashMap<String, Object> obj) {
 
         //
@@ -225,9 +228,9 @@ public class ContractController {
                 //
                 String filehash = item.get("filehash").toString();
                 String type = item.get("type").toString();
-                ArrayList<Map<String, String>> detailList = (ArrayList<Map<String, String>>) item.get("detail");
+                ArrayList<Object> detailList = (ArrayList<Object>) item.get("detail");
                 String detail = gson.toJson(detailList);
-                System.out.println(detail);
+                // System.out.println(detail);
 
                 //
                 Map<String, Object> map = tspService.getTimeStampMap(filehash);
@@ -268,7 +271,104 @@ public class ContractController {
         }
     }
 
-    @PostMapping("/hash")
+
+    @PostMapping("/contracts/custom")
+    public ResponseEntity<Result> putContractBatchCustom(@RequestBody LinkedHashMap<String, Object> obj) {
+
+        //
+        Result rst = new Result("putContractBatchCustom");
+
+        //
+        Set<String> required = new HashSet<>();
+        required.add("access_token");
+        required.add("user_ontid");
+        required.add("filelist");
+
+        //
+        try {
+            validateService.validateParamsKeys(obj, required);
+            validateService.validateParamsValues(obj);
+        } catch (Exception e) {
+            e.printStackTrace();
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+
+        //
+        String access_token = (String) obj.get("access_token");
+        String user_ontid = (String) obj.get("user_ontid");
+
+        //
+        String company_ontid = "";
+        try {
+            company_ontid = oauthService.getContentUser(access_token);
+        } catch (Exception e) {
+            e.printStackTrace();
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+
+        //
+        if (StringUtils.isEmpty(user_ontid))
+            user_ontid = company_ontid;
+
+
+        // TODO
+        ArrayList<Map<String, Object>> filelist = (ArrayList<Map<String, Object>>) obj.get("filelist");
+
+        //
+        try {
+            //
+            List<Contract> contractList = new ArrayList<>();
+            //
+            for (Map<String, Object> item : filelist) {
+                //
+                String filehash = item.get("filehash").toString();
+                String type = item.get("type").toString();
+                ArrayList<Map<String, Object>> detailList = (ArrayList<Map<String, Object>>) item.get("detail");
+                String detail = gson.toJson(detailList);
+                // System.out.println(detail);
+
+                //
+                Map<String, Object> map = tspService.getTimeStampMap(filehash);
+                //
+                long timestamp = (long) map.get("timestamp");
+                String timestampSign = map.get("timestampSign").toString();
+                //
+                Contract contract = new Contract();
+                contract.setCompanyOntid(company_ontid);
+                contract.setOntid(user_ontid);
+                contract.setFilehash(filehash);
+                contract.setDetail(detail);
+                contract.setType(type);
+                contract.setTimestamp(new Date(timestamp * 1000L));
+                contract.setTimestampSign(timestampSign);
+                contract.setCreateTime(new Date());
+                //
+                Map<String, String> map2 = contractService.putContract(contract);
+                String txhash = map2.get("txhash");
+                contract.setTxhash(txhash);
+                // 链同步
+                syncService.confirmTx(txhash);
+                //
+                contractList.add(contract);
+            }
+            // mybatis batch insert
+            // 单条长度大概 4KB，30条，一个sql语句size大概为120KB
+            // TODO 检查 max_allowed_packet
+            contractService.saveToLocalBatch(company_ontid, contractList);
+            //
+            rst.setResult(true);
+            rst.setErrorAndDesc(ErrorCode.SUCCESSS);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+    }
+
+    @PostMapping("/contract/hash")
     public ResponseEntity<Result> selectByOntidAndHash(@RequestBody LinkedHashMap<String, Object> obj) {
 
         //
@@ -313,7 +413,58 @@ public class ContractController {
 
     }
 
-    @PostMapping("/history")
+    @PostMapping("/contract/hash/delete")
+    public ResponseEntity<Result> deleteByOntidAndHash(@RequestBody LinkedHashMap<String, Object> obj) {
+
+        //
+        Result rst = new Result("deleteByOntidAndHash");
+
+        //
+        Set<String> required = new HashSet<>();
+        required.add("hash");
+        required.add("access_token");
+
+        //
+        try {
+            validateService.validateParamsKeys(obj, required);
+            validateService.validateParamsValues(obj);
+        } catch (Exception e) {
+            e.printStackTrace();
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+
+        //
+        String hash = (String) obj.get("hash");
+        String accessToken = (String) obj.get("access_token");
+
+        //
+        String ontid = "";
+        try {
+            ontid = oauthService.getContentUser(accessToken);
+        } catch (Exception e) {
+            e.printStackTrace();
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+
+        // ontid 也要作为条件
+        try {
+            contractService.deleteByOntidAndHash(ontid, hash);
+        } catch (Exception e) {
+            e.printStackTrace();
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+
+        //
+        rst.setResult(true);
+        rst.setErrorAndDesc(ErrorCode.SUCCESSS);
+        return new ResponseEntity<>(rst, HttpStatus.OK);
+
+    }
+
+    @PostMapping("/contract/history")
     public ResponseEntity<Result> getHistory(@RequestBody LinkedHashMap<String, Object> obj) {
 
         //
@@ -365,7 +516,7 @@ public class ContractController {
         return new ResponseEntity<>(rst, HttpStatus.OK);
     }
 
-    @PostMapping("/count")
+    @PostMapping("/contract/count")
     public ResponseEntity<Result> count(@RequestBody LinkedHashMap<String, Object> obj) {
 
         //
@@ -405,7 +556,7 @@ public class ContractController {
         return new ResponseEntity<>(rst, HttpStatus.OK);
     }
 
-    @PostMapping("/explorer")
+    @PostMapping("/contract/explorer")
     public ResponseEntity<Result> getExplorer(@RequestBody LinkedHashMap<String, Object> obj) {
 
         //
@@ -441,7 +592,7 @@ public class ContractController {
         return new ResponseEntity<>(rst, HttpStatus.OK);
     }
 
-    @PostMapping("/explorer/hash")
+    @PostMapping("/contract/explorer/hash")
     public ResponseEntity<Result> getExplorerHash(@RequestBody LinkedHashMap<String, Object> obj) {
 
         //
@@ -475,7 +626,7 @@ public class ContractController {
     }
 
 
-    @PostMapping("/company/add")
+    @PostMapping("/contract/company/add")
     public ResponseEntity<Result> addCompany(@RequestBody LinkedHashMap<String, Object> obj) {
 
         //
@@ -526,7 +677,7 @@ public class ContractController {
     }
 
 
-    @PostMapping("/company/update")
+    @PostMapping("/contract/company/update")
     public ResponseEntity<Result> updateCompany(@RequestBody LinkedHashMap<String, Object> obj) {
 
         //
@@ -583,7 +734,7 @@ public class ContractController {
         return new ResponseEntity<>(rst, HttpStatus.OK);
     }
 
-    @PostMapping("/company/get")
+    @PostMapping("/contract/company/get")
     public ResponseEntity<Result> getCompany(@RequestBody LinkedHashMap<String, Object> obj) {
 
         //
@@ -617,7 +768,7 @@ public class ContractController {
         return new ResponseEntity<>(rst, HttpStatus.OK);
     }
 
-    @PostMapping("/ontid/register")
+    @PostMapping("/contract/ontid/register")
     public ResponseEntity<Result> registerOntid(@RequestBody LinkedHashMap<String, Object> obj) {
 
         //

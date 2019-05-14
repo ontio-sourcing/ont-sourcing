@@ -5,8 +5,9 @@ public enum ContractTypes {
     //
     INDEX(0, "INDEX"),
     TEXT(1, "TEXT"),
-    IMAGE(1, "DEIMAGELETE"),
-    VIDEO(1, "VIDEO");
+    PDF(2, "PDF"),
+    IMAGE(3, "IMAGE"),
+    VIDEO(4, "VIDEO");
 
     //
     private final int id;

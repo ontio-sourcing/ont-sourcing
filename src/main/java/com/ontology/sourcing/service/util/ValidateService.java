@@ -135,11 +135,20 @@ public class ValidateService {
             }
         }
 
-        // TODO detail
+        //
+        if (obj.containsKey("detail")) {
+            // detail 肯定是一个数组
+            Object o = obj.get("detail");
+            if (o instanceof List<?>) {
+                return;
+            } else {
+                throw new Exception("detail should be List<?>.");
+            }
+        }
 
         if (obj.containsKey("type")) {
             String type = (String) obj.get("type");
-            if (!ContractTypes.contains(type)) {
+            if (!ContractTypes.contains(type) && !StringUtils.isEmpty(type)) {
                 throw new Exception("type " + type + " is incorrect.");
             }
         }
@@ -274,6 +283,8 @@ public class ValidateService {
             }
         }
 
+
+
         //
         if (obj.containsKey("filelist")) {
             ArrayList<Map<String, Object>> filelist = (ArrayList<Map<String, Object>>) obj.get("filelist");
@@ -309,7 +320,13 @@ public class ValidateService {
                     }
                 }
                 if (item.containsKey("detail")) {
-                    // ...
+                    // detail 肯定是一个数组
+                    Object o = item.get("detail");
+                    if (o instanceof List<?>) {
+                        return;
+                    } else {
+                        throw new Exception("detail should be List<?>.");
+                    }
                 }
             }
         }

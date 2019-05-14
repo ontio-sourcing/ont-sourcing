@@ -26,8 +26,10 @@
 
 * [存证](#存证)
 * [批量存证](#批量存证)
+* [批量存证(定制)](#批量存证(定制))
 
 * [根据hash取证](#根据hash取证)
+* [根据hash删除存证](#根据hash删除存证)
 
 * [获取存证总条数](#获取存证总条数)
 * [获取存证历史记录](#获取存证历史记录)
@@ -561,7 +563,7 @@ method：POST
 ### 存证
 
 ```text
-url：/api/v1/contract/put
+url：/api/v1/contract
 method：POST
 ```
 
@@ -569,10 +571,10 @@ method：POST
 
 ```json
 {
-	"access_token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJhdWQiOiJkaWQ6b250OkFNdmpVV1o2Y25BQVVzQk43dWpBQnRMUzlHbWVoOFNQU2oiLCJpc3MiOiJkaWQ6b250OkFhdlJRcVhlOVByYVY1dFlnQnF2VjRiVXE4TFNzdmpjV1MiLCJleHAiOjE1NTU5OTMzNjAsImlhdCI6MTU1NTkwNjk2MCwianRpIjoiMTYwY2FkNjNmZTdkNGY5MTk3NGFjZjQzYWNlMzkzNmYiLCJjb250ZW50Ijp7InR5cGUiOiJhY2Nlc3NfdG9rZW4iLCJvbnRpZCI6ImRpZDpvbnQ6QWExWFBhcEpIR0dqSFF0TjJIZHliOUFQdjdIZmlZeHRSeiJ9fQ.MDE5MzE3ODk4ODU2MGQ5NGQ3MTBmZTc2Mzg1ZWE0OWRiMmRjZjczZmU2NjAyYjU0NjI2YWE0MmJmZWYwYTFkYTE0ODI5YWVmYTJjNjNlMTA5N2Y2ZjM0YTJlMTJmOGYwNWNmYzRhZWI3NzlkOWEwMWY2NDY1Y2VjYWM1MzNjYjk5Ng",
+	"access_token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJhdWQiOiJkaWQ6b250OkFVRG11NEoyVzF2cUpIRHRMUDhVeEhhdWoyZUtzUUh4dTYiLCJpc3MiOiJkaWQ6b250OkFhdlJRcVhlOVByYVY1dFlnQnF2VjRiVXE4TFNzdmpjV1MiLCJleHAiOjE1NTcyODM2MTAsImlhdCI6MTU1NzE5NzIxMCwianRpIjoiYmQ5NTZhNGI1YzYxNGYxN2I2YTgxNDkyZDI5NDIyYTQiLCJjb250ZW50Ijp7InR5cGUiOiJhY2Nlc3NfdG9rZW4iLCJvbnRpZCI6ImRpZDpvbnQ6QWExWFBhcEpIR0dqSFF0TjJIZHliOUFQdjdIZmlZeHRSeiJ9fQ.MDFiMjFkMjg5OGJmYjZlZGQzMmM5ZjY0ZWIxMDA0OGYxNGNkOGE2MTBhYTZmZGNiZTg4OWQyNzI0MjMwZDVjMjk3Y2Q3ZDhjMzlhOGYzZDJkYjE1YzFhMTcxM2Y3OTU4ZjkzYzRjOGI2NmU2ODM5YmFhNjE4NWRjMTlkZjU3YThkYQ",
 	"user_ontid":"",
 	"filehash":"111175b25e49f2767522d332057c3e6bb1144c842dce47913dc8222927999999",
-	"detail":"some message about the file ...",
+	"detail":["abc","abc","abc"],
 	"type": "TEXT"
 }
 ```
@@ -583,7 +585,7 @@ method：POST
 | user_ontid   | String | 空表示自己存证，否则表示被存证    |
 | filehash   | String | 文件hash    |
 | detail   | String | 文件相关说明    |
-| type   | String | INDEX/TEXT/IMAGE/VIDEO   |
+| type   | String | PDF/TEXT/IMAGE/VIDEO   |
 
 - 响应：
 
@@ -609,7 +611,80 @@ method：POST
 ### 批量存证
 
 ```text
-url：/api/v1/contract/put/batch
+url：/api/v1/contracts
+method：POST
+```
+
+- 请求：
+
+```json
+{
+    "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJhdWQiOiJkaWQ6b250OkFVRG11NEoyVzF2cUpIRHRMUDhVeEhhdWoyZUtzUUh4dTYiLCJpc3MiOiJkaWQ6b250OkFhdlJRcVhlOVByYVY1dFlnQnF2VjRiVXE4TFNzdmpjV1MiLCJleHAiOjE1NTc4OTM4MzYsImlhdCI6MTU1NzgwNzQzNiwianRpIjoiNjM3YzY4ODQxMzc1NGMxMGE1ZDM3NDY0MTcwMWQwMTIiLCJjb250ZW50Ijp7InR5cGUiOiJhY2Nlc3NfdG9rZW4iLCJvbnRpZCI6ImRpZDpvbnQ6QWExWFBhcEpIR0dqSFF0TjJIZHliOUFQdjdIZmlZeHRSeiJ9fQ.MDE1YmFjYTI0MTI3ODI2YmI0OWI5YzY1YjU4YTg1Njk5NmRkNjlmMTc1MTM3MGIwM2NhOTQ0ZTY4YzI2NzRjMWU2M2U1MTQ2ODZkYTE3ZWU4OGE2N2E4ZTE1MDQ4ODQzNDZiOTYxMGI4MjhjMzhmNGFkMGNiYTY4MDBhZDVjNDZhNw",
+    "user_ontid": "",
+    "filelist": [
+        {
+            "filehash": "e81475b25e49f2767522d332057c3e6bb1144c842dce47913dc8222927888888",
+            "type": "IMAGE",
+            "detail": [
+                "abc",
+                "abc",
+                "abc"
+            ]
+        },
+        {
+            "filehash": "e81475b25e49f2767522d332057c3e6bb1144c842dce47913dc8222927999999",
+            "type": "IMAGE",
+            "detail": [
+                "abc",
+                "abc",
+                "abc"
+            ]
+        },
+        {
+            "filehash": "e81475b25e49f2767522d332057c3e6bb1144c842dce47913dc8222927000000",
+            "type": "IMAGE",
+            "detail": [
+                "abc",
+                "abc",
+                "abc"
+            ]
+        }
+    ]
+}
+```
+
+| Field_Name | Type   | Description |
+|:-----------|:-------|:------------|
+| access_token   | String | access_token|
+| user_ontid   | String | 空表示自己存证，否则表示被存证    |
+| filelist   | String | 批量文件(总数不能超过30条)    |
+| type   | String | PDF/TEXT/IMAGE/VIDEO   |
+
+- 响应：
+
+```json
+{
+    "result": true,
+    "error": 0,
+    "action": "putContractBatch",
+    "desc": "SUCCESS",
+    "version": "1.0.0"
+}
+```
+
+| Field_Name | Type   | Description                   |
+|:-----------|:-------|:------------------------------|
+| error      | int    | 错误码                        |
+| action     | String | 动作标志                      |
+| desc       | String | 成功返回SUCCESS，失败返回错误描述 |
+| result     | String | 成功返回true，失败返回""     |
+| version    | String | 版本号                        |
+
+
+### 批量存证(定制)
+
+```text
+url：/api/v1/contracts/custom
 method：POST
 ```
 
@@ -677,6 +752,7 @@ method：POST
 | access_token   | String | access_token|
 | user_ontid   | String | 空表示自己存证，否则表示被存证    |
 | filelist   | String | 批量文件(总数不能超过30条)    |
+| type   | String | INDEX/PDF/TEXT/IMAGE/VIDEO   |
 
 - 响应：
 
@@ -684,7 +760,7 @@ method：POST
 {
     "result": true,
     "error": 0,
-    "action": "putContractBatch",
+    "action": "putContractBatchCustom",
     "desc": "SUCCESS",
     "version": "1.0.0"
 }
@@ -779,6 +855,49 @@ method：POST
 | desc       | String | 成功返回SUCCESS，失败返回错误描述 |
 | result     | String | 成功返回存证记录，失败返回""     |
 | version    | String | 版本号                        |
+
+
+### 根据hash删除存证
+
+```text
+url：/api/v1/contract/hash
+method：POST
+```
+
+- 请求：
+
+```json
+{
+	"access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJhdWQiOiJkaWQ6b250OkFNdmpVV1o2Y25BQVVzQk43dWpBQnRMUzlHbWVoOFNQU2oiLCJpc3MiOiJkaWQ6b250OkFhdlJRcVhlOVByYVY1dFlnQnF2VjRiVXE4TFNzdmpjV1MiLCJleHAiOjE1NTUwNTU3MzksImlhdCI6MTU1NDk2OTMzOSwianRpIjoiZjQ1ZmMyMmVkMjBhNDFhMGE1YzdhMzZhYjIxZTkxNTAiLCJjb250ZW50Ijp7InR5cGUiOiJhY2Nlc3NfdG9rZW4iLCJvbnRpZCI6ImRpZDpvbnQ6QU14clNHSHl4Z25XUzZxYzFRalROWWVFYXczWDNEdnpoZiJ9fQ.MDFiZDVhYWQ2MzRkNzlkOTU3ZjE3YWYyNDc3MDUyZGUxNzJjYjdmYjgxZWViOThmYTg2ODgyM2ZiYjM5ZjIyMjZiYWZlYTlkNGFkNjMwMzM0OWY4N2YyYzBiZDlmNzg5M2IzYjhiYjdkZTg1MjFmYzQ1MDMwOGY2NGRmM2E5ZjkwNg",
+	"hash":"e81475b25e49f2767522d332057c3e6bb1144c842dce47913dc8222927102c67"
+}
+```
+
+| Field_Name | Type   | Description |
+|:-----------|:-------|:------------|
+| access_token   | String | access_token    |
+| hash   | String | 文件hash或者交易hash   |
+
+- 响应：
+
+```json
+{
+    "result": "",
+    "error": 0,
+    "desc": "SUCCESS",
+    "action": "",
+    "version": "1.0.0"
+}
+```
+
+| Field_Name | Type   | Description                   |
+|:-----------|:-------|:------------------------------|
+| error      | int    | 错误码                        |
+| action     | String | 动作标志                      |
+| desc       | String | 成功返回SUCCESS，失败返回错误描述 |
+| result     | String | 成功返回""     |
+| version    | String | 版本号                        |
+
 
 
 ### 获取存证总条数

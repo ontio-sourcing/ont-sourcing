@@ -27,6 +27,8 @@ public class Contract {
 
     private Date updateTime;
 
+    private Integer status;  //
+
     private Integer height;  // 跨表
 
     public String getCompanyOntid() {
@@ -117,4 +119,11 @@ public class Contract {
         this.timestampSign = timestampSign == null ? null : timestampSign.trim();
     }
 
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
 }

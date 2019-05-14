@@ -10,6 +10,7 @@
 		<result column="timestamp" jdbcType="TIMESTAMP" property="timestamp"/>
 		<result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
 		<result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+		<result column="status" jdbcType="INTEGER" property="status"/>
 	</resultMap>
 	<resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="com.ontology.sourcing.dao.contract.Contract">
 		<result column="detail" jdbcType="LONGVARCHAR" property="detail"/>
@@ -17,20 +18,21 @@
 	</resultMap>
 
 	<sql id="Base_Column_List">
-    ontid, company_ontid, txhash, filehash, type, timestamp, create_time, update_time
-  </sql>
+		ontid, company_ontid, txhash, filehash, type, timestamp, create_time, update_time, status
+	</sql>
 	<sql id="Blob_Column_List">
-    detail, timestamp_sign
-  </sql>
+		detail, timestamp_sign
+	</sql>
 
 	<insert id="insert" parameterType="com.ontology.sourcing.dao.contract.Contract">
-    insert into ${tableName} (ontid, company_ontid, txhash, filehash, type,
-      timestamp, create_time, update_time, 
-      detail, timestamp_sign)
-    values (#{record.ontid,jdbcType=VARCHAR}, #{record.companyOntid,jdbcType=VARCHAR}, #{record.txhash,jdbcType=VARCHAR}, #{record.filehash,jdbcType=VARCHAR}, #{record.type,jdbcType=VARCHAR},
-      #{record.timestamp,jdbcType=TIMESTAMP}, #{record.createTime,jdbcType=TIMESTAMP}, #{record.updateTime,jdbcType=TIMESTAMP},
-      #{record.detail,jdbcType=LONGVARCHAR}, #{record.timestampSign,jdbcType=LONGVARCHAR})
-  </insert>
+		insert into ${tableName} (ontid, company_ontid, txhash, filehash, type,
+		                          timestamp, create_time, update_time,
+		                          detail, timestamp_sign)
+		values (#{record.ontid,jdbcType=VARCHAR}, #{record.companyOntid,jdbcType=VARCHAR}, #{record.txhash,jdbcType=VARCHAR}, #{record.filehash,jdbcType=VARCHAR},
+		        #{record.type,jdbcType=VARCHAR},
+		        #{record.timestamp,jdbcType=TIMESTAMP}, #{record.createTime,jdbcType=TIMESTAMP}, #{record.updateTime,jdbcType=TIMESTAMP},
+		        #{record.detail,jdbcType=LONGVARCHAR}, #{record.timestampSign,jdbcType=LONGVARCHAR})
+	</insert>
 
 	<insert id="insertSelective" parameterType="com.ontology.sourcing.dao.contract.Contract">
 		insert into ${tableName}
@@ -119,14 +121,25 @@
 		,
 		<include refid="Blob_Column_List"/>
 		from ${tableName}
-		where (filehash = #{hash,jdbcType=VARCHAR} or txhash = #{hash,jdbcType=VARCHAR}) and (ontid = #{ontid,jdbcType=VARCHAR} or company_ontid = #{ontid,jdbcType=VARCHAR})
+		where (filehash = #{hash,jdbcType=VARCHAR} or txhash = #{hash,jdbcType=VARCHAR}) and (ontid = #{ontid,jdbcType=VARCHAR} or company_ontid = #{ontid,jdbcType=VARCHAR}) and
+		status = 0
 		order by create_time desc
+	</select>
+
+	<select id="deleteByOntidAndHash" parameterType="java.lang.String">
+		UPDATE ${tableName}
+		SET status = 1
+		WHERE (filehash = #{hash,jdbcType=VARCHAR} or txhash = #{hash,jdbcType=VARCHAR})
+		  and (ontid = #{ontid,jdbcType=VARCHAR} or company_ontid = #{ontid,jdbcType=VARCHAR})
 	</select>
 
 	<!---->
 	<select id="count" resultType="int">
-  select count(*) from ${tableName} where ontid = #{ontid,jdbcType=VARCHAR} or company_ontid = #{ontid,jdbcType=VARCHAR}
-  </select>
+		select count(*)
+		from ${tableName}
+		where (ontid = #{ontid,jdbcType=VARCHAR} or company_ontid = #{ontid,jdbcType=VARCHAR})
+		  and status = 0
+	</select>
 
 	<select id="selectByOntidPageNumSize" parameterType="java.lang.String" resultMap="ResultMapWithBLOBs">
 		select
@@ -134,7 +147,8 @@
 		,
 		<include refid="Blob_Column_List"/>
 		from ${tableName}
-		where ontid = #{ontid,jdbcType=VARCHAR} or company_ontid = #{ontid,jdbcType=VARCHAR} order by create_time desc limit #{start}, #{offset}
+		where ( ontid = #{ontid,jdbcType=VARCHAR} or company_ontid = #{ontid,jdbcType=VARCHAR} ) and status = 0
+		order by create_time desc limit #{start}, #{offset}
 	</select>
 
 	<select id="selectByOntidPageNumSizeAndType" parameterType="java.lang.String" resultMap="ResultMapWithBLOBs">
@@ -143,8 +157,8 @@
 		,
 		<include refid="Blob_Column_List"/>
 		from ${tableName}
-		where (ontid = #{ontid,jdbcType=VARCHAR} or company_ontid = #{ontid,jdbcType=VARCHAR}) and type = #{type,jdbcType=VARCHAR} order by create_time desc limit #{start},
-		#{offset}
+		where (ontid = #{ontid,jdbcType=VARCHAR} or company_ontid = #{ontid,jdbcType=VARCHAR}) and type = #{type,jdbcType=VARCHAR} and status = 0
+		order by create_time desc limit #{start},#{offset}
 	</select>
 
 	<!---->
@@ -154,7 +168,7 @@
 		<include refid="Base_Column_List"/>
 		,
 		<include refid="Blob_Column_List"/>
-		from ${tableName} order by create_time desc limit #{start}, #{offset}
+		from ${tableName} where status = 0 order by create_time desc limit #{start}, #{offset}
 	</select>
 
 	<select id="selectByHash" parameterType="java.lang.String" resultMap="ResultMapWithBLOBs">
@@ -163,7 +177,8 @@
 		,
 		<include refid="Blob_Column_List"/>
 		from ${tableName}
-		where filehash = #{hash,jdbcType=VARCHAR} or txhash = #{hash,jdbcType=VARCHAR} order by create_time desc
+		where (filehash = #{hash,jdbcType=VARCHAR} or txhash = #{hash,jdbcType=VARCHAR}) and status = 0
+		order by create_time desc
 	</select>
 
 

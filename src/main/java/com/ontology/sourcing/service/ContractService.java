@@ -268,6 +268,13 @@ public class ContractService {
     }
 
     //
+    public List<Contract> deleteByOntidAndHash(String ontid, String hash) {
+        String tableName = getIndex(ontid).getName();
+        List<Contract> list = contractMapper.deleteByOntidAndHash(tableName, ontid, hash);
+        return addHeight(list);
+    }
+
+    //
     public List<Contract> selectByHash(String hash) {
 
         // TODO 目前只支持从当前表查询

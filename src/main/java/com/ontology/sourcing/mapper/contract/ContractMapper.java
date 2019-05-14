@@ -20,6 +20,9 @@ public interface ContractMapper {
     List<Contract> selectByOntidAndHash(@Param("tableName") String tableName, @Param("ontid") String ontid, @Param("hash") String hash);
 
     //
+    List<Contract> deleteByOntidAndHash(@Param("tableName") String tableName, @Param("ontid") String ontid, @Param("hash") String hash);
+
+    //
     List<Contract> selectByHash(@Param("tableName") String tableName, @Param("hash") String hash);
 
     //
