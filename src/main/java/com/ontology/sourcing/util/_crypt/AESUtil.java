@@ -1,7 +1,9 @@
 package com.ontology.sourcing.util._crypt;
 
 
+import ch.qos.logback.classic.Logger;
 import com.ontology.sourcing.util._codec.Base64ConvertUtil;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +21,9 @@ import java.util.UUID;
 
 @Component
 public class AESUtil {
+
+    //
+    private Logger logger = (Logger) LoggerFactory.getLogger(AESUtil.class);
 
     private SecurePropertiesService sc;
 
@@ -66,7 +71,7 @@ public class AESUtil {
 
             return Base64ConvertUtil.encode(encryptedBytes);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
         return null;
     }
@@ -84,7 +89,7 @@ public class AESUtil {
             byte[] result = cipher.doFinal(encryptedBytes);
             return new String(result, StandardCharsets.UTF_8);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
         return null;
     }

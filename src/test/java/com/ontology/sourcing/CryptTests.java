@@ -65,7 +65,7 @@ public class CryptTests {
             byte[] result = cipher.doFinal(content);
             return result;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             logger.error("AES_CBC_Encrypt error...", e);
         }
         return null;
@@ -89,7 +89,7 @@ public class CryptTests {
             byte[] result = cipher.doFinal(content);
             return result;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             logger.error("AES_CBC_Decrypt error...", e);
         }
         return null;

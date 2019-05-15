@@ -89,7 +89,7 @@ public class ChainService {
         try {
             wm.setDefaultConnect(wm.getRestful());
         } catch (SDKException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
 
         wm.openWalletFile(walletPath);

@@ -47,7 +47,7 @@ public class SecurePropertiesService {
         try {
             return Base64ConvertUtil.decode(SecurePropertiesService.RSA_PUBLIC_KEY);
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             logger.error(e.getMessage());
             return null;
         }
@@ -60,7 +60,7 @@ public class SecurePropertiesService {
         try {
             return Base64ConvertUtil.decode(SecurePropertiesService.RSA_PRIVATE_KEY);
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             logger.error(e.getMessage());
             return null;
         }
@@ -77,7 +77,7 @@ public class SecurePropertiesService {
     //     try {
     //         return Base64ConvertUtil.decode(SecureConfig.WALLET_GO_PUBLIC_KEY);
     //     } catch (UnsupportedEncodingException e) {
-    //         e.printStackTrace();
+    //         logger.error(e.getMessage());
     //         logger.error(e.getMessage());
     //         return null;
     //     }
@@ -94,7 +94,7 @@ public class SecurePropertiesService {
     //     try {
     //         return Base64ConvertUtil.decode(SecureConfig.WALLET_JAVA_PRIVATE_KEY);
     //     } catch (UnsupportedEncodingException e) {
-    //         e.printStackTrace();
+    //         logger.error(e.getMessage());
     //         logger.error(e.getMessage());
     //         return null;
     //     }
@@ -106,7 +106,7 @@ public class SecurePropertiesService {
         try {
             return Base64ConvertUtil.decode(SecurePropertiesService.AES_IV);
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             logger.error(e.getMessage());
             return null;
         }
@@ -123,7 +123,7 @@ public class SecurePropertiesService {
     //     try {
     //         return Base64ConvertUtil.decode(SecureConfig.AES_KEY);
     //     } catch (UnsupportedEncodingException e) {
-    //         e.printStackTrace();
+    //         logger.error(e.getMessage());
     //         logger.error(e.getMessage());
     //         return null;
     //     }
@@ -141,7 +141,7 @@ public class SecurePropertiesService {
     //     try {
     //         return Base64ConvertUtil.decode(SecureConfig.WALLET_ONTID);
     //     } catch (UnsupportedEncodingException e) {
-    //         e.printStackTrace();
+    //         logger.error(e.getMessage());
     //         logger.error(e.getMessage());
     //         return null;
     //     }

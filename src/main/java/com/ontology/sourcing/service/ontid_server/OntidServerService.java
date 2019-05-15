@@ -1,5 +1,6 @@
 package com.ontology.sourcing.service.ontid_server;
 
+import ch.qos.logback.classic.Logger;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.ontology.sourcing.util.HttpUtil;
@@ -11,6 +12,7 @@ import okhttp3.*;
 import okio.Buffer;
 import org.json.JSONException;
 import org.junit.Assert;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -20,6 +22,9 @@ import java.util.UUID;
 
 @Service
 public class OntidServerService {
+
+    //
+    private Logger logger = (Logger) LoggerFactory.getLogger(OntidServerService.class);
 
     //
     private final AESUtil utilAES;
@@ -97,7 +102,7 @@ public class OntidServerService {
             //			json = ow.writeValueAsString(jsonObject);
             enKey = utilRSA.encryptByPublicKey(key);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             Assert.fail();
         }
         String enJson = utilAES.encryptData(key, JSON.toJSONString(json));

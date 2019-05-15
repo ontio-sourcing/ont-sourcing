@@ -1,5 +1,6 @@
 package com.ontology.sourcing;
 
+import ch.qos.logback.classic.Logger;
 import com.github.ontio.common.Helper;
 import com.github.ontio.core.ontid.Attribute;
 import com.github.ontio.crypto.SignatureScheme;
@@ -13,6 +14,7 @@ import com.ontology.sourcing.service.util.ChainService;
 import com.ontology.sourcing.util.GlobalVariable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -24,6 +26,8 @@ import java.util.Map;
 @SpringBootTest
 public class IdentityTests {
 
+    //
+    private Logger logger = (Logger) LoggerFactory.getLogger(IdentityTests.class);
     private Gson gson = new Gson();
 
     //
@@ -58,7 +62,7 @@ public class IdentityTests {
             this.controlIdentity1 = gson.fromJson(this.controlIdentity1Str, OntidPojo.class);
             //            System.out.println(this.controlIdentity1);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 
@@ -119,7 +123,7 @@ public class IdentityTests {
 }
  */
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 
@@ -162,7 +166,7 @@ public class IdentityTests {
         try {
             identity1 = chainService.ontSdk.getWalletMgr().createIdentity(i_password);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
         map.put("identity", String.valueOf(identity1));
 
@@ -172,7 +176,7 @@ public class IdentityTests {
                                             .sendRegister(identity1, i_password, payerAccount, chainService.ontSdk.DEFAULT_GAS_LIMIT, GlobalVariable.DEFAULT_GAS_PRICE);
             map.put("txhash", rsp);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
 
         //
@@ -242,7 +246,7 @@ public class IdentityTests {
  */
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 
@@ -282,7 +286,7 @@ public class IdentityTests {
             System.out.println(rsp);
             // 33d7d9df0e34dda70f08681b3655033236c8750dfeefd83bc99e16eeb579d691
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
         //
         readDDO(entityIdentity.getOntid());
@@ -308,7 +312,7 @@ public class IdentityTests {
         try {
             Thread.sleep(6000);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
         //
         String ddoStr = "";
@@ -319,7 +323,7 @@ public class IdentityTests {
             DDOPojo ddoPojo = gson.fromJson(ddoStr, DDOPojo.class);
             System.out.println(ddoPojo);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
         return ddoStr;
     }
@@ -399,7 +403,7 @@ public class IdentityTests {
             controlIdentity1Info = chainService.ontSdk.getWalletMgr()
                                                       .getIdentityInfo(controlIdentity1.getOntid(), controlIdentity1Password, controlIdentity1.getControls().get(0).getSalt());
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
         try {
             String rsp = chainService.ontSdk.nativevm().ontId().sendAddPubKey(entityIdentity.getOntid(),
@@ -413,7 +417,7 @@ public class IdentityTests {
             System.out.println(rsp);
             // 1e7356035a7bbc080cc5440542236b363036438b3af66cdd3195149c35df7032
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
 
         //
@@ -539,7 +543,7 @@ public class IdentityTests {
  */
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 

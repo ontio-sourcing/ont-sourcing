@@ -1,10 +1,15 @@
 package com.ontology.sourcing.util;
 
+import ch.qos.logback.classic.Logger;
 import com.github.ontio.account.Account;
 import com.github.ontio.common.Helper;
 import com.github.ontio.crypto.SignatureScheme;
+import org.slf4j.LoggerFactory;
 
 public class GlobalVariable {
+
+    //
+    private static Logger logger = (Logger) LoggerFactory.getLogger(GlobalVariable.class);
 
     //
     public static String API_VERSION = "1.0.0";
@@ -31,7 +36,7 @@ public class GlobalVariable {
         //         // 方法二，直接从私钥
         //         instanceOfAccount = new Account(Helper.hexToBytes(payerPrivateKey), SignatureScheme.SHA256WITHECDSA);
         //     } catch (Exception e) {
-        //         e.printStackTrace();
+        //         logger.error(e.getMessage());
         //     }
         // }
         // return instanceOfAccount;
@@ -39,7 +44,7 @@ public class GlobalVariable {
         try {
             return new Account(Helper.hexToBytes(payerPrivateKey), SignatureScheme.SHA256WITHECDSA);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
         return null;
     }

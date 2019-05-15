@@ -1,6 +1,8 @@
 package com.ontology.sourcing.util._crypt;
 
+import ch.qos.logback.classic.Logger;
 import com.ontology.sourcing.util._codec.Base64ConvertUtil;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Base64Utils;
@@ -35,6 +37,10 @@ import javax.crypto.Cipher;
 @Component
 public class RSAUtil {
 
+    //
+    private Logger logger = (Logger) LoggerFactory.getLogger(RSAUtil.class);
+
+    //
     private String private_key;
     private String public_key;
 
@@ -129,7 +135,7 @@ public class RSAUtil {
             RSAPublicKeySpec keySpec = new RSAPublicKeySpec(b1, b2);
             return (RSAPublicKey) keyFactory.generatePublic(keySpec);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             return null;
         }
     }
@@ -151,7 +157,7 @@ public class RSAUtil {
             RSAPrivateKeySpec keySpec = new RSAPrivateKeySpec(b1, b2);
             return (RSAPrivateKey) keyFactory.generatePrivate(keySpec);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             return null;
         }
     }
@@ -260,7 +266,7 @@ public class RSAUtil {
             map.put("privateKey", privateKey);
 
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
 
         return map;

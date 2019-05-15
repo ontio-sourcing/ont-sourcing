@@ -78,7 +78,7 @@ public class OntidController {
             validateService.validateParamsKeys(obj, required);
             validateService.validateParamsValues(obj);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -112,7 +112,7 @@ public class OntidController {
             rst.setErrorAndDesc(ErrorCode.SUCCESSS);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -135,7 +135,7 @@ public class OntidController {
             validateService.validateParamsKeys(obj, required);
             validateService.validateParamsValues(obj);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -149,7 +149,7 @@ public class OntidController {
         try {
             validateService.isExistedOntid(ontid);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -167,7 +167,7 @@ public class OntidController {
             rst.setErrorAndDesc(ErrorCode.SUCCESSS);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -190,7 +190,7 @@ public class OntidController {
             validateService.validateParamsKeys(obj, required);
             validateService.validateParamsValues(obj);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -204,7 +204,7 @@ public class OntidController {
         try {
             validateService.isExistedOntid(ontid);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -221,7 +221,7 @@ public class OntidController {
             rst.setErrorAndDesc(ErrorCode.SUCCESSS);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -244,7 +244,7 @@ public class OntidController {
             validateService.validateParamsKeys(obj, required);
             validateService.validateParamsValues(obj);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -259,7 +259,7 @@ public class OntidController {
             validateService.isExistedOntid(ontid);
             validateService.isExistedOntid(controlOntid);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -282,16 +282,16 @@ public class OntidController {
             rst.setErrorAndDesc(ErrorCode.SUCCESSS);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         } catch (ExistedException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setError(ErrorCode.ONTID_PubKey_EXIST.getId());
             rst.setDesc(ErrorCode.ONTID_PubKey_EXIST.getMessage());
             return new ResponseEntity<>(rst, HttpStatus.OK);
         } catch (RestfulException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -314,7 +314,7 @@ public class OntidController {
             validateService.validateParamsKeys(obj, required);
             validateService.validateParamsValues(obj);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -330,7 +330,7 @@ public class OntidController {
             validateService.isExistedOntid(ontid);
             validateService.isExistedOntid(controlOntid);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -347,7 +347,7 @@ public class OntidController {
             rst.setErrorAndDesc(ErrorCode.SUCCESSS);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -370,7 +370,7 @@ public class OntidController {
             validateService.validateParamsKeys(obj, required);
             validateService.validateParamsValues(obj);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -386,7 +386,7 @@ public class OntidController {
             validateService.isExistedOntid(ontid);
             validateService.isExistedOntid(controlOntid);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -403,7 +403,7 @@ public class OntidController {
             rst.setErrorAndDesc(ErrorCode.SUCCESSS);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -424,7 +424,7 @@ public class OntidController {
             validateService.validateParamsKeys(obj, required);
             validateService.validateParamsValues(obj);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -436,7 +436,7 @@ public class OntidController {
         try {
             validateService.isExistedOntid(ontid);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -451,7 +451,7 @@ public class OntidController {
             rst.setErrorAndDesc(ErrorCode.SUCCESSS);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -472,7 +472,7 @@ public class OntidController {
             validateService.validateParamsKeys(obj, required);
             validateService.validateParamsValues(obj);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -484,7 +484,7 @@ public class OntidController {
         try {
             validateService.isExistedOntid(ontid);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -518,7 +518,7 @@ public class OntidController {
             validateService.validateParamsKeys(obj, required);
             validateService.validateParamsValues(obj);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -532,7 +532,7 @@ public class OntidController {
         try {
             validateService.isExistedOntid(ontid);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }

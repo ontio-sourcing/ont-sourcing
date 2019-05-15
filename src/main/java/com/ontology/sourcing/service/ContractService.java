@@ -1,5 +1,6 @@
 package com.ontology.sourcing.service;
 
+import ch.qos.logback.classic.Logger;
 import com.alibaba.fastjson.JSON;
 import com.github.ontio.account.Account;
 import com.github.ontio.common.Address;
@@ -16,6 +17,7 @@ import com.ontology.sourcing.service.util.ChainService;
 import com.ontology.sourcing.service.util.PropertiesService;
 import com.ontology.sourcing.util.GlobalVariable;
 import com.ontology.sourcing.util._hash.Sha256Util;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -25,6 +27,9 @@ import java.util.*;
 
 @Service
 public class ContractService {
+
+    //
+    private Logger logger = (Logger) LoggerFactory.getLogger(ContractService.class);
 
     //
     private PropertiesService propertiesService;
@@ -179,7 +184,7 @@ public class ContractService {
                 try {
                     result = chainService.ontSdk.getConnect().sendRawTransactionPreExec(rawdata);
                 } catch (ConnectorException | IOException e) {
-                    e.printStackTrace();
+                    logger.error(e.getMessage());
                     //
                     chainService.switchOntSdk();
                     //
@@ -199,7 +204,7 @@ public class ContractService {
                 try {
                     result = chainService.ontSdk.getConnect().sendRawTransaction(rawdata);
                 } catch (ConnectorException | IOException e) {
-                    e.printStackTrace();
+                    logger.error(e.getMessage());
                     //
                     chainService.switchOntSdk();
                     //

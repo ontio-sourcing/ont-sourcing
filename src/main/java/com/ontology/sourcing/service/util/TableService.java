@@ -67,7 +67,7 @@ public class TableService {
         try {
             Thread.sleep(500L);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
         //
         new Thread(this::detectContractTable).start();
@@ -145,7 +145,7 @@ public class TableService {
                 try {
                     Thread.sleep(t);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    logger.error(e.getMessage());
                 }
                 logger.info("{} 停止休眠...", Thread.currentThread().getName());
             }
@@ -225,7 +225,7 @@ public class TableService {
                 try {
                     Thread.sleep(t);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    logger.error(e.getMessage());
                 }
                 logger.info("{} 停止休眠...", Thread.currentThread().getName());
             }

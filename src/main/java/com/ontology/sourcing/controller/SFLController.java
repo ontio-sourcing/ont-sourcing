@@ -65,7 +65,7 @@ public class SFLController {
             validateService.validateParamsKeys(obj, required);
             validateService.validateParamsValues(obj);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -126,11 +126,11 @@ public class SFLController {
             rst.setErrorAndDesc(ErrorCode.SUCCESSS);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         } catch (ONTSourcingException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -153,7 +153,7 @@ public class SFLController {
             validateService.validateParamsKeys(obj, required);
             validateService.validateParamsValues(obj);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }

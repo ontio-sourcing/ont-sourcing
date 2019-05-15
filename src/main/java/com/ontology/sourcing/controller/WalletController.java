@@ -77,7 +77,7 @@ public class WalletController {
                 rst.setDesc(ErrorCode.SUCCESSS.getMessage());
                 rst.setResult(addr);
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error(e.getMessage());
                 ExceptionMsg msg = gson.fromJson(e.getMessage(), ExceptionMsg.class);
                 rst.setError(msg.getError());
                 rst.setDesc(msg.getDesc());

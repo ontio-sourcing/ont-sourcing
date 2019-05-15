@@ -87,7 +87,7 @@ public class ContractController {
             validateService.validateParamsKeys(obj, required);
             validateService.validateParamsValues(obj);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -102,7 +102,7 @@ public class ContractController {
     public ResponseEntity<Result> putContract(@RequestBody LinkedHashMap<String, Object> obj) {
 
         //
-        Result rst = new Result("putContract1");
+        Result rst = new Result("putContract");
 
         //
         Set<String> required = new HashSet<>();
@@ -117,7 +117,7 @@ public class ContractController {
             validateService.validateParamsKeys(obj, required);
             validateService.validateParamsValues(obj);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -137,7 +137,7 @@ public class ContractController {
         try {
             company_ontid = oauthService.getContentUser(access_token);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -163,7 +163,7 @@ public class ContractController {
             rst.setErrorAndDesc(ErrorCode.SUCCESSS);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -202,7 +202,7 @@ public class ContractController {
             //
             logger.debug("finish processing filehash {}.", filehash);
         } catch (Exception e) {
-            // e.printStackTrace();
+            // logger.error(e.getMessage());
             logger.error(e.getMessage());
         }
 
@@ -265,7 +265,7 @@ public class ContractController {
                 // 链同步
                 syncService.confirmTx(txhash);
             } catch (Exception e) {
-                // e.printStackTrace();
+                // logger.error(e.getMessage());
                 logger.error(e.getMessage());
                 // TODO
                 return;
@@ -304,7 +304,7 @@ public class ContractController {
             validateService.validateParamsKeys(obj, required);
             validateService.validateParamsValues(obj);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -318,7 +318,7 @@ public class ContractController {
         try {
             company_ontid = oauthService.getContentUser(access_token);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -360,7 +360,7 @@ public class ContractController {
             rst.setErrorAndDesc(ErrorCode.SUCCESSS);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -383,7 +383,7 @@ public class ContractController {
             validateService.validateParamsKeys(obj, required);
             validateService.validateParamsValues(obj);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -397,7 +397,7 @@ public class ContractController {
         try {
             company_ontid = oauthService.getContentUser(access_token);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -439,11 +439,13 @@ public class ContractController {
             rst.setErrorAndDesc(ErrorCode.SUCCESSS);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
     }
+
+    /*
 
     @PostMapping("/contract1")
     public ResponseEntity<Result> putContract1(@RequestBody LinkedHashMap<String, Object> obj) {
@@ -464,7 +466,7 @@ public class ContractController {
             validateService.validateParamsKeys(obj, required);
             validateService.validateParamsValues(obj);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -484,7 +486,7 @@ public class ContractController {
         try {
             company_ontid = oauthService.getContentUser(access_token);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -524,7 +526,7 @@ public class ContractController {
             rst.setErrorAndDesc(ErrorCode.SUCCESSS);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -547,7 +549,7 @@ public class ContractController {
             validateService.validateParamsKeys(obj, required);
             validateService.validateParamsValues(obj);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -561,7 +563,7 @@ public class ContractController {
         try {
             company_ontid = oauthService.getContentUser(access_token);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -620,7 +622,7 @@ public class ContractController {
             rst.setErrorAndDesc(ErrorCode.SUCCESSS);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -644,7 +646,7 @@ public class ContractController {
             validateService.validateParamsKeys(obj, required);
             validateService.validateParamsValues(obj);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -658,7 +660,7 @@ public class ContractController {
         try {
             company_ontid = oauthService.getContentUser(access_token);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -717,11 +719,13 @@ public class ContractController {
             rst.setErrorAndDesc(ErrorCode.SUCCESSS);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
     }
+
+    */
 
     @PostMapping("/contract/hash")
     public ResponseEntity<Result> selectByOntidAndHash(@RequestBody LinkedHashMap<String, Object> obj) {
@@ -739,7 +743,7 @@ public class ContractController {
             validateService.validateParamsKeys(obj, required);
             validateService.validateParamsValues(obj);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -753,7 +757,7 @@ public class ContractController {
         try {
             ontid = oauthService.getContentUser(accessToken);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -784,7 +788,7 @@ public class ContractController {
             validateService.validateParamsKeys(obj, required);
             validateService.validateParamsValues(obj);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -798,7 +802,7 @@ public class ContractController {
         try {
             ontid = oauthService.getContentUser(accessToken);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -807,7 +811,7 @@ public class ContractController {
         try {
             contractService.deleteByOntidAndHash(ontid, hash);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -839,7 +843,7 @@ public class ContractController {
             validateService.validateParamsKeys(obj, required);
             validateService.validateParamsValues(obj);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -859,7 +863,7 @@ public class ContractController {
         try {
             ontid = oauthService.getContentUser(accessToken);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -886,7 +890,7 @@ public class ContractController {
             validateService.validateParamsKeys(obj, required);
             validateService.validateParamsValues(obj);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -899,7 +903,7 @@ public class ContractController {
         try {
             ontid = oauthService.getContentUser(accessToken);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -927,7 +931,7 @@ public class ContractController {
             validateService.validateParamsKeys(obj, required);
             validateService.validateParamsValues(obj);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -962,7 +966,7 @@ public class ContractController {
             validateService.validateParamsKeys(obj, required);
             validateService.validateParamsValues(obj);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -1000,7 +1004,7 @@ public class ContractController {
             validateService.validateParamsKeys(obj, required);
             validateService.validateParamsValues(obj);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -1049,7 +1053,7 @@ public class ContractController {
             validateService.validateParamsKeys(obj, required);
             validateService.validateParamsValues(obj);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -1106,7 +1110,7 @@ public class ContractController {
             validateService.validateParamsKeys(obj, required);
             validateService.validateParamsValues(obj);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -1139,7 +1143,7 @@ public class ContractController {
             validateService.validateParamsKeys(obj, required);
             validateService.validateParamsValues(obj);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
@@ -1156,7 +1160,7 @@ public class ContractController {
             rst.setErrorAndDesc(ErrorCode.SUCCESSS);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }

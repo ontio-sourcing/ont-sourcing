@@ -174,7 +174,7 @@ public class TspService {
         try {
             signerInformationVerifier = builder.build(remote_cert_holder);
         } catch (OperatorCreationException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
         //Signature processing with JCA and other provider
         //X509CertificateHolder holderJca = new JcaX509CertificateHolder(cert);
@@ -192,10 +192,10 @@ public class TspService {
             // Note: this is a much weaker proof of correctness than calling validate().
         } catch (TSPValidationException e) {
             // if the certificate or signature fail to be valid.
-            e.printStackTrace();
+            logger.error(e.getMessage());
         } catch (TSPException e) {
             // if an exception occurs in processing the token.
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
 
         // System.out.println("true ....");

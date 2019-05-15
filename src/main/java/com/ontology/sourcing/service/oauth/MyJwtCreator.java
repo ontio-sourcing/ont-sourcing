@@ -1,5 +1,6 @@
 package com.ontology.sourcing.service.oauth;
 
+import ch.qos.logback.classic.Logger;
 import com.auth0.jwt.impl.ClaimsHolder;
 import com.auth0.jwt.impl.PayloadSerializer;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -12,12 +13,18 @@ import com.github.ontio.core.DataSignature;
 import com.github.ontio.crypto.SignatureScheme;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
+import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Slf4j
 public class MyJwtCreator {
+
+    //
+    private Logger logger = (Logger) LoggerFactory.getLogger(MyJwtCreator.class);
+
+    //
     private final String headerJson;
     private final String payloadJson;
 
@@ -42,43 +49,43 @@ public class MyJwtCreator {
         return new MyJwtCreator.Builder();
     }
 
-//    private String sign() throws Exception {
-//        String header = Base64.encodeBase64URLSafeString(this.headerJson.getBytes(StandardCharsets.UTF_8));
-//        String payload = Base64.encodeBase64URLSafeString(this.payloadJson.getBytes(StandardCharsets.UTF_8));
-//        String content = String.format("%s.%s", header, payload);
-////        byte[] signatureBytes = this.algorithm.sign(content.getBytes(StandardCharsets.UTF_8));
-//        byte[] signatureBytes = new byte[0];
-//        try {
-//            Account account = new Account(Account.getPrivateKeyFromWIF(Constant.ONTID_PROVIDE_WIF), SignatureScheme.SHA256WITHECDSA);
-//            DataSignature sign = new DataSignature(SignatureScheme.SHA256WITHECDSA, account, content.getBytes());
-//            signatureBytes = Helper.toHexString(sign.signature()).getBytes();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            log.error("sign token error : {}" + e.getMessage());
-//            throw new Exception("sign token error : " + e.getMessage());
-//        }
-//        String signature = Base64.encodeBase64URLSafeString(signatureBytes);
-//        log.info("sign,content:{},signature:{}", content, signature);
-//        return String.format("%s.%s", content, signature);
-//    }
+    //    private String sign() throws Exception {
+    //        String header = Base64.encodeBase64URLSafeString(this.headerJson.getBytes(StandardCharsets.UTF_8));
+    //        String payload = Base64.encodeBase64URLSafeString(this.payloadJson.getBytes(StandardCharsets.UTF_8));
+    //        String content = String.format("%s.%s", header, payload);
+    ////        byte[] signatureBytes = this.algorithm.sign(content.getBytes(StandardCharsets.UTF_8));
+    //        byte[] signatureBytes = new byte[0];
+    //        try {
+    //            Account account = new Account(Account.getPrivateKeyFromWIF(Constant.ONTID_PROVIDE_WIF), SignatureScheme.SHA256WITHECDSA);
+    //            DataSignature sign = new DataSignature(SignatureScheme.SHA256WITHECDSA, account, content.getBytes());
+    //            signatureBytes = Helper.toHexString(sign.signature()).getBytes();
+    //        } catch (Exception e) {
+    //            logger.error(e.getMessage());
+    //            log.error("sign token error : {}" + e.getMessage());
+    //            throw new Exception("sign token error : " + e.getMessage());
+    //        }
+    //        String signature = Base64.encodeBase64URLSafeString(signatureBytes);
+    //        log.info("sign,content:{},signature:{}", content, signature);
+    //        return String.format("%s.%s", content, signature);
+    //    }
     public String sign(Account account) throws Exception {
         String header = Base64.encodeBase64URLSafeString(this.headerJson.getBytes(StandardCharsets.UTF_8));
         String payload = Base64.encodeBase64URLSafeString(this.payloadJson.getBytes(StandardCharsets.UTF_8));
         String content = String.format("%s.%s", header, payload);
-//        byte[] signatureBytes = this.algorithm.sign(content.getBytes(StandardCharsets.UTF_8));
+        //        byte[] signatureBytes = this.algorithm.sign(content.getBytes(StandardCharsets.UTF_8));
         byte[] signatureBytes = new byte[0];
         try {
             DataSignature sign = new DataSignature(SignatureScheme.SHA256WITHECDSA, account, content.getBytes());
             signatureBytes = Helper.toHexString(sign.signature()).getBytes();
         } catch (Exception e) {
-            e.printStackTrace();
-            log.error("sign token error : {}" + e.getMessage());
+            logger.error("sign token error : {}" + e.getMessage());
             throw new Exception("sign token error : " + e.getMessage());
         }
         String signature = Base64.encodeBase64URLSafeString(signatureBytes);
-        log.info("sign,content:{},signature:{}", content, signature);
+        logger.info("sign,content:{},signature:{}", content, signature);
         return String.format("%s.%s", content, signature);
     }
+
     public static class Builder {
         private final Map<String, Object> payloadClaims = new HashMap();
         private Map<String, Object> headerClaims = new HashMap();
@@ -191,17 +198,18 @@ public class MyJwtCreator {
             return this;
         }
 
-//        public String sign() throws Exception {
-//            this.headerClaims.put("alg", "ES256");
-//            this.headerClaims.put("typ", "JWT");
-//
-//            return (new MyJwtCreator(this.headerClaims, this.payloadClaims)).sign();
-//        }
+        //        public String sign() throws Exception {
+        //            this.headerClaims.put("alg", "ES256");
+        //            this.headerClaims.put("typ", "JWT");
+        //
+        //            return (new MyJwtCreator(this.headerClaims, this.payloadClaims)).sign();
+        //        }
         public String sign(Account account) throws Exception {
             this.headerClaims.put("alg", "ES256");
             this.headerClaims.put("typ", "JWT");
             return (new MyJwtCreator(this.headerClaims, this.payloadClaims)).sign(account);
         }
+
         private void assertNonNull(String name) {
             if (name == null) {
                 throw new IllegalArgumentException("The Custom Claim's name can't be null.");

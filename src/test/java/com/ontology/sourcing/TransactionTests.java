@@ -1,11 +1,13 @@
 package com.ontology.sourcing;
 
+import ch.qos.logback.classic.Logger;
 import com.github.ontio.core.transaction.Transaction;
 import com.github.ontio.network.exception.ConnectorException;
 import com.ontology.sourcing.service.util.ChainService;
 import com.ontology.sourcing.util.GlobalVariable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -15,6 +17,9 @@ import java.io.IOException;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class TransactionTests {
+
+    //
+    private Logger logger = (Logger) LoggerFactory.getLogger(TransactionTests.class);
 
     @Autowired
     ChainService chainService;
@@ -28,7 +33,7 @@ public class TransactionTests {
         try {
             tx = chainService.ontSdk.getConnect().getTransaction("ded11ea2558ed7ed075e99f2e58c053708cb71f6beb8124e1956b6e8955dcc0a");
         } catch (ConnectorException | IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
         System.out.println(tx.toHexString());
         System.out.println(chainService.ontSdk.verifyTransaction(tx));
@@ -42,7 +47,7 @@ public class TransactionTests {
             int height = chainService.ontSdk.getConnect().getBlockHeightByTxHash("ded11ea2558ed7ed075e99f2e58c053708cb71f6beb8124e1956b6e895000000");
             System.out.println(height);
         } catch (ConnectorException | IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 
@@ -83,7 +88,7 @@ public class TransactionTests {
  */
 
         } catch (ConnectorException | IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 
@@ -94,7 +99,7 @@ public class TransactionTests {
             Object o = chainService.ontSdk.getConnect().getSmartCodeEvent("bb4d3c87344f7e289c9fbbf7bc114a82037573731dd46fb9db3b49cd948ee6a1");  //
             System.out.println(o);
         } catch (ConnectorException | IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 }

@@ -86,14 +86,14 @@ public class SyncService {
                         break;
                     } catch (ConnectorException | IOException e) {
                         //
-                        e.printStackTrace();
+                        logger.error(e.getMessage());
                         //
                         chainService.switchOntSdk();
                         //
                         continue;
                     } catch (Exception e) {
                         //
-                        e.printStackTrace();
+                        logger.error(e.getMessage());
                         //
                         break;
                     }
@@ -133,7 +133,7 @@ public class SyncService {
                         break;
                     } catch (ConnectorException | IOException e) {
                         //
-                        // e.printStackTrace();
+                        // logger.error(e.getMessage());
                         logger.error(e.getMessage());
 
                         //
@@ -142,7 +142,7 @@ public class SyncService {
                         continue;
                     } catch (Exception e) {
                         //
-                        e.printStackTrace();
+                        logger.error(e.getMessage());
                         //
                         break;
                     }
@@ -190,7 +190,7 @@ public class SyncService {
                         retry++;
                     }
                 } catch (InterruptedException | IOException e) {
-                    e.printStackTrace();
+                    logger.error(e.getMessage());
                 }
             }
         });

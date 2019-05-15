@@ -1,5 +1,6 @@
 package com.ontology.sourcing.service.oauth;
 
+import ch.qos.logback.classic.Logger;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.interfaces.DecodedJWT;
@@ -8,6 +9,7 @@ import com.github.ontio.common.Helper;
 import com.ontology.sourcing.service.util.PropertiesService;
 import com.ontology.sourcing.util._codec.Base64ConvertUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +18,9 @@ import java.util.Date;
 @Slf4j
 @Service
 public class OAuthService {
+
+    //
+    private Logger logger = (Logger) LoggerFactory.getLogger(OAuthService.class);
 
     //
     private PropertiesService propertiesService;
@@ -87,7 +92,7 @@ public class OAuthService {
             // 只能输出String类型，如果是其他类型返回null
             return jwt.getClaim(claim).asString();
         } catch (JWTDecodeException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             throw new Exception("解密Token中的公共信息出现JWTDecodeException异常");
         }
     }
@@ -104,7 +109,7 @@ public class OAuthService {
             // 只能输出String类型，如果是其他类型返回null
             return (String) jwt.getClaim("content").asMap().get("ontid");
         } catch (JWTDecodeException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             throw new Exception("解密Token中的公共信息出现JWTDecodeException异常");
         }
     }
@@ -115,16 +120,16 @@ public class OAuthService {
      * @param token
      * @return java.lang.String
      */
-    public static String getContentType(String token) throws Exception {
-        try {
-            DecodedJWT jwt = JWT.decode(token);
-            // 只能输出String类型，如果是其他类型返回null
-            return (String) jwt.getClaim("content").asMap().get("type");
-        } catch (JWTDecodeException e) {
-            e.printStackTrace();
-            throw new Exception("解密Token中的公共信息出现JWTDecodeException异常");
-        }
-    }
+    // public static String getContentType(String token) throws Exception {
+    //     try {
+    //         DecodedJWT jwt = JWT.decode(token);
+    //         // 只能输出String类型，如果是其他类型返回null
+    //         return (String) jwt.getClaim("content").asMap().get("type");
+    //     } catch (JWTDecodeException e) {
+    //         logger.error(e.getMessage());
+    //         throw new Exception("解密Token中的公共信息出现JWTDecodeException异常");
+    //     }
+    // }
 
     /**
      * 获得Aud
@@ -137,7 +142,7 @@ public class OAuthService {
             // 只能输出String类型，如果是其他类型返回null
             return jwt.getClaim("aud").asString();
         } catch (JWTDecodeException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
             throw new Exception("解密Token中的公共信息出现JWTDecodeException异常");
         }
     }

@@ -1,8 +1,10 @@
 package com.ontology.sourcing;
 
+import ch.qos.logback.classic.Logger;
 import com.ontology.sourcing.service.oauth.OAuthService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -10,6 +12,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class OAuthTests {
+
+    //
+    private Logger logger = (Logger) LoggerFactory.getLogger(OAuthTests.class);
 
     @Autowired private OAuthService oauthService;
 
@@ -22,7 +27,7 @@ public class OAuthTests {
         try {
             oauthService.verify(accessToken);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
 
     }

@@ -17,7 +17,7 @@ import java.util.Base64;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@TestPropertySource(locations="file:/Volumes/Data/_work/201802_Ontology/ONTSouring/ont-sourcing/config/application-dev.properties")
+@TestPropertySource(locations="file:/Volumes/Data/_work/201802_Ontology/ONTSouring/ont-sourcing/config/application-local.properties")
 public class WalletTests01 {
 
     //
