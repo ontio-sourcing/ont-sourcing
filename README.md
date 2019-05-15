@@ -26,7 +26,9 @@
 
 * [存证](#存证)
 * [批量存证](#批量存证)
-* [批量存证(定制)](#批量存证(定制))
+
+* [批量存证(点晴定制)](#批量存证(点晴定制))
+
 
 * [根据hash取证](#根据hash取证)
 * [根据hash删除存证](#根据hash删除存证)
@@ -574,7 +576,19 @@ method：POST
 	"access_token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJhdWQiOiJkaWQ6b250OkFVRG11NEoyVzF2cUpIRHRMUDhVeEhhdWoyZUtzUUh4dTYiLCJpc3MiOiJkaWQ6b250OkFhdlJRcVhlOVByYVY1dFlnQnF2VjRiVXE4TFNzdmpjV1MiLCJleHAiOjE1NTcyODM2MTAsImlhdCI6MTU1NzE5NzIxMCwianRpIjoiYmQ5NTZhNGI1YzYxNGYxN2I2YTgxNDkyZDI5NDIyYTQiLCJjb250ZW50Ijp7InR5cGUiOiJhY2Nlc3NfdG9rZW4iLCJvbnRpZCI6ImRpZDpvbnQ6QWExWFBhcEpIR0dqSFF0TjJIZHliOUFQdjdIZmlZeHRSeiJ9fQ.MDFiMjFkMjg5OGJmYjZlZGQzMmM5ZjY0ZWIxMDA0OGYxNGNkOGE2MTBhYTZmZGNiZTg4OWQyNzI0MjMwZDVjMjk3Y2Q3ZDhjMzlhOGYzZDJkYjE1YzFhMTcxM2Y3OTU4ZjkzYzRjOGI2NmU2ODM5YmFhNjE4NWRjMTlkZjU3YThkYQ",
 	"user_ontid":"",
 	"filehash":"111175b25e49f2767522d332057c3e6bb1144c842dce47913dc8222927999999",
-	"detail":["abc","abc","abc"],
+	"metadata": {
+            "name":"",
+            "Title": "",
+            "Tags": "",
+            "Description":"",
+            "Timestamp": "",
+            "Location":""
+	},
+	"context": {
+	    "image": ["",""],
+	    "text": ["",""]
+	},
+	"signature":"",
 	"type": "TEXT"
 }
 ```
@@ -584,7 +598,9 @@ method：POST
 | access_token   | String | access_token    |
 | user_ontid   | String | 空表示自己存证，否则表示被存证    |
 | filehash   | String | 文件hash    |
-| detail   | String | 文件相关说明    |
+| metadata   | JSON |     |
+| context   | JSON |     |
+| signature   | String |     |
 | type   | String | PDF/TEXT/IMAGE/VIDEO   |
 
 - 响应：
@@ -623,31 +639,38 @@ method：POST
     "user_ontid": "",
     "filelist": [
         {
-            "filehash": "e81475b25e49f2767522d332057c3e6bb1144c842dce47913dc8222927888888",
-            "type": "IMAGE",
-            "detail": [
-                "abc",
-                "abc",
-                "abc"
-            ]
+            "filehash":"111175b25e49f2767522d332057c3e6bb1144c842dce47913dc8222927999999",
+            "metadata": {
+                    "name":"",
+                    "Title": "",
+                    "Tags": "",
+                    "Description":"",
+                    "Timestamp": "",
+                    "Location":""
+            },
+            "context": {
+                "image": ["",""],
+                "text": ["",""]
+            },
+            "signature":"",
+            "type": "TEXT"
         },
         {
-            "filehash": "e81475b25e49f2767522d332057c3e6bb1144c842dce47913dc8222927999999",
-            "type": "IMAGE",
-            "detail": [
-                "abc",
-                "abc",
-                "abc"
-            ]
-        },
-        {
-            "filehash": "e81475b25e49f2767522d332057c3e6bb1144c842dce47913dc8222927000000",
-            "type": "IMAGE",
-            "detail": [
-                "abc",
-                "abc",
-                "abc"
-            ]
+            "filehash":"111175b25e49f2767522d332057c3e6bb1144c842dce47913dc8222927999999",
+            "metadata": {
+                    "name":"",
+                    "Title": "",
+                    "Tags": "",
+                    "Description":"",
+                    "Timestamp": "",
+                    "Location":""
+            },
+            "context": {
+                "image": ["",""],
+                "text": ["",""]
+            },
+            "signature":"",
+            "type": "TEXT"
         }
     ]
 }
@@ -681,7 +704,7 @@ method：POST
 | version    | String | 版本号                        |
 
 
-### 批量存证(定制)
+### 批量存证(点晴定制)
 
 ```text
 url：/api/v1/contracts/custom
