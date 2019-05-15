@@ -27,7 +27,7 @@ SET time_zone = "+00:00";
 --
 -- Table structure for table `tbl_action_index`
 --
-Drop Table If Exists `tbl_action_index`
+Drop Table If Exists `tbl_action_index`;
 CREATE TABLE `tbl_action_index` (
   `id` int(11) NOT NULL,
   `name` varchar(64) NOT NULL,
@@ -39,7 +39,7 @@ CREATE TABLE `tbl_action_index` (
 --
 -- Table structure for table `tbl_action_ontid`
 --
-Drop Table If Exists `tbl_action_ontid`
+Drop Table If Exists `tbl_action_ontid`;
 CREATE TABLE `tbl_action_ontid` (
   `id` int(11) NOT NULL,
   `action_index` int(11) DEFAULT NULL,
@@ -58,7 +58,7 @@ CREATE TABLE `tbl_action_ontid` (
 --
 -- Table structure for table `tbl_action_ontid_control`
 --
-Drop Table If Exists `tbl_action_ontid_control`
+Drop Table If Exists `tbl_action_ontid_control`;
 CREATE TABLE `tbl_action_ontid_control` (
   `id` int(11) NOT NULL,
   `control` varchar(255) DEFAULT NULL,
@@ -73,7 +73,7 @@ CREATE TABLE `tbl_action_ontid_control` (
 --
 -- Table structure for table `tbl_contract_company`
 --
-Drop Table If Exists `tbl_contract_company`
+Drop Table If Exists `tbl_contract_company`;
 CREATE TABLE `tbl_contract_company` (
   `id` int(11) NOT NULL,
   `ontid` varchar(128) NOT NULL,
@@ -88,7 +88,7 @@ CREATE TABLE `tbl_contract_company` (
 --
 -- Table structure for table `tbl_contract_index`
 --
-Drop Table If Exists `tbl_contract_index`
+Drop Table If Exists `tbl_contract_index`;
 CREATE TABLE `tbl_contract_index` (
   `id` int(11) NOT NULL,
   `name` varchar(64) NOT NULL,
@@ -100,7 +100,7 @@ CREATE TABLE `tbl_contract_index` (
 --
 -- Table structure for table `tbl_contract_ontid`
 --
-Drop Table If Exists `tbl_contract_ontid`
+Drop Table If Exists `tbl_contract_ontid`;
 CREATE TABLE `tbl_contract_ontid` (
   `id` int(11) NOT NULL,
   `ontid` varchar(255) DEFAULT NULL,
@@ -114,7 +114,7 @@ CREATE TABLE `tbl_contract_ontid` (
 --
 -- Table structure for table `tbl_event`
 --
-Drop Table If Exists `tbl_event`
+Drop Table If Exists `tbl_event`;
 CREATE TABLE `tbl_event` (
   `id` int(11) NOT NULL,
   `txhash` varchar(255) NOT NULL,
@@ -129,7 +129,7 @@ CREATE TABLE `tbl_event` (
 --
 -- Table structure for table `tbl_sfl_identity`
 --
-Drop Table If Exists `tbl_sfl_identity`
+Drop Table If Exists `tbl_sfl_identity`;
 CREATE TABLE `tbl_sfl_identity` (
   `id` int(11) NOT NULL,
   `agent` varchar(255) DEFAULT NULL,
@@ -152,7 +152,7 @@ CREATE TABLE `tbl_sfl_identity` (
 --
 -- Table structure for table `tbl_sfl_notary`
 --
-Drop Table If Exists `tbl_sfl_notary`
+Drop Table If Exists `tbl_sfl_notary`;
 CREATE TABLE `tbl_sfl_notary` (
   `id` int(11) NOT NULL,
   `cert_no` varchar(255) DEFAULT NULL,
