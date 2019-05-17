@@ -345,23 +345,23 @@ public class ValidateService {
         }
 
         //
-        if (obj.containsKey("phone_cn")) {
-            String phone_cn = (String) obj.get("phone_cn");
-            if (StringUtils.isEmpty(phone_cn)) {
-                throw new Exception("phone_cn is empty.");
+        if (obj.containsKey("user_phone")) {
+            String user_phone = (String) obj.get("user_phone");
+            if (StringUtils.isEmpty(user_phone)) {
+                throw new Exception("user_phone is empty.");
             }
             //
-            if (!StringUtils.startsWithIgnoreCase(phone_cn, "86*")) {
-                throw new Exception("phone_cn should start with 86* then phone number.");
+            if (!StringUtils.startsWithIgnoreCase(user_phone, "86*")) {
+                throw new Exception("user_phone should start with 86* then phone number.");
             }
             //
-            if (phone_cn.length() != 14) {
-                throw new Exception("phone_cn length is incorrect.");
+            if (user_phone.length() != 14) {
+                throw new Exception("user_phone length is incorrect.");
             }
             //
-            String s = phone_cn.replace("86*", "");
+            String s = user_phone.replace("86*", "");
             if (!s.matches("^[0-9]*$") || !StringUtils.startsWithIgnoreCase(s, "1")) {
-                throw new Exception("phone_cn is incorrect.");
+                throw new Exception("user_phone is incorrect.");
             }
         }
     }

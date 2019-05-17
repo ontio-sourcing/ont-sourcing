@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 @Service
@@ -99,13 +100,15 @@ public class OntidServerService {
         String key = utilAES.generateKey();
         String enKey = null;
         try {
-            //			json = ow.writeValueAsString(jsonObject);
-            enKey = utilRSA.encryptByPublicKey(key);
+            // json = ow.writeValueAsString(jsonObject);
+            // enKey = utilRSA.encryptByPublicKey(key);
+            enKey = utilRSA.encrypt2Base64ByPublicKey(key);
         } catch (Exception e) {
             logger.error(e.getMessage());
             Assert.fail();
         }
-        String enJson = utilAES.encryptData(key, JSON.toJSONString(json));
+        // String enJson = utilAES.encryptData(key, JSON.toJSONString(json));
+        String enJson = utilAES.gcmEncryptData(key.getBytes(), JSON.toJSONString(json));
         // ug/3zPp6fCYzfNL71bmQlgqP+nsOUOQd8K0x2Pq+zXqaQnpoH7YgrF3jRMty4dsUkeOrsK0K5/vbxnXkGLbXOA==
 
         RequestBean requestBean = new RequestBean(enJson);
@@ -118,12 +121,13 @@ public class OntidServerService {
         String requestTimeStamp = tsLong.toString();
 
         UUID uuid = UUID.randomUUID();
-        String nonce = Base64ConvertUtil.encode(uuid.toString().getBytes());
+        String nonce = Base64ConvertUtil.encode(uuid.toString().getBytes(StandardCharsets.UTF_8));
 
         //
-        String rawData = appId + "POST" + "/api/v1/ontid/login/phone" + requestTimeStamp + nonce + requestContentBase64String;  // TODO
+        String uri = "/inner/v1/ontid/login/phone";
+        String rawData = appId + "POST" + uri + requestTimeStamp + nonce + requestContentBase64String;  // TODO
         String signature = Base64ConvertUtil.encode(HMACSha256.sha256_HMAC(rawData, appSecret));
-        String authHMAC = String.format("ont:%s:%s:%s:%s", appId, signature, nonce, requestTimeStamp);
+        String authHMAC = String.format("ont,%s,%s,%s,%s", appId, signature, nonce, requestTimeStamp);
 
         //
         // final HttpHeaders headers = new HttpHeaders();
@@ -143,7 +147,8 @@ public class OntidServerService {
         RequestBody body = RequestBody.create(okhttp3.MediaType.get(c_type), jsonObject.toString());
         //
         Request.Builder builder = new Request.Builder();
-        builder.addHeader("Authorization", authHMAC);
+        // builder.addHeader("Authorization", authHMAC);
+        builder.addHeader("Hmac", authHMAC);
         builder.addHeader("Secure-Key", enKey);
         builder.addHeader("Accept", c_type);
         builder.addHeader("Content-Type", c_type);

@@ -13,8 +13,11 @@ import com.ontology.sourcing.service.util.SyncService;
 import com.ontology.sourcing.service.util.ValidateService;
 import com.ontology.sourcing.util.GlobalVariable;
 import com.ontology.sourcing.util.exp.ErrorCode;
+import org.json.JSONObject;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -28,6 +31,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/v1/")
+@Configuration
 public class ContractController {
 
     //
@@ -44,6 +48,8 @@ public class ContractController {
     private OntidServerService ontidServerService;
     //
     private final KafkaTemplate<String, Object> kafkaTemplate;
+    //
+    private final String ontSourcingTopicPut;
 
     @Autowired
     public ContractController(TspService tspService,
@@ -52,7 +58,8 @@ public class ContractController {
                               OAuthService oauthService,
                               ContractService contractService,
                               OntidServerService ontidServerService,
-                              KafkaTemplate<String, Object> kafkaTemplate) {
+                              KafkaTemplate<String, Object> kafkaTemplate,
+                              @Value("${com.ontology.sourcing.kafka.topic.put}") String ontSourcingTopicPut) {
         //
         this.tspService = tspService;
         this.syncService = syncService;
@@ -63,6 +70,8 @@ public class ContractController {
         this.ontidServerService = ontidServerService;
         //
         this.kafkaTemplate = kafkaTemplate;
+        //
+        this.ontSourcingTopicPut = ontSourcingTopicPut;
     }
 
     //
@@ -72,7 +81,7 @@ public class ContractController {
         logger.info("ContractController PostConstruct start ...");
     }
 
-    @PostMapping("/contract/token/check")
+    @PostMapping("/token/check")
     public ResponseEntity<Result> checkToken(@RequestBody LinkedHashMap<String, Object> obj) {
 
         //
@@ -93,80 +102,27 @@ public class ContractController {
         }
 
         //
-        rst.setResult(true);
+        String access_token = (String) obj.get("access_token");
+        String ontid = "";
+        try {
+            ontid = oauthService.getContentUser(access_token);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+
+        //
+        ContractCompany cc = contractService.getCompany(ontid);
+        if (cc == null) {
+            rst.setResult("2c");
+        } else {
+            rst.setResult("2b");
+        }
+
+        //
         rst.setErrorAndDesc(ErrorCode.SUCCESSS);
         return new ResponseEntity<>(rst, HttpStatus.OK);
-    }
-
-    @PostMapping("/contract")
-    public ResponseEntity<Result> putContract(@RequestBody LinkedHashMap<String, Object> obj) {
-
-        //
-        Result rst = new Result("putContract");
-
-        //
-        Set<String> required = new HashSet<>();
-        required.add("access_token");
-        required.add("user_ontid");  // 空表示自己上传；不空表示被别人上传
-        required.add("filehash");
-        required.add("detail");
-        required.add("type");
-
-        //
-        try {
-            validateService.validateParamsKeys(obj, required);
-            validateService.validateParamsValues(obj);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
-
-        //
-        String access_token = (String) obj.get("access_token");
-        String user_ontid = (String) obj.get("user_ontid");
-        String filehash = (String) obj.get("filehash");
-        //
-        ArrayList<Object> detailList = (ArrayList<Object>) obj.get("detail");
-        String detail = gson.toJson(detailList);
-        //
-        String type = (String) obj.get("type");
-
-        //
-        String company_ontid = "";
-        try {
-            company_ontid = oauthService.getContentUser(access_token);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
-
-        //
-        if (StringUtils.isEmpty(user_ontid))
-            user_ontid = company_ontid;
-
-        //
-        try {
-            //
-            Contract contract = new Contract();
-            contract.setOntid(user_ontid);
-            contract.setCompanyOntid(company_ontid);
-            contract.setFilehash(filehash);
-            contract.setDetail(detail);
-            contract.setType(type);
-            contract.setCreateTime(new Date());
-            //
-            kafkaTemplate.send(GlobalVariable.myTopic1, gson.toJson(contract, Contract.class));
-            //
-            rst.setResult(true);
-            rst.setErrorAndDesc(ErrorCode.SUCCESSS);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
     }
 
     /*
@@ -192,7 +148,7 @@ public class ContractController {
             contract.setTimestamp(new Date(timestamp * 1000L));
             contract.setTimestampSign(timestampSign);
             //
-            Map<String, String> map2 = contractService.putContract(contract);
+            Map<String, String> map2 = contractService.putAttestation(contract);
             String txhash = map2.get("txhash");
             contract.setTxhash(txhash);
             //
@@ -211,8 +167,8 @@ public class ContractController {
     }
     */
 
-    @KafkaListener(topics = {GlobalVariable.myTopic1})
-    public void kafkaListener02(List<String> list, Acknowledgment ack) {
+    @KafkaListener(topics = "#{'${com.ontology.sourcing.kafka.topic.put}'}")
+    public void kafkaListener01(List<String> list, Acknowledgment ack) {
 
         //
         logger.info("start fetching {} from mq ...", list.size());
@@ -287,11 +243,83 @@ public class ContractController {
         ack.acknowledge();
     }
 
-    @PostMapping("/contracts")
-    public ResponseEntity<Result> putContractBatch(@RequestBody LinkedHashMap<String, Object> obj) {
+
+    @PostMapping("/attestation/put")
+    public ResponseEntity<Result> putAttestation(@RequestBody LinkedHashMap<String, Object> obj) {
 
         //
-        Result rst = new Result("putContractBatch");
+        Result rst = new Result("putAttestation");
+
+        //
+        Set<String> required = new HashSet<>();
+        required.add("access_token");
+        required.add("user_ontid");  // 空表示自己上传；不空表示被别人上传
+        required.add("filehash");
+        required.add("detail");
+        required.add("type");
+
+        //
+        try {
+            validateService.validateParamsKeys(obj, required);
+            validateService.validateParamsValues(obj);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+
+        //
+        String access_token = (String) obj.get("access_token");
+        String user_ontid = (String) obj.get("user_ontid");
+        String filehash = (String) obj.get("filehash");
+        //
+        ArrayList<Object> detailList = (ArrayList<Object>) obj.get("detail");
+        String detail = gson.toJson(detailList);
+        //
+        String type = (String) obj.get("type");
+
+        //
+        String company_ontid = "";
+        try {
+            company_ontid = oauthService.getContentUser(access_token);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+
+        //
+        if (StringUtils.isEmpty(user_ontid))
+            user_ontid = company_ontid;
+
+        //
+        try {
+            //
+            Contract contract = new Contract();
+            contract.setOntid(user_ontid);
+            contract.setCompanyOntid(company_ontid);
+            contract.setFilehash(filehash);
+            contract.setDetail(detail);
+            contract.setType(type);
+            contract.setCreateTime(new Date());
+            //
+            kafkaTemplate.send(ontSourcingTopicPut, gson.toJson(contract, Contract.class));
+            //
+            rst.setResult(true);
+            rst.setErrorAndDesc(ErrorCode.SUCCESSS);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+    }
+
+    @PostMapping("/attestations/put")
+    public ResponseEntity<Result> putAttestations(@RequestBody LinkedHashMap<String, Object> obj) {
+
+        //
+        Result rst = new Result("putAttestations");
 
         //
         Set<String> required = new HashSet<>();
@@ -353,7 +381,7 @@ public class ContractController {
                 contract.setType(type);
                 contract.setCreateTime(new Date());
                 //
-                kafkaTemplate.send(GlobalVariable.myTopic1, gson.toJson(contract, Contract.class));
+                kafkaTemplate.send(ontSourcingTopicPut, gson.toJson(contract, Contract.class));
             }
             //
             rst.setResult(true);
@@ -366,11 +394,11 @@ public class ContractController {
         }
     }
 
-    @PostMapping("/contracts/custom")
-    public ResponseEntity<Result> putContractBatchCustom(@RequestBody LinkedHashMap<String, Object> obj) {
+    @PostMapping("/attestations/put/custom")
+    public ResponseEntity<Result> putAttestationsCustom(@RequestBody LinkedHashMap<String, Object> obj) {
 
         //
-        Result rst = new Result("putContractBatchCustom");
+        Result rst = new Result("putAttestationsCustom");
 
         //
         Set<String> required = new HashSet<>();
@@ -432,7 +460,7 @@ public class ContractController {
                 contract.setType(type);
                 contract.setCreateTime(new Date());
                 //
-                kafkaTemplate.send(GlobalVariable.myTopic1, gson.toJson(contract, Contract.class));
+                kafkaTemplate.send(ontSourcingTopicPut, gson.toJson(contract, Contract.class));
             }
             //
             rst.setResult(true);
@@ -451,7 +479,7 @@ public class ContractController {
     public ResponseEntity<Result> putContract1(@RequestBody LinkedHashMap<String, Object> obj) {
 
         //
-        Result rst = new Result("putContract");
+        Result rst = new Result("putAttestation");
 
         //
         Set<String> required = new HashSet<>();
@@ -514,7 +542,7 @@ public class ContractController {
             contract.setTimestamp(new Date(timestamp * 1000L));
             contract.setTimestampSign(timestampSign);
             //
-            Map<String, String> map2 = contractService.putContract(contract);
+            Map<String, String> map2 = contractService.putAttestation(contract);
             String txhash = map2.get("txhash");
             contract.setTxhash(txhash);
             //
@@ -536,7 +564,7 @@ public class ContractController {
     public ResponseEntity<Result> putContractBatch1(@RequestBody LinkedHashMap<String, Object> obj) {
 
         //
-        Result rst = new Result("putContractBatch");
+        Result rst = new Result("putAttestations");
 
         //
         Set<String> required = new HashSet<>();
@@ -605,7 +633,7 @@ public class ContractController {
                 contract.setTimestampSign(timestampSign);
                 contract.setCreateTime(new Date());
                 //
-                Map<String, String> map2 = contractService.putContract(contract);
+                Map<String, String> map2 = contractService.putAttestation(contract);
                 String txhash = map2.get("txhash");
                 contract.setTxhash(txhash);
                 // 链同步
@@ -633,7 +661,7 @@ public class ContractController {
     public ResponseEntity<Result> putContractBatchCustom1(@RequestBody LinkedHashMap<String, Object> obj) {
 
         //
-        Result rst = new Result("putContractBatchCustom");
+        Result rst = new Result("putAttestationsCustom");
 
         //
         Set<String> required = new HashSet<>();
@@ -702,7 +730,7 @@ public class ContractController {
                 contract.setTimestampSign(timestampSign);
                 contract.setCreateTime(new Date());
                 //
-                Map<String, String> map2 = contractService.putContract(contract);
+                Map<String, String> map2 = contractService.putAttestation(contract);
                 String txhash = map2.get("txhash");
                 contract.setTxhash(txhash);
                 // 链同步
@@ -1127,15 +1155,15 @@ public class ContractController {
         return new ResponseEntity<>(rst, HttpStatus.OK);
     }
 
-    @PostMapping("/contract/ontid/register")
-    public ResponseEntity<Result> registerOntid(@RequestBody LinkedHashMap<String, Object> obj) {
+    @PostMapping("/ontid/create")
+    public ResponseEntity<Result> createOntid(@RequestBody LinkedHashMap<String, Object> obj) {
 
         //
-        Result rst = new Result("registerOntid");
+        Result rst = new Result("createOntid");
 
         //
         Set<String> required = new HashSet<>();
-        required.add("phone_cn");
+        required.add("user_phone");
         // required.add("password");
 
         //
@@ -1149,14 +1177,17 @@ public class ContractController {
         }
 
         //
-        String phone_cn = (String) obj.get("phone_cn");
+        String user_phone = (String) obj.get("user_phone");
         // String password = (String) obj.get("password");
 
         //
         try {
-            // String ontid = ontidServerService.registerPhoneWithoutCode(phone_cn, password);
-            String ontid = ontidServerService.registerPhoneWithoutCode(phone_cn);
-            rst.setResult(ontid);
+            // String ontid = ontidServerService.registerPhoneWithoutCode(user_phone, password);
+            String ontid = ontidServerService.registerPhoneWithoutCode(user_phone);
+            //
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("user_ontid", ontid);
+            rst.setResult(jsonObject);
             rst.setErrorAndDesc(ErrorCode.SUCCESSS);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         } catch (Exception e) {

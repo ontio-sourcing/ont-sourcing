@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
@@ -93,4 +94,38 @@ public class AESUtil {
         }
         return null;
     }
+
+    /**
+     * AES-GCM模式加密，相同的明文每次加密后都不一样且能提密文的完整性校验
+     * @param key
+     * @param content
+     * @return
+     */
+    public String gcmEncryptData(byte[] key, String content){
+        try{
+            SecretKey secretKey = new SecretKeySpec(key, "AES");
+/*            //也可以自己生成12个字节长度的iv
+            byte[] iv = generateRandomIV();
+            IvParameterSpec ivspec = new IvParameterSpec(iv);
+            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+            cipher.init(Cipher.ENCRYPT_MODE, key, ivspec);*/
+            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+            //随机生成12个字节长度的iv
+            byte[] iv = cipher.getIV();
+            assert iv.length == 12;
+            byte[] encryptData = cipher.doFinal(content.getBytes(StandardCharsets.UTF_8));
+            //密文长度比原文长16个字节，是附加的密文MAC
+            assert encryptData.length == content.getBytes(StandardCharsets.UTF_8).length + 16;
+            //前12个字节存iv
+            byte[] message = new byte[12 + content.getBytes(StandardCharsets.UTF_8).length + 16];
+            System.arraycopy(iv, 0, message, 0, 12);
+            System.arraycopy(encryptData, 0, message, 12, encryptData.length);
+            return Base64ConvertUtil.encode(message);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return "";
+    }
+
 }

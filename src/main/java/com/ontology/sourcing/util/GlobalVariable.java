@@ -54,8 +54,4 @@ public class GlobalVariable {
     public static Integer scrypt_r = 8;
     public static Integer scrypt_p = 1;
 
-    // mq
-    public final static String myTopic1 = "ont_sourcing_filehash";
-    public final static String myTopic2 = "my_test_topic2_0514";
-
 }

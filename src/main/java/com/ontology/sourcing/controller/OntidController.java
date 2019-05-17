@@ -23,7 +23,7 @@ import javax.annotation.PostConstruct;
 import java.util.*;
 
 @RestController
-@RequestMapping("/api/v1/ontid")
+@RequestMapping("/api/v1/ddo")
 public class OntidController {
 
     //

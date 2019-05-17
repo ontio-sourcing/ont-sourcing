@@ -27,7 +27,7 @@
 * [存证](#存证)
 * [批量存证](#批量存证)
 
-* [批量存证(点晴定制)](#批量存证(点晴定制))
+* [批量存证_点晴定制](#批量存证_点晴定制)
 
 
 * [根据hash取证](#根据hash取证)
@@ -51,7 +51,7 @@
 ### 创建ontid
 
 ```text
-url：/api/v1/ontid/create
+url：/api/v1/ddo/create
 method：POST
 ```
 
@@ -92,7 +92,7 @@ method：POST
 ### 获取ddo
 
 ```text
-url：/api/v1/ontid/getddo
+url：/api/v1/ddo/getddo
 method：POST
 ```
 
@@ -139,11 +139,10 @@ method：POST
 | result     | String | 成功返回DDO，失败返回""     |
 | version    | String | 版本号                        |（）
 
-
 ### 更新ontid的属性
 
 ```text
-url：/api/v1/ontid/update/attribute
+url：/api/v1/ddo/update/attribute
 method：POST
 ```
 
@@ -190,7 +189,7 @@ method：POST
 ### 删除ontid的属性
 
 ```text
-url：/api/v1/ontid/delete/attribute
+url：/api/v1/ddo/delete/attribute
 method：POST
 ```
 
@@ -233,7 +232,7 @@ method：POST
 ### 为ontid添加controller
 
 ```text
-url：/api/v1/ontid/update/control
+url：/api/v1/ddo/update/control
 method：POST
 ```
 
@@ -276,7 +275,7 @@ method：POST
 ### 通过controller更新ontid的属性
 
 ```text
-url：/api/v1/ontid/update/attribute/control
+url：/api/v1/ddo/update/attribute/control
 method：POST
 ```
 
@@ -325,7 +324,7 @@ method：POST
 ### 通过controller删除ontid的属性
 
 ```text
-url：/api/v1/ontid/delete/attribute/control
+url：/api/v1/ddo/delete/attribute/control
 method：POST
 ```
 
@@ -371,7 +370,7 @@ method：POST
 ### 获取总条数
 
 ```text
-url：/api/v1/ontid/count
+url：/api/v1/ddo/count
 method：POST
 ```
 
@@ -411,7 +410,7 @@ method：POST
 ### 获取历史记录
 
 ```text
-url：/api/v1/ontid/history
+url：/api/v1/ddo/history
 method：POST
 ```
 
@@ -482,7 +481,7 @@ method：POST
 
 ### 手机号注册ontid
 ```text
-url：/api/v1/contract/ontid/register
+url：/api/v1/ontid/create
 method：POST
 ```
 
@@ -490,13 +489,13 @@ method：POST
 
 ```json
 {
-	"phone_cn":"86*18612341234"
+	"user_phone":"86*18612341234"
 }
 ```
 
 | Field_Name | Type   | Description |
 |:-----------|:-------|:------------|
-| phone_cn   | String |  中国大陆手机号（格式必须为86*18612341234）    |
+| user_phone   | String |  中国大陆手机号（格式必须为86*18612341234）    |
 
 
 - 响应：
@@ -505,7 +504,7 @@ method：POST
 {
     "result": "did:ont:AbJDcQKcmj1RWJqzURUPSiujHAm6WmsDJu",
     "error": 0,
-    "action": "registerOntid",
+    "action": "createOntid",
     "version": "1.0.0",
     "desc": "SUCCESS"
 }
@@ -524,7 +523,7 @@ method：POST
 ### 验证access_token
 
 ```text
-url：/api/v1/contract/token/check
+url：/api/v1/token/check
 method：POST
 ```
 
@@ -545,7 +544,7 @@ method：POST
 
 ```json
 {
-    "result": true,
+    "result": "2b",
     "error": 0,
     "action": "checkToken",
     "desc": "SUCCESS",
@@ -558,14 +557,14 @@ method：POST
 | error      | int    | 错误码                        |
 | action     | String | 动作标志                      |
 | desc       | String | 成功返回SUCCESS，失败返回错误描述 |
-| result     | String | 成功返回true，失败返回""     |
+| result     | String | 成功返回2b或2c，优先2b，失败返回""     |
 | version    | String | 版本号                        |
 
 
 ### 存证
 
 ```text
-url：/api/v1/contract
+url：/api/v1/attestation/put
 method：POST
 ```
 
@@ -609,7 +608,7 @@ method：POST
 {
     "result": true,
     "error": 0,
-    "action": "putContract",
+    "action": "putAttestation",
     "desc": "SUCCESS",
     "version": "1.0.0"
 }
@@ -627,7 +626,7 @@ method：POST
 ### 批量存证
 
 ```text
-url：/api/v1/contracts
+url：/api/v1/attestations/put
 method：POST
 ```
 
@@ -689,7 +688,7 @@ method：POST
 {
     "result": true,
     "error": 0,
-    "action": "putContractBatch",
+    "action": "putAttestations",
     "desc": "SUCCESS",
     "version": "1.0.0"
 }
@@ -704,10 +703,10 @@ method：POST
 | version    | String | 版本号                        |
 
 
-### 批量存证(点晴定制)
+### 批量存证_点晴定制
 
 ```text
-url：/api/v1/contracts/custom
+url：/api/v1/attestations/put/custom
 method：POST
 ```
 
@@ -783,7 +782,7 @@ method：POST
 {
     "result": true,
     "error": 0,
-    "action": "putContractBatchCustom",
+    "action": "putAttestationsCustom",
     "desc": "SUCCESS",
     "version": "1.0.0"
 }
