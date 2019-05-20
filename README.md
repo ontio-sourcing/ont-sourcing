@@ -502,11 +502,13 @@ method：POST
 
 ```json
 {
-    "result": "did:ont:AbJDcQKcmj1RWJqzURUPSiujHAm6WmsDJu",
+    "result": {
+        "user_ontid": "did:ont:AXVNLgKBV2xx28yMhX5bc5T96E8uBLZry8"
+    },
     "error": 0,
-    "action": "createOntid",
     "version": "1.0.0",
-    "desc": "SUCCESS"
+    "desc": "SUCCESS",
+    "action": "createOntid"
 }
 ```
 

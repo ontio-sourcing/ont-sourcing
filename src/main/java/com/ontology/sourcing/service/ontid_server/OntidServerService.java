@@ -135,7 +135,7 @@ public class OntidServerService {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("data", enJson);
         //
-        String c_type = String.valueOf(new MediaType("application", "ontid.manage.api.v1+json"));
+        String c_type = String.valueOf(new MediaType("application", "ontid.platform.api.v1+json"));
         //
         RequestBody body = RequestBody.create(okhttp3.MediaType.get(c_type), jsonObject.toString());
         //
@@ -184,11 +184,19 @@ public class OntidServerService {
 
 /*
 {
-  "action" : "registerInnerPhone",
-  "error" : 61002,
-  "desc" : "FAIL, user already exist.",
-  "result" : "",
-  "version" : "v1"
+  "code" : 0,
+  "msg" : "SUCCESS",
+  "result" : {
+    "user_ontid" : "did:ont:ASnjegahz6pL216ovioyB9UKyYuJCqQyrp"
+  }
+}
+*/
+
+/*
+{
+  "code" : 61002,
+  "msg" : "FAIL, user already exist.",
+  "result" : false
 }
  */
 
@@ -196,12 +204,13 @@ public class OntidServerService {
         org.json.JSONObject object = new org.json.JSONObject(result);
         //
         try {
-            int err = object.getInt("error");
+            int err = object.getInt("code");
             if (err == 0) {
-                String ontid = object.getString("result");
-                return ontid;
+                String rstStr = object.get("result").toString();
+                org.json.JSONObject o2 = new org.json.JSONObject(rstStr);
+                return o2.getString("user_ontid");
             } else {
-                throw new Exception(object.getString("desc"));
+                throw new Exception(object.getString("msg"));
             }
         } catch (JSONException e) {
             logger.error(e.getMessage());

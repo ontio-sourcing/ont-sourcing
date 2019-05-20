@@ -1016,9 +1016,10 @@ public class ContractController {
             // String ontid = ontidServerService.registerPhoneWithoutCode(user_phone, password);
             String ontid = ontidServerService.registerPhoneWithoutCode(user_phone);
             //
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("user_ontid", ontid);
-            rst.setResult(jsonObject);
+            Map<String, String> m = new HashMap<>();
+            m.put("user_ontid", ontid);
+            //
+            rst.setResult(m);
             rst.setErrorAndDesc(ErrorCode.SUCCESSS);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         } catch (Exception e) {
