@@ -588,7 +588,8 @@ method：POST
 	    "text": ["",""]
 	},
 	"signature":"",
-	"type": "TEXT"
+	"type": "TEXT",
+	"async": true
 }
 ```
 
@@ -601,9 +602,11 @@ method：POST
 | context   | JSON |     |
 | signature   | String |     |
 | type   | String | PDF/TEXT/IMAGE/VIDEO   |
+| async   | boolean |  true表示异步，false表示同步，默认为false   |
 
 - 响应：
 
+当 async 为 true 时：
 ```json
 {
     "result": true,
@@ -614,12 +617,25 @@ method：POST
 }
 ```
 
+当 async 为 false 时：
+```json
+{
+    "version": "1.0.0",
+    "desc": "SUCCESS",
+    "result": {
+        "txhash": "d6459de184af36ccbc786e19f30ea14961f29b85aa330ea58e07463a73532bac"
+    },
+    "error": 0,
+    "action": "putAttestation"
+}
+```
+
 | Field_Name | Type   | Description                   |
 |:-----------|:-------|:------------------------------|
+| result     |  |    |
 | error      | int    | 错误码                        |
 | action     | String | 动作标志                      |
 | desc       | String | 成功返回SUCCESS，失败返回错误描述 |
-| result     | String | 成功返回true，失败返回""     |
 | version    | String | 版本号                        |
 
 
@@ -636,6 +652,7 @@ method：POST
 {
     "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJhdWQiOiJkaWQ6b250OkFVRG11NEoyVzF2cUpIRHRMUDhVeEhhdWoyZUtzUUh4dTYiLCJpc3MiOiJkaWQ6b250OkFhdlJRcVhlOVByYVY1dFlnQnF2VjRiVXE4TFNzdmpjV1MiLCJleHAiOjE1NTc4OTM4MzYsImlhdCI6MTU1NzgwNzQzNiwianRpIjoiNjM3YzY4ODQxMzc1NGMxMGE1ZDM3NDY0MTcwMWQwMTIiLCJjb250ZW50Ijp7InR5cGUiOiJhY2Nlc3NfdG9rZW4iLCJvbnRpZCI6ImRpZDpvbnQ6QWExWFBhcEpIR0dqSFF0TjJIZHliOUFQdjdIZmlZeHRSeiJ9fQ.MDE1YmFjYTI0MTI3ODI2YmI0OWI5YzY1YjU4YTg1Njk5NmRkNjlmMTc1MTM3MGIwM2NhOTQ0ZTY4YzI2NzRjMWU2M2U1MTQ2ODZkYTE3ZWU4OGE2N2E4ZTE1MDQ4ODQzNDZiOTYxMGI4MjhjMzhmNGFkMGNiYTY4MDBhZDVjNDZhNw",
     "user_ontid": "",
+    "async": true,
     "filelist": [
         {
             "filehash":"111175b25e49f2767522d332057c3e6bb1144c842dce47913dc8222927999999",
@@ -680,10 +697,12 @@ method：POST
 | access_token   | String | access_token|
 | user_ontid   | String | 空表示自己存证，否则表示被存证    |
 | filelist   | String | 批量文件(总数不能超过30条)    |
-| type   | String | PDF/TEXT/IMAGE/VIDEO   |
+| async   | boolean |  true表示异步，false表示同步，默认为false   |
+
 
 - 响应：
 
+当 async 为 true 时：
 ```json
 {
     "result": true,
@@ -694,12 +713,32 @@ method：POST
 }
 ```
 
+
+当 async 为 false 时：
+```json
+{
+    "result": [
+        {
+            "txhash": "58eb1b7414d51988899dbaf54ff891aca55eb7ba2f4a5b5008af18a874187d02"
+        },
+        {
+            "txhash": "6cada409428b2d7f4e2186a2a95cd0bdbe82e643ff697b4077129438da0b2e9b"
+        }
+    ],
+    "error": 0,
+    "action": "putAttestations",
+    "desc": "SUCCESS",
+    "version": "1.0.0"
+}
+```
+
+
 | Field_Name | Type   | Description                   |
 |:-----------|:-------|:------------------------------|
 | error      | int    | 错误码                        |
 | action     | String | 动作标志                      |
 | desc       | String | 成功返回SUCCESS，失败返回错误描述 |
-| result     | String | 成功返回true，失败返回""     |
+| result     |  |    |
 | version    | String | 版本号                        |
 
 

@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Logger;
 import com.google.gson.Gson;
 import com.ontology.sourcing.dao.contract.Contract;
 import com.ontology.sourcing.dao.contract.ContractCompany;
+import com.ontology.sourcing.model.contract.input.InputWrapper;
 import com.ontology.sourcing.model.util.Result;
 import com.ontology.sourcing.service.ContractService;
 import com.ontology.sourcing.service.oauth.OAuthService;
@@ -255,8 +256,9 @@ public class ContractController {
         required.add("access_token");
         required.add("user_ontid");  // 空表示自己上传；不空表示被别人上传
         required.add("filehash");
-        required.add("detail");
         required.add("type");
+        required.add("metadata");
+        required.add("context");
 
         //
         try {
@@ -269,14 +271,26 @@ public class ContractController {
         }
 
         //
-        String access_token = (String) obj.get("access_token");
-        String user_ontid = (String) obj.get("user_ontid");
-        String filehash = (String) obj.get("filehash");
+        InputWrapper iw = gson.fromJson(gson.toJson(obj), InputWrapper.class);
+
         //
-        ArrayList<Object> detailList = (ArrayList<Object>) obj.get("detail");
-        String detail = gson.toJson(detailList);
+        String access_token = iw.getAccessToken();
+        String user_ontid = iw.getUserOntid();
+        String filehash = iw.getFilehash();
+        String type = iw.getType();
+
         //
-        String type = (String) obj.get("type");
+        com.alibaba.fastjson.JSONObject jsonObject = new com.alibaba.fastjson.JSONObject();
+        jsonObject.put("metadata", iw.getMetadata());
+        jsonObject.put("context", iw.getContext());
+        jsonObject.put("signature", iw.getSignature());
+        String detail = jsonObject.toJSONString();
+
+        //
+        boolean async = false;
+        if (obj.containsKey("async")) {
+            async = (boolean) obj.get("async");
+        }
 
         //
         String company_ontid = "";
@@ -303,11 +317,39 @@ public class ContractController {
             contract.setType(type);
             contract.setCreateTime(new Date());
             //
-            kafkaTemplate.send(ontSourcingTopicPut, gson.toJson(contract, Contract.class));
-            //
-            rst.setResult(true);
-            rst.setErrorAndDesc(ErrorCode.SUCCESSS);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
+            if (async) {
+                //
+                kafkaTemplate.send(ontSourcingTopicPut, gson.toJson(contract, Contract.class));
+                //
+                rst.setResult(true);
+                rst.setErrorAndDesc(ErrorCode.SUCCESSS);
+                return new ResponseEntity<>(rst, HttpStatus.OK);
+
+            } else {
+                //
+                Map<String, Object> map = tspService.getTimeStampMap(filehash);
+                //
+                long timestamp = (long) map.get("timestamp");
+                String timestampSign = map.get("timestampSign").toString();
+                //
+                contract.setTimestamp(new Date(timestamp * 1000L));
+                contract.setTimestampSign(timestampSign);
+                //
+                Map<String, String> map2 = contractService.putContract(contract);
+                String txhash = map2.get("txhash");
+                contract.setTxhash(txhash);
+                //
+                contractService.saveToLocal(company_ontid, contract);
+                // 链同步
+                syncService.confirmTx(txhash);
+                //
+                Map<String, String> m = new HashMap<>();
+                m.put("txhash", txhash);
+                //
+                rst.setResult(m);
+                rst.setErrorAndDesc(ErrorCode.SUCCESSS);
+                return new ResponseEntity<>(rst, HttpStatus.OK);
+            }
         } catch (Exception e) {
             logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
@@ -342,6 +384,12 @@ public class ContractController {
         String user_ontid = (String) obj.get("user_ontid");
 
         //
+        boolean async = false;
+        if (obj.containsKey("async")) {
+            async = (boolean) obj.get("async");
+        }
+
+        //
         String company_ontid = "";
         try {
             company_ontid = oauthService.getContentUser(access_token);
@@ -364,12 +412,26 @@ public class ContractController {
             //
             List<Contract> contractList = new ArrayList<>();
             //
+            List<Map<String, String>> txhashList = new ArrayList<>();
+            //
             for (Map<String, Object> item : filelist) {
+
                 //
-                String filehash = item.get("filehash").toString();
-                String type = item.get("type").toString();
-                ArrayList<Object> detailList = (ArrayList<Object>) item.get("detail");
-                String detail = gson.toJson(detailList);
+                InputWrapper iw = gson.fromJson(gson.toJson(item), InputWrapper.class);
+
+                //
+                String filehash = iw.getFilehash();
+                String type = iw.getType();
+                //
+                com.alibaba.fastjson.JSONObject jsonObject = new com.alibaba.fastjson.JSONObject();
+                jsonObject.put("metadata", iw.getMetadata());
+                jsonObject.put("context", iw.getContext());
+                jsonObject.put("signature", iw.getSignature());
+                String detail = jsonObject.toJSONString();
+
+                //
+                // ArrayList<Object> detailList = (ArrayList<Object>) item.get("detail");
+                // String detail = gson.toJson(detailList);
                 // System.out.println(detail);
 
                 //
@@ -380,13 +442,63 @@ public class ContractController {
                 contract.setDetail(detail);
                 contract.setType(type);
                 contract.setCreateTime(new Date());
+
                 //
-                kafkaTemplate.send(ontSourcingTopicPut, gson.toJson(contract, Contract.class));
+                if (async) {
+                    //
+                    kafkaTemplate.send(ontSourcingTopicPut, gson.toJson(contract, Contract.class));
+
+                } else {
+                    try {
+
+                        //
+                        Map<String, Object> map = tspService.getTimeStampMap(filehash);
+                        //
+                        long timestamp = (long) map.get("timestamp");
+                        String timestampSign = map.get("timestampSign").toString();
+                        //
+                        contract.setTimestamp(new Date(timestamp * 1000L));
+                        contract.setTimestampSign(timestampSign);
+                        //
+                        Map<String, String> map2 = contractService.putContract(contract);
+                        String txhash = map2.get("txhash");
+                        contract.setTxhash(txhash);
+                        // 链同步
+                        syncService.confirmTx(txhash);
+                        //
+                        contractList.add(contract);
+                        //
+                        Map<String, String> m = new HashMap<>();
+                        m.put("txhash", txhash);
+                        txhashList.add(m);
+
+                    } catch (Exception e) {
+                        logger.error(e.getMessage());
+                        rst.setErrorAndDesc(e);
+                        return new ResponseEntity<>(rst, HttpStatus.OK);
+                    }
+                }
             }
-            //
-            rst.setResult(true);
-            rst.setErrorAndDesc(ErrorCode.SUCCESSS);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
+
+            if (async) {
+
+                //
+                rst.setResult(true);
+                rst.setErrorAndDesc(ErrorCode.SUCCESSS);
+                return new ResponseEntity<>(rst, HttpStatus.OK);
+
+            } else {
+                // mybatis batch insert
+                // 单条长度大概 4KB，30条，一个sql语句size大概为120KB
+                // TODO 检查 max_allowed_packet
+                contractService.saveToLocalBatch(company_ontid, contractList);
+                //
+                rst.setResult(txhashList);
+                rst.setErrorAndDesc(ErrorCode.SUCCESSS);
+                return new ResponseEntity<>(rst, HttpStatus.OK);
+            }
+
+
         } catch (Exception e) {
             logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
@@ -459,6 +571,7 @@ public class ContractController {
                 contract.setDetail(detail);
                 contract.setType(type);
                 contract.setCreateTime(new Date());
+
                 //
                 kafkaTemplate.send(ontSourcingTopicPut, gson.toJson(contract, Contract.class));
             }
@@ -472,288 +585,6 @@ public class ContractController {
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
     }
-
-    /*
-
-    @PostMapping("/contract1")
-    public ResponseEntity<Result> putContract1(@RequestBody LinkedHashMap<String, Object> obj) {
-
-        //
-        Result rst = new Result("putAttestation");
-
-        //
-        Set<String> required = new HashSet<>();
-        required.add("access_token");
-        required.add("user_ontid");  // 空表示自己上传；不空表示被别人上传
-        required.add("filehash");
-        required.add("detail");
-        required.add("type");
-
-        //
-        try {
-            validateService.validateParamsKeys(obj, required);
-            validateService.validateParamsValues(obj);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
-
-        //
-        String access_token = (String) obj.get("access_token");
-        String user_ontid = (String) obj.get("user_ontid");
-        String filehash = (String) obj.get("filehash");
-        //
-        ArrayList<Object> detailList = (ArrayList<Object>) obj.get("detail");
-        String detail = gson.toJson(detailList);
-        //
-        String type = (String) obj.get("type");
-
-        //
-        String company_ontid = "";
-        try {
-            company_ontid = oauthService.getContentUser(access_token);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
-
-        //
-        if (StringUtils.isEmpty(user_ontid))
-            user_ontid = company_ontid;
-
-        //
-        try {
-            //
-            Map<String, Object> map = tspService.getTimeStampMap(filehash);
-            //
-            long timestamp = (long) map.get("timestamp");
-            String timestampSign = map.get("timestampSign").toString();
-            //
-            Contract contract = new Contract();
-            contract.setOntid(user_ontid);
-            contract.setCompanyOntid(company_ontid);
-            contract.setFilehash(filehash);
-            contract.setDetail(detail);
-            contract.setType(type);
-            contract.setCreateTime(new Date());
-            //
-            contract.setTimestamp(new Date(timestamp * 1000L));
-            contract.setTimestampSign(timestampSign);
-            //
-            Map<String, String> map2 = contractService.putAttestation(contract);
-            String txhash = map2.get("txhash");
-            contract.setTxhash(txhash);
-            //
-            contractService.saveToLocal(company_ontid, contract);
-            // 链同步
-            syncService.confirmTx(txhash);
-            //
-            rst.setResult(true);
-            rst.setErrorAndDesc(ErrorCode.SUCCESSS);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
-    }
-
-    @PostMapping("/contracts1")
-    public ResponseEntity<Result> putContractBatch1(@RequestBody LinkedHashMap<String, Object> obj) {
-
-        //
-        Result rst = new Result("putAttestations");
-
-        //
-        Set<String> required = new HashSet<>();
-        required.add("access_token");
-        required.add("user_ontid");
-        required.add("filelist");
-
-        //
-        try {
-            validateService.validateParamsKeys(obj, required);
-            validateService.validateParamsValues(obj);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
-
-        //
-        String access_token = (String) obj.get("access_token");
-        String user_ontid = (String) obj.get("user_ontid");
-
-        //
-        String company_ontid = "";
-        try {
-            company_ontid = oauthService.getContentUser(access_token);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
-
-        //
-        if (StringUtils.isEmpty(user_ontid))
-            user_ontid = company_ontid;
-
-
-        // TODO
-        ArrayList<Map<String, Object>> filelist = (ArrayList<Map<String, Object>>) obj.get("filelist");
-
-        //
-        try {
-            //
-            List<Contract> contractList = new ArrayList<>();
-            //
-            for (Map<String, Object> item : filelist) {
-                //
-                String filehash = item.get("filehash").toString();
-                String type = item.get("type").toString();
-                ArrayList<Object> detailList = (ArrayList<Object>) item.get("detail");
-                String detail = gson.toJson(detailList);
-                // System.out.println(detail);
-
-                //
-                Map<String, Object> map = tspService.getTimeStampMap(filehash);
-                //
-                long timestamp = (long) map.get("timestamp");
-                String timestampSign = map.get("timestampSign").toString();
-                //
-                Contract contract = new Contract();
-                contract.setCompanyOntid(company_ontid);
-                contract.setOntid(user_ontid);
-                contract.setFilehash(filehash);
-                contract.setDetail(detail);
-                contract.setType(type);
-                contract.setTimestamp(new Date(timestamp * 1000L));
-                contract.setTimestampSign(timestampSign);
-                contract.setCreateTime(new Date());
-                //
-                Map<String, String> map2 = contractService.putAttestation(contract);
-                String txhash = map2.get("txhash");
-                contract.setTxhash(txhash);
-                // 链同步
-                syncService.confirmTx(txhash);
-                //
-                contractList.add(contract);
-            }
-            // mybatis batch insert
-            // 单条长度大概 4KB，30条，一个sql语句size大概为120KB
-            // TODO 检查 max_allowed_packet
-            contractService.saveToLocalBatch(company_ontid, contractList);
-            //
-            rst.setResult(true);
-            rst.setErrorAndDesc(ErrorCode.SUCCESSS);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
-    }
-
-
-    @PostMapping("/contracts/custom1")
-    public ResponseEntity<Result> putContractBatchCustom1(@RequestBody LinkedHashMap<String, Object> obj) {
-
-        //
-        Result rst = new Result("putAttestationsCustom");
-
-        //
-        Set<String> required = new HashSet<>();
-        required.add("access_token");
-        required.add("user_ontid");
-        required.add("filelist");
-
-        //
-        try {
-            validateService.validateParamsKeys(obj, required);
-            validateService.validateParamsValues(obj);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
-
-        //
-        String access_token = (String) obj.get("access_token");
-        String user_ontid = (String) obj.get("user_ontid");
-
-        //
-        String company_ontid = "";
-        try {
-            company_ontid = oauthService.getContentUser(access_token);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
-
-        //
-        if (StringUtils.isEmpty(user_ontid))
-            user_ontid = company_ontid;
-
-
-        // TODO
-        ArrayList<Map<String, Object>> filelist = (ArrayList<Map<String, Object>>) obj.get("filelist");
-
-        //
-        try {
-            //
-            List<Contract> contractList = new ArrayList<>();
-            //
-            for (Map<String, Object> item : filelist) {
-                //
-                String filehash = item.get("filehash").toString();
-                String type = item.get("type").toString();
-                ArrayList<Map<String, Object>> detailList = (ArrayList<Map<String, Object>>) item.get("detail");
-                String detail = gson.toJson(detailList);
-                // System.out.println(detail);
-
-                //
-                Map<String, Object> map = tspService.getTimeStampMap(filehash);
-                //
-                long timestamp = (long) map.get("timestamp");
-                String timestampSign = map.get("timestampSign").toString();
-                //
-                Contract contract = new Contract();
-                contract.setCompanyOntid(company_ontid);
-                contract.setOntid(user_ontid);
-                contract.setFilehash(filehash);
-                contract.setDetail(detail);
-                contract.setType(type);
-                contract.setTimestamp(new Date(timestamp * 1000L));
-                contract.setTimestampSign(timestampSign);
-                contract.setCreateTime(new Date());
-                //
-                Map<String, String> map2 = contractService.putAttestation(contract);
-                String txhash = map2.get("txhash");
-                contract.setTxhash(txhash);
-                // 链同步
-                syncService.confirmTx(txhash);
-                //
-                contractList.add(contract);
-            }
-            // mybatis batch insert
-            // 单条长度大概 4KB，30条，一个sql语句size大概为120KB
-            // TODO 检查 max_allowed_packet
-            contractService.saveToLocalBatch(company_ontid, contractList);
-            //
-            rst.setResult(true);
-            rst.setErrorAndDesc(ErrorCode.SUCCESSS);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
-    }
-
-    */
 
     @PostMapping("/contract/hash")
     public ResponseEntity<Result> selectByOntidAndHash(@RequestBody LinkedHashMap<String, Object> obj) {

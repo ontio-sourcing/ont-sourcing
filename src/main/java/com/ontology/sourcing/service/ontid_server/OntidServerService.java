@@ -87,14 +87,14 @@ public class OntidServerService {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("phone", phone);
         jsonObject.put("password", phonePassword);
-        String json = JSON.toJSONString(jsonObject);
+        // String json = JSON.toJSONString(jsonObject);
 
         //
         String ontid = postHmac(URI, jsonObject);
         return ontid;
     }
 
-    public String postHmac(String URI, JSONObject json) throws Exception {
+    private String postHmac(String URI, JSONObject json) throws Exception {
 
         //加密
         String key = utilAES.generateKey();
@@ -108,7 +108,8 @@ public class OntidServerService {
             Assert.fail();
         }
         // String enJson = utilAES.encryptData(key, JSON.toJSONString(json));
-        String enJson = utilAES.gcmEncryptData(key.getBytes(), JSON.toJSONString(json));
+        String tmp = JSON.toJSONString(json);
+        String enJson = utilAES.gcmEncryptData(key.getBytes(), tmp);
         // ug/3zPp6fCYzfNL71bmQlgqP+nsOUOQd8K0x2Pq+zXqaQnpoH7YgrF3jRMty4dsUkeOrsK0K5/vbxnXkGLbXOA==
 
         RequestBean requestBean = new RequestBean(enJson);
@@ -124,17 +125,9 @@ public class OntidServerService {
         String nonce = Base64ConvertUtil.encode(uuid.toString().getBytes(StandardCharsets.UTF_8));
 
         //
-        String uri = "/inner/v1/ontid/login/phone";
-        String rawData = appId + "POST" + uri + requestTimeStamp + nonce + requestContentBase64String;  // TODO
+        String rawData = appId + "POST" + pathRegister + requestTimeStamp + nonce + requestContentBase64String;  // TODO
         String signature = Base64ConvertUtil.encode(HMACSha256.sha256_HMAC(rawData, appSecret));
         String authHMAC = String.format("ont,%s,%s,%s,%s", appId, signature, nonce, requestTimeStamp);
-
-        //
-        // final HttpHeaders headers = new HttpHeaders();
-        // headers.set("Authorization", authHMAC);
-        // headers.set("Secure-Key", enKey);
-        // headers.setAccept(Arrays.asList(new MediaType("application", "ontid.manage.api.v1+json")));
-        // headers.setContentType(new MediaType("application", "ontid.manage.api.v1+json"));
 
         //
         HttpUtil.HttpInfo httpInfo = new HttpUtil.HttpInfo();
@@ -211,7 +204,8 @@ public class OntidServerService {
                 throw new Exception(object.getString("desc"));
             }
         } catch (JSONException e) {
-            throw new Exception("ontid_server " + object.getString("error"));
+            logger.error(e.getMessage());
+            throw new Exception("ontid_server " + e.getMessage());
         }
 
     }

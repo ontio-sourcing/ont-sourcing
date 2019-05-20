@@ -283,9 +283,20 @@ public class ValidateService {
             }
         }
 
+        // 点晴专用
+        // if (obj.containsKey("list")) {
+        //     ArrayList<Map<String, Object>> filelist = (ArrayList<Map<String, Object>>) obj.get("filelist");
+        //     //
+        //     if (filelist.size() == 0) {
+        //         throw new Exception("filelist contains no elements.");
+        //     }
+        //     // TODO
+        //     if (filelist.size() >= 30) {
+        //         throw new Exception("filelist contains too many elements. max is 30.");
+        //     }
+        // }
 
-
-        //
+        // 点晴专用
         if (obj.containsKey("filelist")) {
             ArrayList<Map<String, Object>> filelist = (ArrayList<Map<String, Object>>) obj.get("filelist");
             //
@@ -305,9 +316,9 @@ public class ValidateService {
                 if (!item.containsKey("type")) {
                     throw new Exception("param type is missing.");
                 }
-                if (!item.containsKey("detail")) {
-                    throw new Exception("param detail is missing.");
-                }
+                // if (!item.containsKey("detail")) {
+                //     throw new Exception("param detail is missing.");
+                // }
                 // 检查 value
                 if (item.containsKey("filehash")) {
                     String filehash = item.get("filehash").toString();
@@ -319,15 +330,15 @@ public class ValidateService {
                         throw new Exception("type " + type + " is incorrect.");
                     }
                 }
-                if (item.containsKey("detail")) {
-                    // detail 肯定是一个数组
-                    Object o = item.get("detail");
-                    if (o instanceof List<?>) {
-                        return;
-                    } else {
-                        throw new Exception("detail should be List<?>.");
-                    }
-                }
+                // if (item.containsKey("detail")) {
+                //     // detail 肯定是一个数组
+                //     Object o = item.get("detail");
+                //     if (o instanceof List<?>) {
+                //         return;
+                //     } else {
+                //         throw new Exception("detail should be List<?>.");
+                //     }
+                // }
             }
         }
 
