@@ -579,11 +579,11 @@ method：POST
 	"filehash":"111175b25e49f2767522d332057c3e6bb1144c842dce47913dc8222927999999",
 	"metadata": {
             "name":"",
-            "Title": "",
-            "Tags": "",
-            "Description":"",
-            "Timestamp": "",
-            "Location":""
+            "title": "",
+            "tags": "",
+            "description":"",
+            "timestamp": "",
+            "location":""
 	},
 	"context": {
 	    "image": ["",""],
@@ -660,11 +660,11 @@ method：POST
             "filehash":"111175b25e49f2767522d332057c3e6bb1144c842dce47913dc8222927999999",
             "metadata": {
                     "name":"",
-                    "Title": "",
-                    "Tags": "",
-                    "Description":"",
-                    "Timestamp": "",
-                    "Location":""
+                    "title": "",
+                    "tags": "",
+                    "description":"",
+                    "timestamp": "",
+                    "location":""
             },
             "context": {
                 "image": ["",""],
@@ -676,12 +676,12 @@ method：POST
         {
             "filehash":"111175b25e49f2767522d332057c3e6bb1144c842dce47913dc8222927999999",
             "metadata": {
-                    "name":"",
-                    "Title": "",
-                    "Tags": "",
-                    "Description":"",
-                    "Timestamp": "",
-                    "Location":""
+                     "name":"",
+                     "title": "",
+                     "tags": "",
+                     "description":"",
+                     "timestamp": "",
+                     "location":""
             },
             "context": {
                 "image": ["",""],
