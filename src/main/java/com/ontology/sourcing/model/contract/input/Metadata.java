@@ -8,19 +8,24 @@ public class Metadata {
     @SerializedName("name")
     @Expose
     private String name;
-    @SerializedName("Title")
+
+    @SerializedName("title")
     @Expose
     private String title;
-    @SerializedName("Tags")
+
+    @SerializedName("tags")
     @Expose
     private String tags;
-    @SerializedName("Description")
+
+    @SerializedName("description")
     @Expose
     private String description;
-    @SerializedName("Timestamp")
+
+    @SerializedName("timestamp")
     @Expose
     private String timestamp;
-    @SerializedName("Location")
+
+    @SerializedName("location")
     @Expose
     private String location;
 

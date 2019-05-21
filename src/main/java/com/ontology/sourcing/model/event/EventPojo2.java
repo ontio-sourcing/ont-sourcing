@@ -6,10 +6,10 @@ import com.google.gson.annotations.SerializedName;
 import java.math.BigInteger;
 import java.util.List;
 
-public class EventPojo {
+public class EventPojo2 {
 
     @SerializedName("GasConsumed") @Expose private BigInteger gasConsumed;
-    @SerializedName("Notify") @Expose private List<Notify> notify = null;
+    @SerializedName("event") @Expose private List<Notify> notify = null;
     @SerializedName("TxHash") @Expose private String txHash;
     @SerializedName("State") @Expose private Integer state;
 

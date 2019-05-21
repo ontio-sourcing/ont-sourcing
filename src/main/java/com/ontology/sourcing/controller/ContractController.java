@@ -800,7 +800,11 @@ public class ContractController {
         int pageSize = Integer.parseInt(obj.get("pageSize").toString());
 
         //
-        List<Contract> list = contractService.getExplorerHistory(GlobalVariable.CURRENT_CONTRACT_TABLE_NAME, pageNum, pageSize);
+        List<Contract> list = new ArrayList<>();
+        if (!StringUtils.isEmpty(GlobalVariable.CURRENT_CONTRACT_TABLE_NAME)) {
+            list = contractService.getExplorerHistory(GlobalVariable.CURRENT_CONTRACT_TABLE_NAME, pageNum, pageSize);
+        }
+
         //
         rst.setResult(list);
         //
