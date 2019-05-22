@@ -939,7 +939,7 @@ method：POST
 | Field_Name | Type   | Description |
 |:-----------|:-------|:------------|
 | access_token   | String | access_token    |
-| hash   | String | 文件hash或者交易hash   |
+| hash   | String | 交易hash   |
 
 - 响应：
 

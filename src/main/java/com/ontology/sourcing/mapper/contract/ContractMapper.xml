@@ -11,6 +11,7 @@
 		<result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
 		<result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
 		<result column="status" jdbcType="INTEGER" property="status"/>
+		<result column="revoke_tx" jdbcType="VARCHAR" property="revokeTx"/>
 	</resultMap>
 	<resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="com.ontology.sourcing.dao.contract.Contract">
 		<result column="detail" jdbcType="LONGVARCHAR" property="detail"/>
@@ -18,7 +19,7 @@
 	</resultMap>
 
 	<sql id="Base_Column_List">
-		ontid, company_ontid, txhash, filehash, type, timestamp, create_time, update_time, status
+		ontid, company_ontid, txhash, filehash, type, timestamp, create_time, update_time, status, revoke_tx
 	</sql>
 	<sql id="Blob_Column_List">
 		detail, timestamp_sign
@@ -26,12 +27,12 @@
 
 	<insert id="insert" parameterType="com.ontology.sourcing.dao.contract.Contract">
 		insert into ${tableName} (ontid, company_ontid, txhash, filehash, type,
-		                          timestamp, create_time, update_time,
-		                          detail, timestamp_sign)
+		timestamp, create_time, update_time,
+		detail, timestamp_sign)
 		values (#{record.ontid,jdbcType=VARCHAR}, #{record.companyOntid,jdbcType=VARCHAR}, #{record.txhash,jdbcType=VARCHAR}, #{record.filehash,jdbcType=VARCHAR},
-		        #{record.type,jdbcType=VARCHAR},
-		        #{record.timestamp,jdbcType=TIMESTAMP}, #{record.createTime,jdbcType=TIMESTAMP}, #{record.updateTime,jdbcType=TIMESTAMP},
-		        #{record.detail,jdbcType=LONGVARCHAR}, #{record.timestampSign,jdbcType=LONGVARCHAR})
+		#{record.type,jdbcType=VARCHAR},
+		#{record.timestamp,jdbcType=TIMESTAMP}, #{record.createTime,jdbcType=TIMESTAMP}, #{record.updateTime,jdbcType=TIMESTAMP},
+		#{record.detail,jdbcType=LONGVARCHAR}, #{record.timestampSign,jdbcType=LONGVARCHAR})
 	</insert>
 
 	<insert id="insertSelective" parameterType="com.ontology.sourcing.dao.contract.Contract">
@@ -115,6 +116,32 @@
 		</foreach>
 	</insert>
 
+	<select id="deleteByOntidAndHash" parameterType="java.lang.String">
+		UPDATE ${tableName}
+		SET status = 1
+		WHERE (filehash = #{hash,jdbcType=VARCHAR} or txhash = #{hash,jdbcType=VARCHAR})
+		and (ontid = #{ontid,jdbcType=VARCHAR} or company_ontid = #{ontid,jdbcType=VARCHAR})
+	</select>
+
+	<!---->
+	<select id="count" resultType="int">
+		select count(*)
+		from ${tableName}
+		where (ontid = #{ontid,jdbcType=VARCHAR} or company_ontid = #{ontid,jdbcType=VARCHAR})
+		and status = 0
+	</select>
+
+	<select id="selectByOntidAndTxHash" parameterType="java.lang.String" resultMap="ResultMapWithBLOBs">
+		select
+		<include refid="Base_Column_List"/>
+		,
+		<include refid="Blob_Column_List"/>
+		from ${tableName}
+		where (txhash = #{txhash,jdbcType=VARCHAR}) and (ontid = #{ontid,jdbcType=VARCHAR} or company_ontid = #{ontid,jdbcType=VARCHAR}) and
+		status = 0
+		order by create_time desc
+	</select>
+
 	<select id="selectByOntidAndHash" parameterType="java.lang.String" resultMap="ResultMapWithBLOBs">
 		select
 		<include refid="Base_Column_List"/>
@@ -124,21 +151,6 @@
 		where (filehash = #{hash,jdbcType=VARCHAR} or txhash = #{hash,jdbcType=VARCHAR}) and (ontid = #{ontid,jdbcType=VARCHAR} or company_ontid = #{ontid,jdbcType=VARCHAR}) and
 		status = 0
 		order by create_time desc
-	</select>
-
-	<select id="deleteByOntidAndHash" parameterType="java.lang.String">
-		UPDATE ${tableName}
-		SET status = 1
-		WHERE (filehash = #{hash,jdbcType=VARCHAR} or txhash = #{hash,jdbcType=VARCHAR})
-		  and (ontid = #{ontid,jdbcType=VARCHAR} or company_ontid = #{ontid,jdbcType=VARCHAR})
-	</select>
-
-	<!---->
-	<select id="count" resultType="int">
-		select count(*)
-		from ${tableName}
-		where (ontid = #{ontid,jdbcType=VARCHAR} or company_ontid = #{ontid,jdbcType=VARCHAR})
-		  and status = 0
 	</select>
 
 	<select id="selectByOntidPageNumSize" parameterType="java.lang.String" resultMap="ResultMapWithBLOBs">
@@ -181,5 +193,11 @@
 		order by create_time desc
 	</select>
 
+	<update id="updateRevokeTx" parameterType="java.lang.String">
+		update ${tableName}
+		set revoke_tx = #{revokeTx,jdbcType=VARCHAR},
+		update_time = #{updateTime,jdbcType=TIMESTAMP}
+		where txhash = #{txhash,jdbcType=INTEGER}
+	</update>
 
 </mapper>

@@ -12,6 +12,7 @@ public enum ErrorCode {
     ONTID_PubKey_EXIST(71003, "ONTID_PubKey_EXIST"),
     //
     BLOCKCHAIN(81001, "BLOCKCHAIN_ERROR"),
+    FILEHASH_NOT_EXIST(81002, "FILEHASH_NOT_EXIST"),
     //
     SFL_ERROR(90001, "司法链接口调用失败"),
     //

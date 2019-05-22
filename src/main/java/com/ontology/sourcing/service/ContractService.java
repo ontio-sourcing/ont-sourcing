@@ -70,18 +70,16 @@ public class ContractService {
 
     public Map<String, String> putContract(Contract contract) throws Exception {
 
-        List paramList = new ArrayList<>();
-        paramList.add("putRecord".getBytes());
-
-        List args = new ArrayList();
-        // key
-        args.add(contractToDigestForKey(contract));  // 上链时，只把指定field的组合后的hash
-        // value
-        args.add(contractToDigestForValue(contract));  // 上链时，只把指定field的组合后的hash
+        // 上链时，只把指定field的组合后的hash作为key
+        String c_key = contractToDigestForKey(contract);
+        // 上链时，只把指定field的组合后的hash作为value
+        String c_value = contractToDigestForValue(contract);
 
         //
-        paramList.add(args);
-        byte[] params = BuildParams.createCodeParamsScript(paramList);
+        return putContract(contract, c_key, c_value);
+    }
+
+    public Map<String, String> putContract(Contract contract, String c_key, String c_value) throws Exception {
 
         // 先查询是不是项目方，有没有设置指定的payer地址和合约地址
         String c_ontid = contract.getCompanyOntid();
@@ -94,9 +92,25 @@ public class ContractService {
             // TODO
             throw new Exception("项目方地址列表中找不到该ontid..." + c_ontid);
         }
+        // String s2 = payer.getAddressU160().toBase58();
 
         //
-        // String s2 = payer.getAddressU160().toBase58();
+        logger.debug("c_key is {}", c_key);
+        logger.debug("c_value is {}", c_value);
+
+        //
+        List paramList = new ArrayList<>();
+        paramList.add("putRecord".getBytes());
+
+        List args = new ArrayList();
+        // key
+        args.add(c_key);
+        // value
+        args.add(c_value);
+
+        //
+        paramList.add(args);
+        byte[] params = BuildParams.createCodeParamsScript(paramList);
 
         //
         Map<String, String> map = invokeContract(Helper.reverse(codeAddr), null, params, payer, 76220L, GlobalVariable.DEFAULT_GAS_PRICE, false);
@@ -266,6 +280,13 @@ public class ContractService {
     }
 
     //
+    public List<Contract> selectByOntidAndTxHash(String ontid, String txhash) {
+        String tableName = getIndex(ontid).getName();
+        List<Contract> list = contractMapper.selectByOntidAndTxHash(tableName, ontid, txhash);
+        return addHeight(list);
+    }
+
+    //
     public List<Contract> selectByOntidAndHash(String ontid, String hash) {
         String tableName = getIndex(ontid).getName();
         List<Contract> list = contractMapper.selectByOntidAndHash(tableName, ontid, hash);
@@ -285,6 +306,13 @@ public class ContractService {
         List<Contract> list = contractMapper.selectByHash(GlobalVariable.CURRENT_CONTRACT_TABLE_NAME, hash);
         return addHeight(list);
     }
+
+    //
+    public int updateRevokeTx(String ontid, String txhash, String revokeTx) {
+        String tableName = getIndex(ontid).getName();
+        return contractMapper.updateRevokeTx(tableName, txhash, revokeTx, new Date());
+    }
+
 
     //
     public Integer count(String ontid) {

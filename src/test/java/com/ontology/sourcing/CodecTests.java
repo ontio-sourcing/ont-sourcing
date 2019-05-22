@@ -78,9 +78,17 @@ public class CodecTests {
 
     @Test
     public void example05() throws UnsupportedEncodingException {
-        String afterBase64 = Base64ConvertUtil
-                .encode("");
+        String s = "";
+        System.out.println(s.length());
+        String afterBase64 = Base64ConvertUtil.encode(s);
         System.out.println(afterBase64);
+        System.out.println(afterBase64);
+
+    }
+
+    @Test
+    public void example06() {
+
 
     }
 

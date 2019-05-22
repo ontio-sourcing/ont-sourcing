@@ -14,7 +14,6 @@ import com.ontology.sourcing.service.util.SyncService;
 import com.ontology.sourcing.service.util.ValidateService;
 import com.ontology.sourcing.util.GlobalVariable;
 import com.ontology.sourcing.util.exp.ErrorCode;
-import org.json.JSONObject;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -653,7 +652,7 @@ public class ContractController {
         }
 
         //
-        String hash = (String) obj.get("hash");
+        String txhash = (String) obj.get("hash");
         String accessToken = (String) obj.get("access_token");
 
         //
@@ -668,7 +667,33 @@ public class ContractController {
 
         // ontid 也要作为条件
         try {
-            contractService.deleteByOntidAndHash(ontid, hash);
+            //
+            List<Contract> exists = contractService.selectByOntidAndTxHash(ontid, txhash);
+            if (exists.size() != 0) {
+
+                //
+                contractService.deleteByOntidAndHash(ontid, txhash);
+
+                //
+                Contract exist = exists.get(0);
+                String c_key = "revoke" + contractService.contractToDigestForKey(exist);
+                String c_value = "";
+                Map<String, String> map2 = contractService.putContract(exist, c_key, c_value);
+                String revokeTx = map2.get("txhash");
+
+                //
+                contractService.updateRevokeTx(ontid, txhash, revokeTx);
+
+                // todo 保证一定从链上取到
+                syncService.confirmTx(revokeTx);
+
+            } else {
+                //
+                rst.setResult(true);
+                rst.setErrorAndDesc(ErrorCode.FILEHASH_NOT_EXIST);
+                return new ResponseEntity<>(rst, HttpStatus.OK);
+            }
+
         } catch (Exception e) {
             logger.error(e.getMessage());
             rst.setErrorAndDesc(e);

@@ -11,10 +11,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
+@TestPropertySource(locations = "file:/Volumes/Data/_work/201802_Ontology/ONTSouring/ont-sourcing/config/application-local.properties")
 public class IdentityTests01 {
 
     //
@@ -99,5 +101,25 @@ public class IdentityTests01 {
  */
     }
 
+
+    // privateKey to WIF
+    @Test
+    public void example03() throws Exception {
+
+        //
+        String s = "";
+        System.out.println(s.length());  // 64
+
+        //
+        com.github.ontio.account.Account account = GlobalVariable.getInstanceOfAccount(s);
+
+        //
+        // String wif = Base58.base58Encode(s.getBytes());  // 貌似不对
+        String wif = account.exportWif();
+
+        //
+        System.out.println(wif);
+        System.out.println(wif.length());  // 52
+    }
 
 }

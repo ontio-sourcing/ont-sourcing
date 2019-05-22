@@ -7,8 +7,8 @@
 		<result column="flag" jdbcType="INTEGER" property="flag"/>
 	</resultMap>
 	<sql id="Base_Column_List">
-    id, name, flag
-  </sql>
+		id, name, flag
+	</sql>
 	<select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
 		select
 		<include refid="Base_Column_List"/>
@@ -16,15 +16,15 @@
 		where id = #{id,jdbcType=INTEGER}
 	</select>
 	<delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
-    delete from tbl_contract_index
-    where id = #{id,jdbcType=INTEGER}
-  </delete>
+		delete from tbl_contract_index
+		where id = #{id,jdbcType=INTEGER}
+	</delete>
 	<insert id="insert" parameterType="com.ontology.sourcing.dao.contract.ContractIndex">
-    insert into tbl_contract_index (id, name, flag
-      )
-    values (#{id,jdbcType=INTEGER}, #{name,jdbcType=VARCHAR}, #{flag,jdbcType=INTEGER}
-      )
-  </insert>
+		insert into tbl_contract_index (id, name, flag
+		)
+		values (#{id,jdbcType=INTEGER}, #{name,jdbcType=VARCHAR}, #{flag,jdbcType=INTEGER}
+		)
+	</insert>
 	<insert id="insertSelective" parameterType="com.ontology.sourcing.dao.contract.ContractIndex">
 		insert into tbl_contract_index
 		<trim prefix="(" suffix=")" suffixOverrides=",">
@@ -63,15 +63,15 @@
 		where id = #{id,jdbcType=INTEGER}
 	</update>
 	<update id="updateByPrimaryKey" parameterType="com.ontology.sourcing.dao.contract.ContractIndex">
-    update tbl_contract_index
-    set name = #{name,jdbcType=VARCHAR},
-      flag = #{flag,jdbcType=INTEGER}
-    where id = #{id,jdbcType=INTEGER}
-  </update>
+		update tbl_contract_index
+		set name = #{name,jdbcType=VARCHAR},
+		flag = #{flag,jdbcType=INTEGER}
+		where id = #{id,jdbcType=INTEGER}
+	</update>
 
 	<select id="count" resultType="int">
-  select count(*) from tbl_contract_index
-  </select>
+		select count(*) from tbl_contract_index
+	</select>
 
 	<select id="selectCurrent" resultMap="BaseResultMap">
 		select
@@ -81,32 +81,33 @@
 	</select>
 
 	<select id="getTableSize" resultType="int">
-  SELECT
-  round(((data_length + index_length) / 1024 / 1024 /1024), 2) `Size in GB`
-  FROM information_schema.TABLES
-  WHERE table_name = '${tableName}';
-  </select>
+		SELECT
+		round(((data_length + index_length) / 1024 / 1024 /1024), 2) `Size in GB`
+		FROM information_schema.TABLES
+		WHERE table_name = '${tableName}';
+	</select>
 
 	<update id="createNewTable">
-CREATE TABLE `${newTableName}` (
-`id` int(11) NOT NULL AUTO_INCREMENT,
- `ontid` varchar(255) NOT NULL,
- `company_ontid` varchar(255) NOT NULL,
- `txhash` varchar(255) NOT NULL,
- `filehash` varchar(255) NOT NULL,
- `detail` text NOT NULL,
- `type` varchar(16) NOT NULL,
- `timestamp` datetime NOT NULL,
- `timestamp_sign` text NOT NULL,
- `create_time` datetime NOT NULL,
- `update_time` datetime DEFAULT NULL,
-`status` int(11) NOT NULL DEFAULT '0' COMMENT '0-未删除；1-已删除；',
-PRIMARY KEY (`id`),
- UNIQUE KEY `txhash` (`txhash`) USING BTREE,
- KEY `filehash` (`filehash`),
- KEY `type` (`type`),
- KEY `ontid` (`ontid`),
- KEY `company_ontid` (`company_ontid`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8
-  </update>
+		CREATE TABLE `${newTableName}` (
+		`id` int(11) NOT NULL AUTO_INCREMENT,
+		`ontid` varchar(255) NOT NULL,
+		`company_ontid` varchar(255) NOT NULL,
+		`txhash` varchar(255) NOT NULL,
+		`filehash` varchar(255) NOT NULL,
+		`detail` text NOT NULL,
+		`type` varchar(16) NOT NULL,
+		`timestamp` datetime NOT NULL,
+		`timestamp_sign` text NOT NULL,
+		`create_time` datetime NOT NULL,
+		`update_time` datetime DEFAULT NULL,
+		`status` int(11) NOT NULL DEFAULT '0' COMMENT '0-未删除；1-已删除；',
+		`revoke_tx` varchar(255) DEFAULT NULL,
+		PRIMARY KEY (`id`),
+		UNIQUE KEY `txhash` (`txhash`) USING BTREE,
+		KEY `filehash` (`filehash`),
+		KEY `ontid` (`ontid`),
+		KEY `company_ontid` (`company_ontid`),
+		KEY `type` (`type`)
+		) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8
+	</update>
 </mapper>

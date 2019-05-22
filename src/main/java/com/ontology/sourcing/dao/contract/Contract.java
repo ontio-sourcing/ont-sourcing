@@ -31,6 +31,16 @@ public class Contract {
 
     private Integer height;  // 跨表
 
+    private String revokeTx;
+
+    public String getRevokeTx() {
+        return revokeTx;
+    }
+
+    public void setRevokeTx(String revokeTx) {
+        this.revokeTx = revokeTx;
+    }
+
     public String getCompanyOntid() {
         return companyOntid;
     }

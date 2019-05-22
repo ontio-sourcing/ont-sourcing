@@ -6,21 +6,37 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ContractIndexMapper {
-    int deleteByPrimaryKey(Integer id);
+
+    // ========== 增 ==========
 
     int insert(ContractIndex record);
 
-    int insertSelective(ContractIndex record);
+    // ========== 删 ==========
 
-    ContractIndex selectByPrimaryKey(Integer id);
 
+    // ========== 改 ==========
+
+    //
     int updateByPrimaryKeySelective(ContractIndex record);
 
     int updateByPrimaryKey(ContractIndex record);
 
+    // ========== 查 ==========
+
+    //
+    ContractIndex selectCurrent();
+
+    ContractIndex selectByPrimaryKey(Integer id);
+
+    // ========== 统计 ==========
+
     //
     int count();
-    ContractIndex selectCurrent();
+
+    // ========== 其它 ==========
+
+    //
     int getTableSize(@Param("tableName") String tableName);
+
     void createNewTable(@Param("newTableName") String newTableName);
 }
