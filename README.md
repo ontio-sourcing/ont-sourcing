@@ -923,7 +923,7 @@ method：POST
 ### 根据hash删除存证
 
 ```text
-url：/api/v1/contract/hash
+url：/api/v1/contract/hash/delete
 method：POST
 ```
 
