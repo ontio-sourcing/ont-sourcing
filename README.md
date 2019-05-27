@@ -947,7 +947,7 @@ method：POST
 {
     "version": "1.0.0",
     "error": 0,
-    "action": updateStatusByOntidAndHash,
+    "action": "deleteByOntidAndHash",
     "result": true,
     "desc": "SUCCESS"
 }
