@@ -1,13 +1,24 @@
 package com.ontology.sourcing.dao.contract;
 
-import org.springframework.stereotype.Component;
+import com.ontology.sourcing.mapper.contract.ContractIndexMapper;
+import lombok.Data;
 
-@Component
+import javax.persistence.*;
+
+// @Component
+@Data
+@Entity
+@Table(name = ContractIndexMapper.tableName)
 public class ContractIndex {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column
     private String name;
 
+    @Column
     private Integer flag;
 
     public Integer getId() {

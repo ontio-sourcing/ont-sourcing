@@ -18,16 +18,18 @@ public class ValidateService {
     private ActionOntidMapper actionOntidMapper;
 
     //
-    private OAuthService oauthService;
+    private OAuthService      oauthService;
     private PropertiesService propertiesService;
 
     //
     @Autowired
-    public ValidateService(ActionOntidMapper actionOntidMapper, OAuthService oauthService, PropertiesService propertiesService) {
+    public ValidateService(ActionOntidMapper actionOntidMapper,
+                           OAuthService oauthService,
+                           PropertiesService propertiesService) {
         //
         this.actionOntidMapper = actionOntidMapper;
         //
-        this.oauthService = oauthService;
+        this.oauthService      = oauthService;
         this.propertiesService = propertiesService;
     }
 
@@ -80,7 +82,8 @@ public class ValidateService {
             throw new Exception("hash length should be 64.");
     }
 
-    public void validateParamsKeys(LinkedHashMap<String, Object> obj, Set<String> required) throws Exception {
+    public void validateParamsKeys(LinkedHashMap<String, Object> obj,
+                                   Set<String> required) throws Exception {
         Iterator<String> requiredIterator = required.iterator();
         while (requiredIterator.hasNext()) {
             String next = requiredIterator.next();
@@ -148,7 +151,8 @@ public class ValidateService {
 
         if (obj.containsKey("type")) {
             String type = (String) obj.get("type");
-            if (!ContractTypes.contains(type) && !StringUtils.isEmpty(type)) {
+            // if (!ContractTypes.contains(type) && !StringUtils.isEmpty(type)) {
+            if (!ContractTypes.contains(type)) {
                 throw new Exception("type " + type + " is incorrect.");
             }
         }
@@ -304,7 +308,7 @@ public class ValidateService {
                 throw new Exception("filelist contains no elements.");
             }
             // TODO
-            if (filelist.size() >= 30) {
+            if (filelist.size() > 30) {
                 throw new Exception("filelist contains too many elements. max is 30.");
             }
             //

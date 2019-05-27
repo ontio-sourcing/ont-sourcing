@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ontology.sourcing.mapper.contract.ContractMapper">
+
 	<resultMap id="BaseResultMap" type="com.ontology.sourcing.dao.contract.Contract">
 		<result column="ontid" jdbcType="VARCHAR" property="ontid"/>
 		<result column="company_ontid" jdbcType="VARCHAR" property="companyOntid"/>
@@ -13,6 +14,7 @@
 		<result column="status" jdbcType="INTEGER" property="status"/>
 		<result column="revoke_tx" jdbcType="VARCHAR" property="revokeTx"/>
 	</resultMap>
+
 	<resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="com.ontology.sourcing.dao.contract.Contract">
 		<result column="detail" jdbcType="LONGVARCHAR" property="detail"/>
 		<result column="timestamp_sign" jdbcType="LONGVARCHAR" property="timestampSign"/>
@@ -21,9 +23,12 @@
 	<sql id="Base_Column_List">
 		ontid, company_ontid, txhash, filehash, type, timestamp, create_time, update_time, status, revoke_tx
 	</sql>
+
 	<sql id="Blob_Column_List">
 		detail, timestamp_sign
 	</sql>
+
+	<!-- ========== 增 ========== -->
 
 	<insert id="insert" parameterType="com.ontology.sourcing.dao.contract.Contract">
 		insert into ${tableName} (ontid, company_ontid, txhash, filehash, type,
@@ -116,20 +121,26 @@
 		</foreach>
 	</insert>
 
-	<select id="deleteByOntidAndHash" parameterType="java.lang.String">
+	<!-- ========== 删 ========== -->
+
+
+	<!-- ========== 改 ========== -->
+
+	<update id="updateStatusByOntidAndHash" parameterType="java.lang.String">
 		UPDATE ${tableName}
 		SET status = 1
 		WHERE (filehash = #{hash,jdbcType=VARCHAR} or txhash = #{hash,jdbcType=VARCHAR})
 		and (ontid = #{ontid,jdbcType=VARCHAR} or company_ontid = #{ontid,jdbcType=VARCHAR})
-	</select>
+	</update>
 
-	<!---->
-	<select id="count" resultType="int">
-		select count(*)
-		from ${tableName}
-		where (ontid = #{ontid,jdbcType=VARCHAR} or company_ontid = #{ontid,jdbcType=VARCHAR})
-		and status = 0
-	</select>
+	<update id="updateRevokeTx" parameterType="java.lang.String">
+		update ${tableName}
+		set revoke_tx = #{revokeTx,jdbcType=VARCHAR},
+		update_time = #{updateTime,jdbcType=TIMESTAMP}
+		where txhash = #{txhash,jdbcType=INTEGER}
+	</update>
+
+	<!-- ========== 查 ========== -->
 
 	<select id="selectByOntidAndTxHash" parameterType="java.lang.String" resultMap="ResultMapWithBLOBs">
 		select
@@ -153,7 +164,7 @@
 		order by create_time desc
 	</select>
 
-	<select id="selectByOntidPageNumSize" parameterType="java.lang.String" resultMap="ResultMapWithBLOBs">
+	<select id="selectByOntidAndPage" parameterType="java.lang.String" resultMap="ResultMapWithBLOBs">
 		select
 		<include refid="Base_Column_List"/>
 		,
@@ -163,7 +174,7 @@
 		order by create_time desc limit #{start}, #{offset}
 	</select>
 
-	<select id="selectByOntidPageNumSizeAndType" parameterType="java.lang.String" resultMap="ResultMapWithBLOBs">
+	<select id="selectByOntidAndPageAndType" parameterType="java.lang.String" resultMap="ResultMapWithBLOBs">
 		select
 		<include refid="Base_Column_List"/>
 		,
@@ -173,9 +184,7 @@
 		order by create_time desc limit #{start},#{offset}
 	</select>
 
-	<!---->
-
-	<select id="selectByPageNumSize" parameterType="java.lang.String" resultMap="ResultMapWithBLOBs">
+	<select id="selectByPage" parameterType="java.lang.String" resultMap="ResultMapWithBLOBs">
 		select
 		<include refid="Base_Column_List"/>
 		,
@@ -193,11 +202,15 @@
 		order by create_time desc
 	</select>
 
-	<update id="updateRevokeTx" parameterType="java.lang.String">
-		update ${tableName}
-		set revoke_tx = #{revokeTx,jdbcType=VARCHAR},
-		update_time = #{updateTime,jdbcType=TIMESTAMP}
-		where txhash = #{txhash,jdbcType=INTEGER}
-	</update>
+
+	<!-- ========== 统计 ========== -->
+
+	<select id="count" resultType="int">
+		select count(*)
+		from ${tableName}
+		where (ontid = #{ontid,jdbcType=VARCHAR} or company_ontid = #{ontid,jdbcType=VARCHAR})
+		and status = 0
+	</select>
+
 
 </mapper>

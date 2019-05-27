@@ -10,38 +10,66 @@ import java.util.List;
 @Repository
 public interface ContractMapper {
 
-    int insert(@Param("tableName") String tableName, @Param("record") Contract record);
+    // ========== 增 ==========
 
-    int insertSelective(@Param("tableName") String tableName, @Param("record") Contract record);
+    int insert(@Param("tableName") String tableName,
+               @Param("record") Contract record);
 
-    //
-    void insertBatch(@Param("tableName") String tableName, @Param("contractList") List<Contract> contractList);
+    int insertSelective(@Param("tableName") String tableName,
+                        @Param("record") Contract record);
 
-    //
-    List<Contract> selectByOntidAndTxHash(@Param("tableName") String tableName, @Param("ontid") String ontid, @Param("txhash") String txhash);
+    void insertBatch(@Param("tableName") String tableName,
+                     @Param("contractList") List<Contract> contractList);
 
-    List<Contract> selectByOntidAndHash(@Param("tableName") String tableName, @Param("ontid") String ontid, @Param("hash") String hash);
 
-    //
-    List<Contract> deleteByOntidAndHash(@Param("tableName") String tableName, @Param("ontid") String ontid, @Param("hash") String hash);
+    // ========== 删 ==========
 
-    //
-    List<Contract> selectByHash(@Param("tableName") String tableName, @Param("hash") String hash);
 
-    //
-    int count(@Param("tableName") String tableName, @Param("ontid") String ontid);
+    // ========== 改 ==========
 
-    List<Contract> selectByOntidPageNumSize(@Param("tableName") String tableName, @Param("ontid") String ontid, @Param("start") int start, @Param("offset") int offset);
 
-    List<Contract> selectByOntidPageNumSizeAndType(@Param("tableName") String tableName,
-                                                   @Param("ontid") String ontid,
-                                                   @Param("start") int start,
-                                                   @Param("offset") int offset,
-                                                   @Param("type") String type);
+    int updateStatusByOntidAndHash(@Param("tableName") String tableName,
+                                   @Param("ontid") String ontid,
+                                   @Param("hash") String hash);
 
-    //
-    List<Contract> selectByPageNumSize(@Param("tableName") String tableName, @Param("start") int start, @Param("offset") int offset);
+    int updateRevokeTx(@Param("tableName") String tableName,
+                       @Param("txhash") String txhash,
+                       @Param("revokeTx") String revokeTx,
+                       @Param("updateTime") Date updateTime);
 
-    //
-    int updateRevokeTx(@Param("tableName") String tableName, @Param("txhash") String txhash, @Param("revokeTx") String revokeTx, @Param("updateTime") Date updateTime);
+
+    // ========== 查 ==========
+
+    List<Contract> selectByOntidAndTxHash(@Param("tableName") String tableName,
+                                          @Param("ontid") String ontid,
+                                          @Param("txhash") String txhash);
+
+    List<Contract> selectByOntidAndHash(@Param("tableName") String tableName,
+                                        @Param("ontid") String ontid,
+                                        @Param("hash") String hash);
+
+    List<Contract> selectByHash(@Param("tableName") String tableName,
+                                @Param("hash") String hash);
+
+    List<Contract> selectByOntidAndPage(@Param("tableName") String tableName,
+                                        @Param("ontid") String ontid,
+                                        @Param("start") int start,
+                                        @Param("offset") int offset);
+
+    List<Contract> selectByOntidAndPageAndType(@Param("tableName") String tableName,
+                                               @Param("ontid") String ontid,
+                                               @Param("start") int start,
+                                               @Param("offset") int offset,
+                                               @Param("type") String type);
+
+    List<Contract> selectByPage(@Param("tableName") String tableName,
+                                @Param("start") int start,
+                                @Param("offset") int offset);
+
+
+    // ========== 统计 ==========
+
+    int count(@Param("tableName") String tableName,
+              @Param("ontid") String ontid);
+
 }

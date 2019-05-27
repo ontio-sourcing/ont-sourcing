@@ -10,12 +10,16 @@ import java.util.Date;
 @Repository
 public interface ContractOntidMapper extends JpaRepository<ContractOntid, Integer> {
 
+    String tableName = "tbl_contract_ontid";
+
     ContractOntid findByOntid(String ontid);
 
     ContractOntid findFirstByOntidOrderByCreateTimeAsc(String ontid);
 
     @Modifying
     @Transactional
-    @Query(value = "insert into tbl_contract_ontid (ontid,contract_index,create_time) values(?1,?2,?3)", nativeQuery = true)
-    int saveIfIgnore(String ontid, int index, Date create_time);
+    @Query(value = "insert into " + tableName + " (ontid,contract_index,create_time) values(?1,?2,?3)", nativeQuery = true)
+    int saveIfIgnore(String ontid,
+                     int index,
+                     Date create_time);
 }

@@ -163,7 +163,7 @@ public class TableService {
         while (true) {
 
             //
-            int count = contractIndexMapper.count();
+            long count = contractIndexMapper.count();
             if (count == 0) {
                 // 第一次创建表
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmm");
@@ -174,7 +174,9 @@ public class TableService {
                 ContractIndex newContractTable = new ContractIndex();
                 newContractTable.setName(newTableName);
                 newContractTable.setFlag(1);
-                int newTableID = contractIndexMapper.insert(newContractTable);
+                // int newTableID = contractIndexMapper.insert(newContractTable);
+                ContractIndex newCI = contractIndexMapper.saveAndFlush(newContractTable);
+                int newTableID = newCI.getId();
 
                 // 切换全局表名
                 GlobalVariable.CURRENT_CONTRACT_TABLE_INDEX = newTableID;
@@ -200,13 +202,16 @@ public class TableService {
 
                 // 在表目录中取消旧表，并设置flag为0
                 currentContractTable.setFlag(0);
-                contractIndexMapper.updateByPrimaryKeySelective(currentContractTable);
+                // contractIndexMapper.updateByPrimaryKeySelective(currentContractTable);
+                contractIndexMapper.save(currentContractTable);
 
                 // 在表目录中加入新表，并设置flag为1
                 ContractIndex newContractTable = new ContractIndex();
                 newContractTable.setName(newTableName);
                 newContractTable.setFlag(1);
-                int newTableID = contractIndexMapper.insert(newContractTable);
+                // int newTableID = contractIndexMapper.insert(newContractTable);
+                ContractIndex newCI = contractIndexMapper.saveAndFlush(newContractTable);
+                int newTableID = newCI.getId();
 
                 // 切换全局表名
                 GlobalVariable.CURRENT_CONTRACT_TABLE_INDEX = newTableID;

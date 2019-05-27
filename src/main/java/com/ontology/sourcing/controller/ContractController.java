@@ -36,18 +36,23 @@ public class ContractController {
 
     //
     private Logger logger = (Logger) LoggerFactory.getLogger(ContractController.class);
+
+    //
     private Gson gson = new Gson();
 
     //
-    private TspService tspService;
-    private SyncService syncService;
+    private TspService      tspService;
+    private SyncService     syncService;
     private ValidateService validateService;
+
     //
-    private OAuthService oauthService;
-    private ContractService contractService;
+    private OAuthService       oauthService;
+    private ContractService    contractService;
     private OntidServerService ontidServerService;
+
     //
     private final KafkaTemplate<String, Object> kafkaTemplate;
+
     //
     private final String ontSourcingTopicPut;
 
@@ -61,12 +66,12 @@ public class ContractController {
                               KafkaTemplate<String, Object> kafkaTemplate,
                               @Value("${com.ontology.sourcing.kafka.topic.put}") String ontSourcingTopicPut) {
         //
-        this.tspService = tspService;
-        this.syncService = syncService;
+        this.tspService      = tspService;
+        this.syncService     = syncService;
         this.validateService = validateService;
         //
-        this.oauthService = oauthService;
-        this.contractService = contractService;
+        this.oauthService       = oauthService;
+        this.contractService    = contractService;
         this.ontidServerService = ontidServerService;
         //
         this.kafkaTemplate = kafkaTemplate;
@@ -103,7 +108,7 @@ public class ContractController {
 
         //
         String access_token = (String) obj.get("access_token");
-        String ontid = "";
+        String ontid        = "";
         try {
             ontid = oauthService.getContentUser(access_token);
         } catch (Exception e) {
@@ -168,7 +173,8 @@ public class ContractController {
     */
 
     @KafkaListener(topics = "#{'${com.ontology.sourcing.kafka.topic.put}'}")
-    public void kafkaListener01(List<String> list, Acknowledgment ack) {
+    public void kafkaListener01(List<String> list,
+                                Acknowledgment ack) {
 
         //
         logger.info("start fetching {} from mq ...", list.size());
@@ -176,13 +182,13 @@ public class ContractController {
             return;
 
         //
-        List<Contract> c_list = new ArrayList<>();
+        List<Contract> c_list     = new ArrayList<>();
         List<Contract> other_list = new ArrayList<>();
 
         //
-        String first = list.get(0);
+        String   first          = list.get(0);
         Contract first_contract = gson.fromJson(first, Contract.class);
-        String first_ontid = first_contract.getCompanyOntid();
+        String   first_ontid    = first_contract.getCompanyOntid();
 
 
         //
@@ -192,7 +198,7 @@ public class ContractController {
             Contract contract = gson.fromJson(message, Contract.class);
 
             //
-            String filehash = contract.getFilehash();
+            String filehash      = contract.getFilehash();
             String company_ontid = contract.getCompanyOntid();
 
             //
@@ -203,14 +209,14 @@ public class ContractController {
                 //
                 Map<String, Object> map = tspService.getTimeStampMap(filehash);
                 //
-                long timestamp = (long) map.get("timestamp");
+                long   timestamp     = (long) map.get("timestamp");
                 String timestampSign = map.get("timestampSign").toString();
                 //
                 contract.setTimestamp(new Date(timestamp * 1000L));
                 contract.setTimestampSign(timestampSign);
                 //
-                Map<String, String> map2 = contractService.putContract(contract);
-                String txhash = map2.get("txhash");
+                Map<String, String> map2   = contractService.putContract(contract);
+                String              txhash = map2.get("txhash");
                 contract.setTxhash(txhash);
                 //
                 if (contract.getCompanyOntid().equals(first_ontid)) {
@@ -232,11 +238,21 @@ public class ContractController {
         }
 
         //
-        contractService.saveToLocalBatch(first_ontid, c_list);
+        try {
+            contractService.saveToLocalBatch(first_ontid, c_list);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            return;
+        }
 
         //
         for (Contract c : other_list) {
-            contractService.saveToLocal(c.getCompanyOntid(), c);
+            try {
+                contractService.saveToLocal(c.getCompanyOntid(), c);
+            } catch (Exception e) {
+                logger.error(e.getMessage());
+                return;
+            }
         }
 
         //
@@ -274,9 +290,9 @@ public class ContractController {
 
         //
         String access_token = iw.getAccessToken();
-        String user_ontid = iw.getUserOntid();
-        String filehash = iw.getFilehash();
-        String type = iw.getType();
+        String user_ontid   = iw.getUserOntid();
+        String filehash     = iw.getFilehash();
+        String type         = iw.getType();
 
         //
         com.alibaba.fastjson.JSONObject jsonObject = new com.alibaba.fastjson.JSONObject();
@@ -328,14 +344,14 @@ public class ContractController {
                 //
                 Map<String, Object> map = tspService.getTimeStampMap(filehash);
                 //
-                long timestamp = (long) map.get("timestamp");
+                long   timestamp     = (long) map.get("timestamp");
                 String timestampSign = map.get("timestampSign").toString();
                 //
                 contract.setTimestamp(new Date(timestamp * 1000L));
                 contract.setTimestampSign(timestampSign);
                 //
-                Map<String, String> map2 = contractService.putContract(contract);
-                String txhash = map2.get("txhash");
+                Map<String, String> map2   = contractService.putContract(contract);
+                String              txhash = map2.get("txhash");
                 contract.setTxhash(txhash);
                 //
                 contractService.saveToLocal(company_ontid, contract);
@@ -380,7 +396,7 @@ public class ContractController {
 
         //
         String access_token = (String) obj.get("access_token");
-        String user_ontid = (String) obj.get("user_ontid");
+        String user_ontid   = (String) obj.get("user_ontid");
 
         //
         boolean async = false;
@@ -420,7 +436,7 @@ public class ContractController {
 
                 //
                 String filehash = iw.getFilehash();
-                String type = iw.getType();
+                String type     = iw.getType();
                 //
                 com.alibaba.fastjson.JSONObject jsonObject = new com.alibaba.fastjson.JSONObject();
                 jsonObject.put("metadata", iw.getMetadata());
@@ -453,14 +469,14 @@ public class ContractController {
                         //
                         Map<String, Object> map = tspService.getTimeStampMap(filehash);
                         //
-                        long timestamp = (long) map.get("timestamp");
+                        long   timestamp     = (long) map.get("timestamp");
                         String timestampSign = map.get("timestampSign").toString();
                         //
                         contract.setTimestamp(new Date(timestamp * 1000L));
                         contract.setTimestampSign(timestampSign);
                         //
-                        Map<String, String> map2 = contractService.putContract(contract);
-                        String txhash = map2.get("txhash");
+                        Map<String, String> map2   = contractService.putContract(contract);
+                        String              txhash = map2.get("txhash");
                         contract.setTxhash(txhash);
                         // 链同步
                         syncService.confirmTx(txhash);
@@ -529,7 +545,7 @@ public class ContractController {
 
         //
         String access_token = (String) obj.get("access_token");
-        String user_ontid = (String) obj.get("user_ontid");
+        String user_ontid   = (String) obj.get("user_ontid");
 
         //
         String company_ontid = "";
@@ -556,10 +572,10 @@ public class ContractController {
             //
             for (Map<String, Object> item : filelist) {
                 //
-                String filehash = item.get("filehash").toString();
-                String type = item.get("type").toString();
+                String                         filehash   = item.get("filehash").toString();
+                String                         type       = item.get("type").toString();
                 ArrayList<Map<String, Object>> detailList = (ArrayList<Map<String, Object>>) item.get("detail");
-                String detail = gson.toJson(detailList);
+                String                         detail     = gson.toJson(detailList);
                 // System.out.println(detail);
 
                 //
@@ -607,21 +623,24 @@ public class ContractController {
         }
 
         //
-        String hash = (String) obj.get("hash");
+        String hash        = (String) obj.get("hash");
         String accessToken = (String) obj.get("access_token");
 
         //
-        String ontid = "";
+        String         ontid = "";
+        List<Contract> list  = new ArrayList<>();
+
+        //
         try {
             ontid = oauthService.getContentUser(accessToken);
+
+            // ontid 也要作为条件，否则查到别人的了
+            list = contractService.selectByOntidAndHash(ontid, hash);
         } catch (Exception e) {
             logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
-
-        // ontid 也要作为条件，否则查到别人的了
-        List<Contract> list = contractService.selectByOntidAndHash(ontid, hash);
 
         //
         rst.setResult(list);
@@ -634,7 +653,7 @@ public class ContractController {
     public ResponseEntity<Result> deleteByOntidAndHash(@RequestBody LinkedHashMap<String, Object> obj) {
 
         //
-        Result rst = new Result("deleteByOntidAndHash");
+        Result rst = new Result("updateStatusByOntidAndHash");
 
         //
         Set<String> required = new HashSet<>();
@@ -652,7 +671,7 @@ public class ContractController {
         }
 
         //
-        String txhash = (String) obj.get("hash");
+        String txhash      = (String) obj.get("hash");
         String accessToken = (String) obj.get("access_token");
 
         //
@@ -672,14 +691,15 @@ public class ContractController {
             if (exists.size() != 0) {
 
                 //
-                contractService.deleteByOntidAndHash(ontid, txhash);
+                int rt = contractService.updateStatusByOntidAndHash(ontid, txhash);
+                System.out.println(rt);
 
                 //
-                Contract exist = exists.get(0);
-                String c_key = "revoke" + contractService.contractToDigestForKey(exist);
-                String c_value = "";
-                Map<String, String> map2 = contractService.putContract(exist, c_key, c_value);
-                String revokeTx = map2.get("txhash");
+                Contract            exist    = exists.get(0);
+                String              c_key    = "revoke" + contractService.contractToDigestForKey(exist);
+                String              c_value  = "";
+                Map<String, String> map2     = contractService.putContract(exist, c_key, c_value);
+                String              revokeTx = map2.get("txhash");
 
                 //
                 contractService.updateRevokeTx(ontid, txhash, revokeTx);
@@ -690,7 +710,7 @@ public class ContractController {
             } else {
                 //
                 rst.setResult(true);
-                rst.setErrorAndDesc(ErrorCode.FILEHASH_NOT_EXIST);
+                rst.setErrorAndDesc(ErrorCode.TXHASH_NOT_EXIST);
                 return new ResponseEntity<>(rst, HttpStatus.OK);
             }
 
@@ -734,8 +754,8 @@ public class ContractController {
 
         //
         String accessToken = (String) obj.get("access_token");
-        int pageNum = Integer.parseInt(obj.get("pageNum").toString());
-        int pageSize = Integer.parseInt(obj.get("pageSize").toString());
+        int    pageNum     = Integer.parseInt(obj.get("pageNum").toString());
+        int    pageSize    = Integer.parseInt(obj.get("pageSize").toString());
         //
         String type = "";
         if (obj.containsKey("type")) {
@@ -743,16 +763,19 @@ public class ContractController {
         }
 
         //
-        String ontid = "";
+        String         ontid = "";
+        List<Contract> list  = new ArrayList<>();
         try {
+            //
             ontid = oauthService.getContentUser(accessToken);
+            //
+            list = contractService.getHistoryByOntid(ontid, pageNum, pageSize, type);
         } catch (Exception e) {
             logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
-        //
-        List<Contract> list = contractService.getHistoryByOntid(ontid, pageNum, pageSize, type);
+
         //
         rst.setResult(list);
         rst.setErrorAndDesc(ErrorCode.SUCCESSS);
@@ -783,16 +806,17 @@ public class ContractController {
         String accessToken = (String) obj.get("access_token");
 
         //
-        String ontid = "";
+        String  ontid = "";
+        Integer count;
         try {
             ontid = oauthService.getContentUser(accessToken);
+            count = contractService.count(ontid);
         } catch (Exception e) {
             logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
-        //
-        Integer count = contractService.count(ontid);
+
         //
         rst.setResult(count);
         rst.setErrorAndDesc(ErrorCode.SUCCESSS);
@@ -821,7 +845,7 @@ public class ContractController {
         }
 
         //
-        int pageNum = Integer.parseInt(obj.get("pageNum").toString());
+        int pageNum  = Integer.parseInt(obj.get("pageNum").toString());
         int pageSize = Integer.parseInt(obj.get("pageSize").toString());
 
         //
@@ -898,8 +922,8 @@ public class ContractController {
         }
 
         //
-        String ontid = (String) obj.get("ontid");
-        String prikey = (String) obj.get("prikey");
+        String ontid     = (String) obj.get("ontid");
+        String prikey    = (String) obj.get("prikey");
         String code_addr = (String) obj.get("code_addr");
 
         //

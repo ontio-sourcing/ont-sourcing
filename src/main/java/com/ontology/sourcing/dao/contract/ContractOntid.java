@@ -1,5 +1,6 @@
 package com.ontology.sourcing.dao.contract;
 
+import com.ontology.sourcing.mapper.contract.ContractOntidMapper;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -7,10 +8,11 @@ import java.util.Date;
 
 @Data
 @Entity
-@Table(name = "tbl_contract_ontid")
+@Table(name = ContractOntidMapper.tableName)
 public class ContractOntid {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @Column
