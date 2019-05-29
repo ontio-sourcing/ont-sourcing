@@ -161,7 +161,7 @@
 		from ${tableName}
 		where (filehash = #{hash,jdbcType=VARCHAR} or txhash = #{hash,jdbcType=VARCHAR}) and (ontid = #{ontid,jdbcType=VARCHAR} or company_ontid = #{ontid,jdbcType=VARCHAR}) and
 		status = 0
-		order by create_time desc
+		order by id desc
 	</select>
 
 	<select id="selectByOntidAndPage" parameterType="java.lang.String" resultMap="ResultMapWithBLOBs">
@@ -171,7 +171,7 @@
 		<include refid="Blob_Column_List"/>
 		from ${tableName}
 		where ( ontid = #{ontid,jdbcType=VARCHAR} or company_ontid = #{ontid,jdbcType=VARCHAR} ) and status = 0
-		order by create_time desc limit #{start}, #{offset}
+		order by id desc limit #{start}, #{offset}
 	</select>
 
 	<select id="selectByOntidAndPageAndType" parameterType="java.lang.String" resultMap="ResultMapWithBLOBs">
@@ -181,7 +181,7 @@
 		<include refid="Blob_Column_List"/>
 		from ${tableName}
 		where (ontid = #{ontid,jdbcType=VARCHAR} or company_ontid = #{ontid,jdbcType=VARCHAR}) and type = #{type,jdbcType=VARCHAR} and status = 0
-		order by create_time desc limit #{start},#{offset}
+		order by id desc limit #{start},#{offset}
 	</select>
 
 	<select id="selectByPage" parameterType="java.lang.String" resultMap="ResultMapWithBLOBs">
@@ -195,12 +195,12 @@
 
 	<select id="selectByHash" parameterType="java.lang.String" resultMap="ResultMapWithBLOBs">
 		select
-		<include refid="Base_Column_List"/>
+		<include refid="Base_Column_sList"/>
 		,
 		<include refid="Blob_Column_List"/>
 		from ${tableName}
 		where (filehash = #{hash,jdbcType=VARCHAR} or txhash = #{hash,jdbcType=VARCHAR}) and status = 0
-		order by create_time desc
+		order by id desc
 	</select>
 
 
