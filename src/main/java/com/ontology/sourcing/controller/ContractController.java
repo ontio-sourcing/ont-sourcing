@@ -521,6 +521,7 @@ public class ContractController {
         }
     }
 
+    // 点晴定制
     @PostMapping("/attestations/put/custom")
     public ResponseEntity<Result> putAttestationsCustom(@RequestBody LinkedHashMap<String, Object> obj) {
 
@@ -579,17 +580,33 @@ public class ContractController {
                 // System.out.println(detail);
 
                 //
+                Map<String, Object> map = tspService.getTimeStampMap(filehash);
+                //
+                long timestamp = (long) map.get("timestamp");
+                String timestampSign = map.get("timestampSign").toString();
+                //
                 Contract contract = new Contract();
                 contract.setCompanyOntid(company_ontid);
                 contract.setOntid(user_ontid);
                 contract.setFilehash(filehash);
                 contract.setDetail(detail);
                 contract.setType(type);
+                contract.setTimestamp(new Date(timestamp * 1000L));
+                contract.setTimestampSign(timestampSign);
                 contract.setCreateTime(new Date());
-
                 //
-                kafkaTemplate.send(ontSourcingTopicPut, gson.toJson(contract, Contract.class));
+                Map<String, String> map2 = contractService.putContract(contract);
+                String txhash = map2.get("txhash");
+                contract.setTxhash(txhash);
+                // 链同步
+                syncService.confirmTx(txhash);
+                //
+                contractList.add(contract);
             }
+            // mybatis batch insert
+            // 单条长度大概 4KB，30条，一个sql语句size大概为120KB
+            // TODO 检查 max_allowed_packet
+            contractService.saveToLocalBatch(company_ontid, contractList);
             //
             rst.setResult(true);
             rst.setErrorAndDesc(ErrorCode.SUCCESSS);
