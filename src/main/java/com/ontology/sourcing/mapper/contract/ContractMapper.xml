@@ -189,8 +189,9 @@
 		<include refid="Base_Column_List"/>
 		,
 		<include refid="Blob_Column_List"/>
-		from ${tableName} where status = 0 order by create_time desc limit #{start}, #{offset}
+		from ${tableName} order by id desc limit #{start}, #{offset}
 	</select>
+	<!-- todo where status = 0 -->
 
 	<select id="selectByHash" parameterType="java.lang.String" resultMap="ResultMapWithBLOBs">
 		select
