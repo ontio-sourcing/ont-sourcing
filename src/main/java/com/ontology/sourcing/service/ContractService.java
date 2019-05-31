@@ -513,7 +513,7 @@ public class ContractService {
                               String contextStr) throws Exception {
         // 分词，英文
         List<String> wlist = new ArrayList<>();
-        StringTokenizer multiTokenizer = new StringTokenizer(contextStr, ":：//,，.。-()（）[]{}、\"");
+        StringTokenizer multiTokenizer = new StringTokenizer(contextStr, ":：//,，.。-()（）[]{}、\" ");
         while (multiTokenizer.hasMoreTokens()) {
             wlist.add(multiTokenizer.nextToken());
         }
