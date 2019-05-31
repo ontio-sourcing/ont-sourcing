@@ -511,7 +511,7 @@ public class ContractService {
 
     public void hasSensitives(String ontid,
                               String contextStr) throws Exception {
-        // 分词
+        // 分词，英文
         List<String> wlist = new ArrayList<>();
         StringTokenizer multiTokenizer = new StringTokenizer(contextStr, ":：//,，.。-()（）[]{}、\"");
         while (multiTokenizer.hasMoreTokens()) {
@@ -526,6 +526,17 @@ public class ContractService {
                 slist.add(w);
             }
         }
+        // 中文
+        if (isChinese(contextStr)){
+            //
+            for (String w : GlobalVariable.sensitiveWords) {
+                //
+                if (contextStr.contains(w)) {
+                    slist.add(w);
+                }
+            }
+        }
+
         //
         if (slist.size() != 0) {
             //
@@ -538,5 +549,20 @@ public class ContractService {
             throw new Exception("含有敏感词:" + slist);
         }
 
+    }
+
+
+
+    // 判断一个字符是否是中文
+    public static boolean isChinese(char c) {
+        return c >= 0x4E00 &&  c <= 0x9FA5;// 根据字节码判断
+    }
+    // 判断一个字符串是否含有中文
+    public static boolean isChinese(String str) {
+        if (str == null) return false;
+        for (char c : str.toCharArray()) {
+            if (isChinese(c)) return true;// 有一个中文字符就返回
+        }
+        return false;
     }
 }
