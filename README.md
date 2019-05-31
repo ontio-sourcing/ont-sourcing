@@ -1369,6 +1369,138 @@ method：POST
 | version    | String | 版本号  
 
 
+### 添加敏感词
+```text
+url：/api/v1/sensitive/put
+method：POST
+```
+
+- 请求：
+
+```json
+{
+    "word": "贸易战"
+}
+```
+
+| Field_Name | Type   | Description |
+|:-----------|:-------|:------------|
+| word   | String |      |
+
+
+- 响应：
+
+```json
+{
+    "error": 0,
+    "desc": "SUCCESS",
+    "result": true,
+    "action": "putSensitive",
+    "version": "1.0.0"
+}
+```
+
+| Field_Name | Type   | Description                   |
+|:-----------|:-------|:------------------------------|
+| error      | int    | 错误码                        |
+| action     | String | 动作标志                      |
+| desc       | String | 成功返回SUCCESS，失败返回错误描述 |
+| result     | String | 成功返回true，失败返回""     |
+| version    | String | 版本号                        |
+
+
+### 查询敏感词列表
+```text
+url：/api/v1/sensitives
+method：GET
+```
+
+- 请求：
+
+参数空
+
+- 响应：
+
+```json
+{
+    "action": "getSensitives",
+    "desc": "SUCCESS",
+    "result": [
+        "敏感",
+        "美国",
+        "贸易战"
+    ],
+    "error": 0,
+    "version": "1.0.0"
+}
+```
+
+| Field_Name | Type   | Description                   |
+|:-----------|:-------|:------------------------------|
+| error      | int    | 错误码                        |
+| action     | String | 动作标志                      |
+| desc       | String | 成功返回SUCCESS，失败返回错误描述 |
+| result     | String | 成功返回列表，失败返回""     |
+| version    | String | 版本号                        |
+
+
+### 查询敏感词记录
+```text
+url：/api/v1/sensitive/logs
+method：POST
+```
+
+- 请求：
+
+```json
+{
+    "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJhdWQiOiJkaWQ6b250OkFVRG11NEoyVzF2cUpIRHRMUDhVeEhhdWoyZUtzUUh4dTYiLCJpc3MiOiJkaWQ6b250OkFhdlJRcVhlOVByYVY1dFlnQnF2VjRiVXE4TFNzdmpjV1MiLCJleHAiOjE1NTcyODM2MTAsImlhdCI6MTU1NzE5NzIxMCwianRpIjoiYmQ5NTZhNGI1YzYxNGYxN2I2YTgxNDkyZDI5NDIyYTQiLCJjb250ZW50Ijp7InR5cGUiOiJhY2Nlc3NfdG9rZW4iLCJvbnRpZCI6ImRpZDpvbnQ6QWExWFBhcEpIR0dqSFF0TjJIZHliOUFQdjdIZmlZeHRSeiJ9fQ.MDFiMjFkMjg5OGJmYjZlZGQzMmM5ZjY0ZWIxMDA0OGYxNGNkOGE2MTBhYTZmZGNiZTg4OWQyNzI0MjMwZDVjMjk3Y2Q3ZDhjMzlhOGYzZDJkYjE1YzFhMTcxM2Y3OTU4ZjkzYzRjOGI2NmU2ODM5YmFhNjE4NWRjMTlkZjU3YThkYQ"
+}
+```
+
+| Field_Name | Type   | Description |
+|:-----------|:-------|:------------|
+| access_token   | String |     |
+
+
+- 响应：
+
+```json
+{
+    "result": [
+        {
+            "id": 1,
+            "ontid": "did:ont:Aa1XPapJHGGjHQtN2Hdyb9APv7HfiYxtRz",
+            "words": "[\"敏感\",\"贸易战\"]",
+            "createTime": "2019-05-31T04:43:59.000+0000",
+            "updateTime": null
+        },
+        {
+            "id": 2,
+            "ontid": "did:ont:Aa1XPapJHGGjHQtN2Hdyb9APv7HfiYxtRz",
+            "words": "[\"敏感\",\"美国\",\"贸易战\"]",
+            "createTime": "2019-05-31T04:45:04.000+0000",
+            "updateTime": null
+        }
+    ],
+    "error": 0,
+    "action": "getSensitives",
+    "version": "1.0.0",
+    "desc": "SUCCESS"
+}
+```
+
+| Field_Name | Type   | Description                   |
+|:-----------|:-------|:------------------------------|
+| error      | int    | 错误码                        |
+| action     | String | 动作标志                      |
+| desc       | String | 成功返回SUCCESS，失败返回错误描述 |
+| result     | String | 成功返回列表，失败返回""     |
+| version    | String | 版本号                        |
+
+
+
+
 ## 错误码
 
 | 返回代码  | 描述信息   | 备注                   |
