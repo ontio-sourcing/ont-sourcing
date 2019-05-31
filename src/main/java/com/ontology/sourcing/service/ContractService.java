@@ -408,17 +408,22 @@ public class ContractService {
         return record;
     }
 
-    private ContractIndex getIndex(String ontid) throws Exception {
+    // private ContractIndex getIndex(String ontid) throws Exception {
+    //     ContractOntid record = getRecord(ontid);
+    //     // ContractIndex contractIndex = contractIndexMapper.findById(record.getContractIndex());
+    //
+    //     Optional<ContractIndex> ci_opt = contractIndexMapper.findById(record.getContractIndex());
+    //     if (ci_opt.isPresent()) {
+    //         ContractIndex ci = ci_opt.get();
+    //         return ci;
+    //     } else {
+    //         throw new Exception("can not find index for ontid:" + ontid);
+    //     }
+    // }
+    private ContractIndex getIndex(String ontid) {
         ContractOntid record = getRecord(ontid);
-        // ContractIndex contractIndex = contractIndexMapper.findById(record.getContractIndex());
-
-        Optional<ContractIndex> ci_opt = contractIndexMapper.findById(record.getContractIndex());
-        if (ci_opt.isPresent()) {
-            ContractIndex ci = ci_opt.get();
-            return ci;
-        } else {
-            throw new Exception("can not find index for ontid:" + ontid);
-        }
+        ContractIndex contractIndex = contractIndexMapper.selectByPrimaryKey(record.getContractIndex());
+        return contractIndex;
     }
 
     // 写入数据库

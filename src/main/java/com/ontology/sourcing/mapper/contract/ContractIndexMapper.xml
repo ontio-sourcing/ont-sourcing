@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ontology.sourcing.mapper.contract.ContractIndexMapper">
+	<resultMap id="BaseResultMap" type="com.ontology.sourcing.dao.contract.ContractIndex">
+		<id column="id" jdbcType="INTEGER" property="id"/>
+		<result column="name" jdbcType="VARCHAR" property="name"/>
+		<result column="flag" jdbcType="INTEGER" property="flag"/>
+	</resultMap>
+	<sql id="Base_Column_List">
+		id, name, flag
+	</sql>
+	<select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List"/>
+		from tbl_contract_index
+		where id = #{id,jdbcType=INTEGER}
+	</select>
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+		delete from tbl_contract_index
+		where id = #{id,jdbcType=INTEGER}
+	</delete>
+	<insert id="insert" parameterType="com.ontology.sourcing.dao.contract.ContractIndex">
+		insert into tbl_contract_index (id, name, flag
+		)
+		values (#{id,jdbcType=INTEGER}, #{name,jdbcType=VARCHAR}, #{flag,jdbcType=INTEGER}
+		)
+	</insert>
+	<insert id="insertSelective" parameterType="com.ontology.sourcing.dao.contract.ContractIndex">
+		insert into tbl_contract_index
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="name != null">
+				name,
+			</if>
+			<if test="flag != null">
+				flag,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=INTEGER},
+			</if>
+			<if test="name != null">
+				#{name,jdbcType=VARCHAR},
+			</if>
+			<if test="flag != null">
+				#{flag,jdbcType=INTEGER},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKeySelective" parameterType="com.ontology.sourcing.dao.contract.ContractIndex">
+		update tbl_contract_index
+		<set>
+			<if test="name != null">
+				name = #{name,jdbcType=VARCHAR},
+			</if>
+			<if test="flag != null">
+				flag = #{flag,jdbcType=INTEGER},
+			</if>
+		</set>
+		where id = #{id,jdbcType=INTEGER}
+	</update>
+	<update id="updateByPrimaryKey" parameterType="com.ontology.sourcing.dao.contract.ContractIndex">
+		update tbl_contract_index
+		set name = #{name,jdbcType=VARCHAR},
+		flag = #{flag,jdbcType=INTEGER}
+		where id = #{id,jdbcType=INTEGER}
+	</update>
+
+	<select id="count" resultType="int">
+		select count(*) from tbl_contract_index
+	</select>
+
+	<select id="selectCurrent" resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List"/>
+		from tbl_contract_index
+		where flag = '1'
+	</select>
+
+	<select id="getTableSize" resultType="int">
+		SELECT
+		round(((data_length + index_length) / 1024 / 1024 /1024), 2) `Size in GB`
+		FROM information_schema.TABLES
+		WHERE table_name = '${tableName}';
+	</select>
+
+	<update id="createNewTable">
+		CREATE TABLE `${newTableName}` (
+		`id` INT(11) NOT NULL AUTO_INCREMENT,
+		`ontid` VARCHAR(255) NOT NULL,
+		`company_ontid` VARCHAR(255) NOT NULL,
+		`txhash` VARCHAR(255) NOT NULL,
+		`filehash` VARCHAR(255) NOT NULL,
+		`detail` TEXT NOT NULL,
+		`type` VARCHAR(16) NOT NULL,
+		`timestamp` DATETIME NOT NULL,
+		`timestamp_sign` TEXT NOT NULL,
+		`create_time` DATETIME NOT NULL,
+		`update_time` DATETIME DEFAULT NULL,
+		`status` INT(11) NOT NULL DEFAULT '0' COMMENT '0-未删除；1-已删除；',
+		`revoke_tx` VARCHAR(255) DEFAULT NULL,
+		PRIMARY KEY(`id`),
+		UNIQUE KEY `txhash`(`txhash`) USING BTREE,
+		KEY `filehash`(`filehash`),
+		KEY `ontid`(`ontid`),
+		KEY `company_ontid`(`company_ontid`),
+		KEY `type`(`type`)
+		) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8
+	</update>
+</mapper>
