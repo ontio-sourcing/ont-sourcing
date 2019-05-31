@@ -70,7 +70,7 @@ public class ContractTests04 {
     @Test
     public void example02() throws ConnectorException, IOException, DecoderException {
 
-        Object rst = chainService.ontSdk.getConnect().getSmartCodeEvent("da0a97b7e8e4c3d49645bbdf8579d8badfcc8aeb8a45384ec7dc8209e184d50a");
+        Object rst = chainService.ontSdk.getConnect().getSmartCodeEvent("348be4435bf436aaa30005f3cc7cc9bd013a784921f496dab987d8a23d36bf4c");
 
         //
         String ntfy = rst.toString();

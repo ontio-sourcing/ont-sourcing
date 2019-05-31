@@ -96,7 +96,8 @@ public class ContractService {
         // 上链时，只把指定field的组合后的hash作为key
         String c_key = contractToDigestForKey(contract);
         // 上链时，只把指定field的组合后的hash作为value
-        String c_value = contractToDigestForValue(contract);
+        // String c_value = contractToDigestForValue(contract);
+        String c_value = contract.getDetail();  // TODO 原文上链
 
         //
         return putContract(contract, c_key, c_value);
@@ -441,6 +442,15 @@ public class ContractService {
     public ContractCompany getCompany(String ontid) {
         ContractCompany company = contractCompanyMapper.findByOntid(ontid);
         return company;
+    }
+
+    // 先查询是不是项目方，有没有设置指定的payer地址和合约地址
+    public void checkCompany(String company_ontid) throws Exception {
+        ContractCompany contractCompany = getCompany(company_ontid);
+        if (contractCompany == null) {
+            // TODO
+            throw new Exception("项目方地址列表中找不到该ontid..." + company_ontid);
+        }
     }
 
     //
