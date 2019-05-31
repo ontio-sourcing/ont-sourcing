@@ -9,19 +9,26 @@ import com.github.ontio.core.transaction.Transaction;
 import com.github.ontio.network.exception.ConnectorException;
 import com.github.ontio.sdk.exception.SDKException;
 import com.github.ontio.smartcontract.neovm.abi.BuildParams;
+import com.google.gson.Gson;
 import com.ontology.sourcing.dao.Event;
 import com.ontology.sourcing.dao.contract.*;
+import com.ontology.sourcing.dao.util.Sensitive;
+import com.ontology.sourcing.dao.util.SensitiveLog;
 import com.ontology.sourcing.mapper.EventMapper;
 import com.ontology.sourcing.mapper.contract.*;
+import com.ontology.sourcing.mapper.util.SensitiveLogMapper;
+import com.ontology.sourcing.mapper.util.SensitiveMapper;
 import com.ontology.sourcing.service.util.ChainService;
 import com.ontology.sourcing.service.util.PropertiesService;
 import com.ontology.sourcing.util.GlobalVariable;
 import com.ontology.sourcing.util._hash.Sha256Util;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.*;
 
@@ -30,19 +37,23 @@ public class ContractService {
 
     //
     private Logger logger = (Logger) LoggerFactory.getLogger(ContractService.class);
+    private Gson gson = new Gson();
 
     //
-    private PropertiesService     propertiesService;
-    private ChainService          chainService;
+    private PropertiesService propertiesService;
+    private ChainService chainService;
     //
-    private ContractMapper        contractMapper;
-    private ContractIndexMapper   contractIndexMapper;
-    private ContractOntidMapper   contractOntidMapper;
-    private EventMapper           eventMapper;
+    private ContractMapper contractMapper;
+    private ContractIndexMapper contractIndexMapper;
+    private ContractOntidMapper contractOntidMapper;
+    private EventMapper eventMapper;
     private ContractCompanyMapper contractCompanyMapper;
+    //
+    private SensitiveMapper sensitiveMapper;
+    private SensitiveLogMapper sensitiveLogMapper;
 
     // 公共payer和公共合约
-    private String  codeAddr;
+    private String codeAddr;
     private Account payer;
 
     @Autowired
@@ -52,21 +63,32 @@ public class ContractService {
                            ContractIndexMapper contractIndexMapper,
                            ContractOntidMapper contractOntidMapper,
                            EventMapper eventMapper,
-                           ContractCompanyMapper contractCompanyMapper) {
+                           ContractCompanyMapper contractCompanyMapper,
+                           SensitiveMapper sensitiveMapper,
+                           SensitiveLogMapper sensitiveLogMapper) {
         //
         this.propertiesService = propertiesService;
-        this.chainService      = chainService;
+        this.chainService = chainService;
 
         //
-        this.contractMapper        = contractMapper;
-        this.contractIndexMapper   = contractIndexMapper;
-        this.contractOntidMapper   = contractOntidMapper;
-        this.eventMapper           = eventMapper;
+        this.contractMapper = contractMapper;
+        this.contractIndexMapper = contractIndexMapper;
+        this.contractOntidMapper = contractOntidMapper;
+        this.eventMapper = eventMapper;
         this.contractCompanyMapper = contractCompanyMapper;
+        //
+        this.sensitiveMapper = sensitiveMapper;
+        this.sensitiveLogMapper = sensitiveLogMapper;
 
         // 合约哈希/合约地址/contract codeAddr
         codeAddr = propertiesService.codeAddr;
-        payer    = GlobalVariable.getInstanceOfAccount(propertiesService.payerPrivateKey);
+        payer = GlobalVariable.getInstanceOfAccount(propertiesService.payerPrivateKey);
+    }
+
+    @PostConstruct
+    public void whatever() {
+        // 初始化敏感词
+        GlobalVariable.sensitiveWords = getSensitives();
     }
 
     public Map<String, String> putContract(Contract contract) throws Exception {
@@ -85,10 +107,10 @@ public class ContractService {
                                            String c_value) throws Exception {
 
         // 先查询是不是项目方，有没有设置指定的payer地址和合约地址
-        String          c_ontid         = contract.getCompanyOntid();
+        String c_ontid = contract.getCompanyOntid();
         ContractCompany contractCompany = contractCompanyMapper.findByOntid(c_ontid);
         if (contractCompany != null) {
-            payer    = GlobalVariable.getInstanceOfAccount(contractCompany.getPrikey());
+            payer = GlobalVariable.getInstanceOfAccount(contractCompany.getPrikey());
             codeAddr = contractCompany.getCodeAddr();
             // String s1 = payer.getAddressU160().toBase58();
         } else {
@@ -142,7 +164,7 @@ public class ContractService {
         // 先查询是不是项目方，有没有设置指定的payer地址和合约地址
         ContractCompany contractCompany = contractCompanyMapper.findByOntid(contract.getCompanyOntid());
         if (contractCompany != null) {
-            payer    = GlobalVariable.getInstanceOfAccount(contractCompany.getPrikey());
+            payer = GlobalVariable.getInstanceOfAccount(contractCompany.getPrikey());
             codeAddr = Address.AddressFromVmCode(contractCompany.getCodeAddr()).toHexString();
         }
 
@@ -154,8 +176,8 @@ public class ContractService {
         String result = map.get("result");
 
         //
-        String s1    = JSON.parseObject(result).getString("Result");
-        byte[] s2    = Helper.hexToBytes(s1);
+        String s1 = JSON.parseObject(result).getString("Result");
+        byte[] s2 = Helper.hexToBytes(s1);
         String value = new String(s2);
 
         //
@@ -194,7 +216,7 @@ public class ContractService {
 
         //
         String rawdata = tx.toHexString();
-        String txhash  = tx.hash().toString();
+        String txhash = tx.hash().toString();
         //
         map.put("txhash", txhash);
         map.put("rawdata", rawdata);  // TODO
@@ -260,7 +282,7 @@ public class ContractService {
     // 后期如果需要验证
     public boolean verifyContractOnBlockchain(Contract contract,
                                               Account payer) throws Exception {
-        String valueLocal        = contractToDigestForValue(contract);
+        String valueLocal = contractToDigestForValue(contract);
         String valueOnBlockchain = getContract(contract, payer);
         return valueOnBlockchain.equals(valueLocal);
     }
@@ -273,7 +295,7 @@ public class ContractService {
         //
         String tableName = getIndex(ontid).getName();
         //
-        int start  = (pageNum - 1) * pageSize;
+        int start = (pageNum - 1) * pageSize;
         int offset = pageSize;
         //
         List<Contract> list;
@@ -289,25 +311,25 @@ public class ContractService {
     public List<Contract> getExplorerHistory(String tableName,
                                              int pageNum,
                                              int pageSize) {
-        int            start  = (pageNum - 1) * pageSize;
-        int            offset = pageSize;
-        List<Contract> list   = contractMapper.selectByPage(tableName, start, offset);
+        int start = (pageNum - 1) * pageSize;
+        int offset = pageSize;
+        List<Contract> list = contractMapper.selectByPage(tableName, start, offset);
         return addHeight(list);
     }
 
     //
     public List<Contract> selectByOntidAndTxHash(String ontid,
                                                  String txhash) throws Exception {
-        String         tableName = getIndex(ontid).getName();
-        List<Contract> list      = contractMapper.selectByOntidAndTxHash(tableName, ontid, txhash);
+        String tableName = getIndex(ontid).getName();
+        List<Contract> list = contractMapper.selectByOntidAndTxHash(tableName, ontid, txhash);
         return addHeight(list);
     }
 
     //
     public List<Contract> selectByOntidAndHash(String ontid,
                                                String hash) throws Exception {
-        String         tableName = getIndex(ontid).getName();
-        List<Contract> list      = contractMapper.selectByOntidAndHash(tableName, ontid, hash);
+        String tableName = getIndex(ontid).getName();
+        List<Contract> list = contractMapper.selectByOntidAndHash(tableName, ontid, hash);
         return addHeight(list);
     }
 
@@ -419,5 +441,74 @@ public class ContractService {
     public ContractCompany getCompany(String ontid) {
         ContractCompany company = contractCompanyMapper.findByOntid(ontid);
         return company;
+    }
+
+    //
+    public int addSensitive(String word) {
+        Sensitive s = new Sensitive();
+        s.setWord(word);
+        s.setCreateTime(new Date());
+        s = sensitiveMapper.save(s);
+        return s.getId();
+    }
+
+    public List<String> getSensitives() {
+        List<String> l = new ArrayList<>();
+        List<Sensitive> ls = sensitiveMapper.findAll();
+        for (Sensitive s : ls) {
+            l.add(s.getWord());
+        }
+        return l;
+    }
+
+    public int addSensitiveLog(String ontid,
+                               List<String> words) {
+        SensitiveLog sl = new SensitiveLog();
+        sl.setOntid(ontid);
+        sl.setWords(gson.toJson(words));
+        sl.setCreateTime(new Date());
+        sl = sensitiveLogMapper.save(sl);
+        return sl.getId();
+    }
+
+    public List<SensitiveLog> getSensitiveLog(String ontid) {
+        // return sensitiveLogMapper.findAllByOntid(ontid);
+        SensitiveLog slog = new SensitiveLog();
+        slog.setOntid(ontid);
+        Example<SensitiveLog> employeeExample = Example.of(slog);
+        //calling QueryByExampleExecutor#findAll(Example)
+        Iterable<SensitiveLog> employees = sensitiveLogMapper.findAll(employeeExample);
+        //
+        List<SensitiveLog> sl = new ArrayList<>();
+        for (SensitiveLog e : employees) {
+            // System.out.println(e);
+            sl.add(e);
+        }
+        //
+        return sl;
+    }
+
+    public void hasSensitives(String ontid,
+                              String contextStr) throws Exception {
+        //
+        List<String> slist = new ArrayList<>();
+        //
+        for (String w : GlobalVariable.sensitiveWords) {
+            if (contextStr.contains(w)) {
+                slist.add(w);
+            }
+        }
+        //
+        if (slist.size() != 0) {
+            //
+            SensitiveLog slog = new SensitiveLog();
+            slog.setOntid(ontid);
+            slog.setWords(gson.toJson(slist));
+            slog.setCreateTime(new Date());
+            sensitiveLogMapper.save(slog);
+            //
+            throw new Exception("含有敏感词:" + slist);
+        }
+
     }
 }

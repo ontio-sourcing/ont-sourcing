@@ -6,6 +6,9 @@ import com.github.ontio.common.Helper;
 import com.github.ontio.crypto.SignatureScheme;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class GlobalVariable {
 
     //
@@ -53,5 +56,8 @@ public class GlobalVariable {
     public static Integer scrypt_N = 16384;
     public static Integer scrypt_r = 8;
     public static Integer scrypt_p = 1;
+
+    //
+    public static List<String> sensitiveWords = new ArrayList<>();
 
 }

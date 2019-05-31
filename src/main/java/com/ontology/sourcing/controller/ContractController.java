@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Logger;
 import com.google.gson.Gson;
 import com.ontology.sourcing.dao.contract.Contract;
 import com.ontology.sourcing.dao.contract.ContractCompany;
+import com.ontology.sourcing.dao.util.SensitiveLog;
 import com.ontology.sourcing.model.contract.input.InputWrapper;
 import com.ontology.sourcing.model.util.Result;
 import com.ontology.sourcing.service.ContractService;
@@ -321,6 +322,16 @@ public class ContractController {
         if (StringUtils.isEmpty(user_ontid))
             user_ontid = company_ontid;
 
+
+        // 敏感词检测
+        try {
+            contractService.hasSensitives(company_ontid, gson.toJson(iw.getContext()));
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+
         //
         try {
             //
@@ -421,6 +432,17 @@ public class ContractController {
 
         // TODO
         ArrayList<Map<String, Object>> filelist = (ArrayList<Map<String, Object>>) obj.get("filelist");
+
+
+        // 敏感词检测
+        try {
+            contractService.hasSensitives(company_ontid, gson.toJson(filelist));
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+
 
         //
         try {
@@ -1090,6 +1112,119 @@ public class ContractController {
             m.put("user_ontid", ontid);
             //
             rst.setResult(m);
+            rst.setErrorAndDesc(ErrorCode.SUCCESSS);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+    }
+
+
+    @PostMapping("/sensitive/put")
+    public ResponseEntity<Result> putSensitive(@RequestBody LinkedHashMap<String, Object> obj) {
+
+        //
+        Result rst = new Result("putSensitive");
+
+        //
+        Set<String> required = new HashSet<>();
+        required.add("word");
+
+        //
+        try {
+            validateService.validateParamsKeys(obj, required);
+            validateService.validateParamsValues(obj);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+
+        //
+        String word = (String) obj.get("word");
+
+        try {
+            contractService.addSensitive(word);
+            //
+            rst.setResult(true);
+            rst.setErrorAndDesc(ErrorCode.SUCCESSS);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+    }
+
+    @GetMapping("/sensitives")
+    public ResponseEntity<Result> getSensitives() {
+
+        //
+        Result rst = new Result("getSensitives");
+
+        //
+        // Set<String> required = new HashSet<>();
+        // required.add("word");
+
+        //
+        // try {
+        //     validateService.validateParamsKeys(obj, required);
+        //     validateService.validateParamsValues(obj);
+        // } catch (Exception e) {
+        //     logger.error(e.getMessage());
+        //     rst.setErrorAndDesc(e);
+        //     return new ResponseEntity<>(rst, HttpStatus.OK);
+        // }
+
+        //
+        // String word = (String) obj.get("word");
+
+        try {
+            List<String> words = contractService.getSensitives();
+            //
+            rst.setResult(words);
+            rst.setErrorAndDesc(ErrorCode.SUCCESSS);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+    }
+
+
+    @PostMapping("/sensitive/logs")
+    public ResponseEntity<Result> getSensitiveLogs(@RequestBody LinkedHashMap<String, Object> obj) {
+
+        //
+        Result rst = new Result("getSensitives");
+
+        //
+        Set<String> required = new HashSet<>();
+        required.add("access_token");
+
+        //
+        try {
+            validateService.validateParamsKeys(obj, required);
+            validateService.validateParamsValues(obj);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+
+        //
+        String accessToken = (String) obj.get("access_token");
+
+        try {
+            //
+            String ontid = oauthService.getContentUser(accessToken);
+            //
+            List<SensitiveLog> ls = contractService.getSensitiveLog(ontid);
+            //
+            rst.setResult(ls);
             rst.setErrorAndDesc(ErrorCode.SUCCESSS);
             return new ResponseEntity<>(rst, HttpStatus.OK);
         } catch (Exception e) {
