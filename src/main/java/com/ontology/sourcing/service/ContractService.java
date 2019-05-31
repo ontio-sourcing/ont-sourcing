@@ -506,11 +506,18 @@ public class ContractService {
 
     public void hasSensitives(String ontid,
                               String contextStr) throws Exception {
+        // 分词
+        List<String> wlist = new ArrayList<>();
+        StringTokenizer multiTokenizer = new StringTokenizer(contextStr, ":：//,，.。-()（）[]{}、\"");
+        while (multiTokenizer.hasMoreTokens()) {
+            wlist.add(multiTokenizer.nextToken());
+        }
         //
         List<String> slist = new ArrayList<>();
         //
         for (String w : GlobalVariable.sensitiveWords) {
-            if (contextStr.contains(w)) {
+            //
+            if (wlist.indexOf(w) != -1) {
                 slist.add(w);
             }
         }
