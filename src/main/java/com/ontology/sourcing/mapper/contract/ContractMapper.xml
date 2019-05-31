@@ -195,7 +195,7 @@
 
 	<select id="selectByHash" parameterType="java.lang.String" resultMap="ResultMapWithBLOBs">
 		select
-		<include refid="Base_Column_sList"/>
+		<include refid="Base_Column_List"/>
 		,
 		<include refid="Blob_Column_List"/>
 		from ${tableName}
