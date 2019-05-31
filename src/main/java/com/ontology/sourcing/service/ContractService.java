@@ -32,17 +32,17 @@ public class ContractService {
     private Logger logger = (Logger) LoggerFactory.getLogger(ContractService.class);
 
     //
-    private PropertiesService     propertiesService;
-    private ChainService          chainService;
+    private PropertiesService propertiesService;
+    private ChainService chainService;
     //
-    private ContractMapper        contractMapper;
-    private ContractIndexMapper   contractIndexMapper;
-    private ContractOntidMapper   contractOntidMapper;
-    private EventMapper           eventMapper;
+    private ContractMapper contractMapper;
+    private ContractIndexMapper contractIndexMapper;
+    private ContractOntidMapper contractOntidMapper;
+    private EventMapper eventMapper;
     private ContractCompanyMapper contractCompanyMapper;
 
     // 公共payer和公共合约
-    private String  codeAddr;
+    private String codeAddr;
     private Account payer;
 
     @Autowired
@@ -55,18 +55,18 @@ public class ContractService {
                            ContractCompanyMapper contractCompanyMapper) {
         //
         this.propertiesService = propertiesService;
-        this.chainService      = chainService;
+        this.chainService = chainService;
 
         //
-        this.contractMapper        = contractMapper;
-        this.contractIndexMapper   = contractIndexMapper;
-        this.contractOntidMapper   = contractOntidMapper;
-        this.eventMapper           = eventMapper;
+        this.contractMapper = contractMapper;
+        this.contractIndexMapper = contractIndexMapper;
+        this.contractOntidMapper = contractOntidMapper;
+        this.eventMapper = eventMapper;
         this.contractCompanyMapper = contractCompanyMapper;
 
         // 合约哈希/合约地址/contract codeAddr
         codeAddr = propertiesService.codeAddr;
-        payer    = GlobalVariable.getInstanceOfAccount(propertiesService.payerPrivateKey);
+        payer = GlobalVariable.getInstanceOfAccount(propertiesService.payerPrivateKey);
     }
 
     public Map<String, String> putContract(Contract contract) throws Exception {
@@ -85,10 +85,10 @@ public class ContractService {
                                            String c_value) throws Exception {
 
         // 先查询是不是项目方，有没有设置指定的payer地址和合约地址
-        String          c_ontid         = contract.getCompanyOntid();
+        String c_ontid = contract.getCompanyOntid();
         ContractCompany contractCompany = contractCompanyMapper.findByOntid(c_ontid);
         if (contractCompany != null) {
-            payer    = GlobalVariable.getInstanceOfAccount(contractCompany.getPrikey());
+            payer = GlobalVariable.getInstanceOfAccount(contractCompany.getPrikey());
             codeAddr = contractCompany.getCodeAddr();
             // String s1 = payer.getAddressU160().toBase58();
         } else {
@@ -142,7 +142,7 @@ public class ContractService {
         // 先查询是不是项目方，有没有设置指定的payer地址和合约地址
         ContractCompany contractCompany = contractCompanyMapper.findByOntid(contract.getCompanyOntid());
         if (contractCompany != null) {
-            payer    = GlobalVariable.getInstanceOfAccount(contractCompany.getPrikey());
+            payer = GlobalVariable.getInstanceOfAccount(contractCompany.getPrikey());
             codeAddr = Address.AddressFromVmCode(contractCompany.getCodeAddr()).toHexString();
         }
 
@@ -154,8 +154,8 @@ public class ContractService {
         String result = map.get("result");
 
         //
-        String s1    = JSON.parseObject(result).getString("Result");
-        byte[] s2    = Helper.hexToBytes(s1);
+        String s1 = JSON.parseObject(result).getString("Result");
+        byte[] s2 = Helper.hexToBytes(s1);
         String value = new String(s2);
 
         //
@@ -194,7 +194,7 @@ public class ContractService {
 
         //
         String rawdata = tx.toHexString();
-        String txhash  = tx.hash().toString();
+        String txhash = tx.hash().toString();
         //
         map.put("txhash", txhash);
         map.put("rawdata", rawdata);  // TODO
@@ -260,7 +260,7 @@ public class ContractService {
     // 后期如果需要验证
     public boolean verifyContractOnBlockchain(Contract contract,
                                               Account payer) throws Exception {
-        String valueLocal        = contractToDigestForValue(contract);
+        String valueLocal = contractToDigestForValue(contract);
         String valueOnBlockchain = getContract(contract, payer);
         return valueOnBlockchain.equals(valueLocal);
     }
@@ -273,7 +273,7 @@ public class ContractService {
         //
         String tableName = getIndex(ontid).getName();
         //
-        int start  = (pageNum - 1) * pageSize;
+        int start = (pageNum - 1) * pageSize;
         int offset = pageSize;
         //
         List<Contract> list;
@@ -289,25 +289,25 @@ public class ContractService {
     public List<Contract> getExplorerHistory(String tableName,
                                              int pageNum,
                                              int pageSize) {
-        int            start  = (pageNum - 1) * pageSize;
-        int            offset = pageSize;
-        List<Contract> list   = contractMapper.selectByPage(tableName, start, offset);
+        int start = (pageNum - 1) * pageSize;
+        int offset = pageSize;
+        List<Contract> list = contractMapper.selectByPage(tableName, start, offset);
         return addHeight(list);
     }
 
     //
     public List<Contract> selectByOntidAndTxHash(String ontid,
                                                  String txhash) throws Exception {
-        String         tableName = getIndex(ontid).getName();
-        List<Contract> list      = contractMapper.selectByOntidAndTxHash(tableName, ontid, txhash);
+        String tableName = getIndex(ontid).getName();
+        List<Contract> list = contractMapper.selectByOntidAndTxHash(tableName, ontid, txhash);
         return addHeight(list);
     }
 
     //
     public List<Contract> selectByOntidAndHash(String ontid,
                                                String hash) throws Exception {
-        String         tableName = getIndex(ontid).getName();
-        List<Contract> list      = contractMapper.selectByOntidAndHash(tableName, ontid, hash);
+        String tableName = getIndex(ontid).getName();
+        List<Contract> list = contractMapper.selectByOntidAndHash(tableName, ontid, hash);
         return addHeight(list);
     }
 
@@ -419,5 +419,14 @@ public class ContractService {
     public ContractCompany getCompany(String ontid) {
         ContractCompany company = contractCompanyMapper.findByOntid(ontid);
         return company;
+    }
+
+    // 先查询是不是项目方，有没有设置指定的payer地址和合约地址
+    public void checkCompany(String company_ontid) throws Exception {
+        ContractCompany contractCompany = getCompany(company_ontid);
+        if (contractCompany == null) {
+            // TODO
+            throw new Exception("项目方地址列表中找不到该ontid..." + company_ontid);
+        }
     }
 }

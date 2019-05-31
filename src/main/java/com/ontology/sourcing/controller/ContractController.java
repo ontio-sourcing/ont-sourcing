@@ -317,6 +317,15 @@ public class ContractController {
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
 
+        // 查看项目有没有添加定制信息
+        try {
+            contractService.checkCompany(company_ontid);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+
         //
         if (StringUtils.isEmpty(user_ontid))
             user_ontid = company_ontid;
@@ -408,6 +417,15 @@ public class ContractController {
         String company_ontid = "";
         try {
             company_ontid = oauthService.getContentUser(access_token);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+
+        // 查看项目有没有添加定制信息
+        try {
+            contractService.checkCompany(company_ontid);
         } catch (Exception e) {
             logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
