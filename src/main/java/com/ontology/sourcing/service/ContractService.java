@@ -455,10 +455,14 @@ public class ContractService {
 
     //
     public int addSensitive(String word) {
+        //
         Sensitive s = new Sensitive();
         s.setWord(word);
         s.setCreateTime(new Date());
         s = sensitiveMapper.save(s);
+        //
+        GlobalVariable.sensitiveWords.add(word);
+        //
         return s.getId();
     }
 
@@ -473,11 +477,13 @@ public class ContractService {
 
     public int addSensitiveLog(String ontid,
                                List<String> words) {
+        //
         SensitiveLog sl = new SensitiveLog();
         sl.setOntid(ontid);
         sl.setWords(gson.toJson(words));
         sl.setCreateTime(new Date());
         sl = sensitiveLogMapper.save(sl);
+        //
         return sl.getId();
     }
 
