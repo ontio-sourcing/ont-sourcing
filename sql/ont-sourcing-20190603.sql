@@ -1,0 +1,1 @@
+ALTER TABLE `tbl_sensitive_log` ADD `content` TEXT NOT NULL AFTER `words`;

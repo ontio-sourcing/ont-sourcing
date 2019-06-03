@@ -543,6 +543,7 @@ public class ContractService {
             SensitiveLog slog = new SensitiveLog();
             slog.setOntid(ontid);
             slog.setWords(gson.toJson(slist));
+            slog.setContent(contextStr);
             slog.setCreateTime(new Date());
             sensitiveLogMapper.save(slog);
             //

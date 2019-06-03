@@ -20,6 +20,9 @@ public class SensitiveLog {
     private String words;
 
     @Column
+    private String content;
+
+    @Column
     private Date createTime;
 
     @Column
