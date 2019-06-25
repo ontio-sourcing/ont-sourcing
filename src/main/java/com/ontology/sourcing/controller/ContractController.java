@@ -7,7 +7,7 @@ import com.ontology.sourcing.dao.contract.ContractCompany;
 import com.ontology.sourcing.model.contract.input.InputWrapper;
 import com.ontology.sourcing.model.util.Result;
 import com.ontology.sourcing.service.ContractService;
-import com.ontology.sourcing.service.oauth.OAuthService;
+import com.ontology.sourcing.service.oauth.JWTService;
 import com.ontology.sourcing.service.ontid_server.OntidServerService;
 import com.ontology.sourcing.service.time.bctsp.TspService;
 import com.ontology.sourcing.service.util.SyncService;
@@ -46,7 +46,7 @@ public class ContractController {
     private ValidateService validateService;
 
     //
-    private OAuthService oauthService;
+    private JWTService jwtService;
     private ContractService contractService;
     private OntidServerService ontidServerService;
 
@@ -60,7 +60,7 @@ public class ContractController {
     public ContractController(TspService tspService,
                               SyncService syncService,
                               ValidateService validateService,
-                              OAuthService oauthService,
+                              JWTService jwtService,
                               ContractService contractService,
                               OntidServerService ontidServerService,
                               KafkaTemplate<String, Object> kafkaTemplate,
@@ -70,7 +70,7 @@ public class ContractController {
         this.syncService = syncService;
         this.validateService = validateService;
         //
-        this.oauthService = oauthService;
+        this.jwtService = jwtService;
         this.contractService = contractService;
         this.ontidServerService = ontidServerService;
         //
@@ -110,7 +110,7 @@ public class ContractController {
         String access_token = (String) obj.get("access_token");
         String ontid = "";
         try {
-            ontid = oauthService.getContentUser(access_token);
+            ontid = jwtService.getContentUser(access_token);
         } catch (Exception e) {
             logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
@@ -310,7 +310,7 @@ public class ContractController {
         //
         String company_ontid = "";
         try {
-            company_ontid = oauthService.getContentUser(access_token);
+            company_ontid = jwtService.getContentUser(access_token);
         } catch (Exception e) {
             logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
@@ -416,7 +416,7 @@ public class ContractController {
         //
         String company_ontid = "";
         try {
-            company_ontid = oauthService.getContentUser(access_token);
+            company_ontid = jwtService.getContentUser(access_token);
         } catch (Exception e) {
             logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
@@ -569,7 +569,7 @@ public class ContractController {
         //
         String company_ontid = "";
         try {
-            company_ontid = oauthService.getContentUser(access_token);
+            company_ontid = jwtService.getContentUser(access_token);
         } catch (Exception e) {
             logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
@@ -667,7 +667,7 @@ public class ContractController {
 
         //
         try {
-            ontid = oauthService.getContentUser(accessToken);
+            ontid = jwtService.getContentUser(accessToken);
 
             // ontid 也要作为条件，否则查到别人的了
             list = contractService.selectByOntidAndHash(ontid, hash);
@@ -712,7 +712,7 @@ public class ContractController {
         //
         String ontid = "";
         try {
-            ontid = oauthService.getContentUser(accessToken);
+            ontid = jwtService.getContentUser(accessToken);
         } catch (Exception e) {
             logger.error(e.getMessage());
             rst.setErrorAndDesc(e);
@@ -802,7 +802,7 @@ public class ContractController {
         List<Contract> list = new ArrayList<>();
         try {
             //
-            ontid = oauthService.getContentUser(accessToken);
+            ontid = jwtService.getContentUser(accessToken);
             //
             list = contractService.getHistoryByOntid(ontid, pageNum, pageSize, type);
         } catch (Exception e) {
@@ -844,7 +844,7 @@ public class ContractController {
         String ontid = "";
         Integer count;
         try {
-            ontid = oauthService.getContentUser(accessToken);
+            ontid = jwtService.getContentUser(accessToken);
             count = contractService.count(ontid);
         } catch (Exception e) {
             logger.error(e.getMessage());

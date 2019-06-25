@@ -1,9 +1,10 @@
 package com.ontology.sourcing.service.util;
 
+import com.google.gson.Gson;
 import com.ontology.sourcing.dao.contract.ContractTypes;
 import com.ontology.sourcing.dao.ddo.ActionOntid;
 import com.ontology.sourcing.mapper.ddo.ActionOntidMapper;
-import com.ontology.sourcing.service.oauth.OAuthService;
+import com.ontology.sourcing.service.oauth.JWTService;
 import com.ontology.sourcing.util.exp.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,21 +16,24 @@ import java.util.*;
 public class ValidateService {
 
     //
+    private Gson gson = new Gson();
+
+    //
     private ActionOntidMapper actionOntidMapper;
 
     //
-    private OAuthService      oauthService;
+    private JWTService jwtService;
     private PropertiesService propertiesService;
 
     //
     @Autowired
     public ValidateService(ActionOntidMapper actionOntidMapper,
-                           OAuthService oauthService,
+                           JWTService jwtService,
                            PropertiesService propertiesService) {
         //
         this.actionOntidMapper = actionOntidMapper;
         //
-        this.oauthService      = oauthService;
+        this.jwtService = jwtService;
         this.propertiesService = propertiesService;
     }
 
@@ -213,7 +217,7 @@ public class ValidateService {
                 throw new Exception("access_token is empty.");
             }
             // 验证 token
-            oauthService.verify(access_token);
+            jwtService.verify(access_token);
         }
 
         // 司法链
@@ -379,5 +383,15 @@ public class ValidateService {
                 throw new Exception("user_phone is incorrect.");
             }
         }
+
+        // 敏感词
+        if (obj.containsKey("word")) {
+            String word = (String) obj.get("word");
+            //
+            if (StringUtils.isEmpty(word)) {
+                throw new Exception("word is empty.");
+            }
+        }
+
     }
 }

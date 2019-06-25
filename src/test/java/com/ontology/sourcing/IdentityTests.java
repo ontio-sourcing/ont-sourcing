@@ -17,6 +17,7 @@ import org.junit.runner.RunWith;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.HashMap;
@@ -24,6 +25,7 @@ import java.util.Map;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
+@TestPropertySource(locations = "file:/Volumes/Data/_work/201802_Ontology/ONTSouring/ont-sourcing/config/application-local.properties")
 public class IdentityTests {
 
     //
@@ -172,8 +174,11 @@ public class IdentityTests {
 
         // 链上：注册 identity1
         try {
-            String rsp = chainService.ontSdk.nativevm().ontId()
-                                            .sendRegister(identity1, i_password, payerAccount, chainService.ontSdk.DEFAULT_GAS_LIMIT, GlobalVariable.DEFAULT_GAS_PRICE);
+            String rsp = chainService.ontSdk.nativevm().ontId().sendRegister(identity1,
+                                                                             i_password,
+                                                                             payerAccount,
+                                                                             chainService.ontSdk.DEFAULT_GAS_LIMIT,
+                                                                             GlobalVariable.DEFAULT_GAS_PRICE);
             map.put("txhash", rsp);
         } catch (Exception e) {
             logger.error(e.getMessage());
@@ -185,6 +190,48 @@ public class IdentityTests {
 
         //
         return map;
+
+    }
+
+    @Test
+    public void createIdentityFromPrikeyAndRegisterOnBlockChain() {
+
+        //
+        Map<String, String> map = new HashMap<String, String>();
+
+        String passphrase = "123456";
+
+        // 创建 identity1
+        Identity identity1 = null;
+        try {
+            //
+            String prikey = "3fb33f6ece9b9cba55936965c0eef8c15819bc74d7588c1feb3217b8948e1854";
+            //
+            identity1 = chainService.ontSdk.getWalletMgr().createIdentityFromPriKey(passphrase, prikey);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+        }
+        map.put("identity", String.valueOf(identity1));
+
+        // 链上：注册 identity1
+        try {
+            String rsp = chainService.ontSdk.nativevm().ontId().sendRegister(identity1,
+                                                                             passphrase,
+                                                                             payerAccount,
+                                                                             chainService.ontSdk.DEFAULT_GAS_LIMIT,
+                                                                             GlobalVariable.DEFAULT_GAS_PRICE);
+            map.put("txhash", rsp);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+        }
+
+        //
+        String ddoStr = readDDO(identity1.ontid);
+        map.put("ddo", ddoStr);
+
+        //
+        System.out.println(map);
+        // {identity={"controls":[{"address":"AYcZZYxgAVw7uoizVJFGmEYEdbFomeXhEG","algorithm":"ECDSA","enc-alg":"aes-256-gcm","hash":"sha256","id":"keys-1","key":"2GnmuxtCCIuWWD/S80zrmGGX/p32S0LLQ1ZNvwRp4NoBlSmL/haNPM4L+FZoxrSR","parameters":{"curve":"P-256"},"publicKey":"02c1c8d9ee6f5c3bbc901aa00406fe819b4cc5bb85e605c3970a97ac400416b764","salt":"wc6IbOKu3IsBAAIpFxcnGA=="}],"isDefault":false,"label":"7c3c4d86","lock":false,"ontid":"did:ont:AYcZZYxgAVw7uoizVJFGmEYEdbFomeXhEG"}, ddo={"Attributes":[],"OntId":"did:ont:AYcZZYxgAVw7uoizVJFGmEYEdbFomeXhEG","Owners":[{"Type":"ECDSA","Curve":"P256","Value":"02c1c8d9ee6f5c3bbc901aa00406fe819b4cc5bb85e605c3970a97ac400416b764","PubKeyId":"did:ont:AYcZZYxgAVw7uoizVJFGmEYEdbFomeXhEG#keys-1"}]}, txhash=84384591ae4363882465cff9a924b9d1d92668c110aa03065deaa3ac30be0cba}
 
     }
 
@@ -400,8 +447,9 @@ public class IdentityTests {
         //
         IdentityInfo controlIdentity1Info = new IdentityInfo();
         try {
-            controlIdentity1Info = chainService.ontSdk.getWalletMgr()
-                                                      .getIdentityInfo(controlIdentity1.getOntid(), controlIdentity1Password, controlIdentity1.getControls().get(0).getSalt());
+            controlIdentity1Info = chainService.ontSdk.getWalletMgr().getIdentityInfo(controlIdentity1.getOntid(),
+                                                                                      controlIdentity1Password,
+                                                                                      controlIdentity1.getControls().get(0).getSalt());
         } catch (Exception e) {
             logger.error(e.getMessage());
         }

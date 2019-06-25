@@ -156,7 +156,7 @@
 			<version>1.1.7.3</version>
 		</dependency>
 
-		<!-- ouath -->
+		<!-- JWT -->
 		<dependency>
 			<groupId>com.auth0</groupId>
 			<artifactId>java-jwt</artifactId>
