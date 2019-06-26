@@ -9,11 +9,13 @@ import com.github.ontio.sdk.info.IdentityInfo;
 import com.github.ontio.sdk.wallet.Identity;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.lambdaworks.crypto.SCryptUtil;
 import com.ontology.sourcing.dao.ddo.*;
 import com.ontology.sourcing.mapper.ddo.*;
 import com.ontology.sourcing.model.ddo.DDOPojo;
 import com.ontology.sourcing.model.ddo.Owner;
 import com.ontology.sourcing.model.ddo.identity.OntidPojo;
+import com.ontology.sourcing.service.oauth.JWTService;
 import com.ontology.sourcing.service.util.ChainService;
 import com.ontology.sourcing.service.util.PropertiesService;
 import com.ontology.sourcing.util.GlobalVariable;
@@ -35,6 +37,7 @@ public class OntidService {
     //
     private PropertiesService propertiesService;
     private ChainService chainService;
+    private JWTService jwtService;
     //
     private ActionOntidMapper actionOntidMapper;
     private ActionMapper actionMapper;
@@ -46,7 +49,8 @@ public class OntidService {
                         ActionMapper actionMapper,
                         ActionIndexMapper actionIndexMapper,
                         PropertiesService propertiesService,
-                        ChainService chainService) {
+                        ChainService chainService,
+                        JWTService jwtService) {
         //
         this.actionOntidMapper = actionOntidMapper;
         this.actionMapper = actionMapper;
@@ -54,13 +58,21 @@ public class OntidService {
         //
         this.propertiesService = propertiesService;
         this.chainService = chainService;
+        this.jwtService = jwtService;
 
         //
         payerAccount = GlobalVariable.getInstanceOfAccount(propertiesService.payerPrivateKey);
     }
 
     //
-    public Map<String, String> createOntid(String password) throws Exception {
+    public Map<String, String> createOntid(String username,
+                                           String password) throws Exception {
+
+        // 先检查username是否已注册
+        ActionOntid existed = actionOntidMapper.findByUsername(username);
+        if (existed != null) {
+            throw new Exception("username existed.");
+        }
 
         //
         Map<String, String> map = new HashMap<String, String>();
@@ -69,8 +81,11 @@ public class OntidService {
         Identity identity = chainService.ontSdk.getWalletMgr().createIdentity(password);
 
         // 链上：注册 identity
-        String rsp = chainService.ontSdk.nativevm().ontId()
-                                        .sendRegister(identity, password, payerAccount, chainService.ontSdk.DEFAULT_GAS_LIMIT, GlobalVariable.DEFAULT_GAS_PRICE);  // 会将身份信息写入钱包文件
+        String rsp = chainService.ontSdk.nativevm().ontId().sendRegister(identity,
+                                                                         password,
+                                                                         payerAccount,
+                                                                         chainService.ontSdk.DEFAULT_GAS_LIMIT,
+                                                                         GlobalVariable.DEFAULT_GAS_PRICE);  // 会将身份信息写入钱包文件
         map.put("txhash", rsp);
 
         //
@@ -79,15 +94,54 @@ public class OntidService {
 
         //        Map keystore = WalletQR.exportIdentityQRCode(ontSdk.getWalletMgr().getWallet(), identity);
         //        map.put("keystore", JSON.toJSONString(keystore));
-        map.put("keystore", JSON.toJSONString(identity));
-        map.put("ontid", identity.ontid);
+
+        String keystore = JSON.toJSONString(identity);
+        map.put("keystore", keystore);
+        String ontid = identity.ontid;
+        map.put("ontid", ontid);
+
+        // 写入本地表
+        ActionOntid record = new ActionOntid();
+        record.setUsername(username);
+        record.setPassword(SCryptUtil.scrypt(password, GlobalVariable.scrypt_N, GlobalVariable.scrypt_r, GlobalVariable.scrypt_p));
+        record.setOntid(ontid);
+        record.setKeystore(keystore);
+        record.setTxhash(rsp);
+        record.setActionIndex(GlobalVariable.CURRENT_ACTION_TABLE_INDEX);
+        record.setCreateTime(new Date());
+        actionOntidMapper.save(record);
 
         //
         return map;
     }
 
     //
-    public Map<String, String> updateOntidAttribute(String ontid, String password, String attributeJson) throws Exception {
+    public Map<String, String> login(String username,
+                                     String password) throws Exception {
+
+        // 先检查username是否已注册
+        ActionOntid existed = actionOntidMapper.findByUsername(username);
+        if (existed == null) {
+            throw new Exception("username not exist.");
+        }
+
+        // String tmp = SCryptUtil.scrypt(password, GlobalVariable.scrypt_N, GlobalVariable.scrypt_r, GlobalVariable.scrypt_p);
+        if (!SCryptUtil.check(password, existed.getPassword())) {
+            throw new Exception("password error.");
+        }
+
+        //
+        String user_ontid = existed.getOntid();
+
+        Map<String, String> map = jwtService.getAccessToken(user_ontid);
+
+        return map;
+    }
+
+    //
+    public Map<String, String> updateOntidAttribute(String ontid,
+                                                    String password,
+                                                    String attributeJson) throws Exception {
 
         //
         Map<String, String> map = new HashMap<String, String>();
@@ -113,7 +167,9 @@ public class OntidService {
     }
 
     //
-    public Map<String, String> deleteEntityIdentityAttribute(String ontid, String password, String path_key) throws Exception {
+    public Map<String, String> deleteEntityIdentityAttribute(String ontid,
+                                                             String password,
+                                                             String path_key) throws Exception {
 
         //
         Map<String, String> map = new HashMap<String, String>();
@@ -136,7 +192,9 @@ public class OntidService {
     }
 
     //
-    public Map<String, String> updateOntidControl(String ontid, String ontidPassword, String controlOntid) throws RestfulException, Exception {
+    public Map<String, String> updateOntidControl(String ontid,
+                                                  String ontidPassword,
+                                                  String controlOntid) throws RestfulException, Exception {
         //
         Map<String, String> map = new HashMap<String, String>();
 
@@ -167,7 +225,10 @@ public class OntidService {
     }
 
     //
-    public Map<String, String> updateOntidAttributeByControl(String ontid, String attributeJson, String controlOntid, String controlPassword) throws Exception {
+    public Map<String, String> updateOntidAttributeByControl(String ontid,
+                                                             String attributeJson,
+                                                             String controlOntid,
+                                                             String controlPassword) throws Exception {
 
         //
         Map<String, String> map = new HashMap<String, String>();
@@ -192,7 +253,10 @@ public class OntidService {
     }
 
     //
-    public Map<String, String> deleteEntityIdentityAttributeByControl(String ontid, String path_key, String controlOntid, String controlPassword) throws Exception {
+    public Map<String, String> deleteEntityIdentityAttributeByControl(String ontid,
+                                                                      String path_key,
+                                                                      String controlOntid,
+                                                                      String controlPassword) throws Exception {
 
         //
         Map<String, String> map = new HashMap<String, String>();
@@ -223,12 +287,16 @@ public class OntidService {
     }
 
     //
-    public Integer count(String tableName, String ontid) {
+    public Integer count(String tableName,
+                         String ontid) {
         return actionMapper.count(tableName, ontid);
     }
 
     //
-    public List<Action> getActionHistory(String tableName, String ontid, int pageNum, int pageSize) {
+    public List<Action> getActionHistory(String tableName,
+                                         String ontid,
+                                         int pageNum,
+                                         int pageSize) {
         int start = (pageNum - 1) * pageSize;
         int offset = pageSize;
         return actionMapper.selectByPageNumSize(tableName, ontid, start, offset);
@@ -267,7 +335,8 @@ public class OntidService {
     }
 
     //
-    public com.github.ontio.account.Account getAccountByOntidAndPassword(String ontid, String ontidPassword) throws Exception {
+    public com.github.ontio.account.Account getAccountByOntidAndPassword(String ontid,
+                                                                         String ontidPassword) throws Exception {
         //
         OntidPojo controlPojo = getPojoByOntid(ontid);
         //
@@ -286,7 +355,11 @@ public class OntidService {
         return account;
     }
 
-    public void save(String ontid, String control, String txhash, Integer type, String detail) {
+    public void save(String ontid,
+                     String control,
+                     String txhash,
+                     Integer type,
+                     String detail) {
         // 写入本地表
         Action record = new Action();
         record.setOntid(ontid);

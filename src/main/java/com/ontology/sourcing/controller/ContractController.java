@@ -636,7 +636,7 @@ public class ContractController {
         }
     }
 
-    @PostMapping("/contract/hash")
+    @PostMapping("/attestation/hash")
     public ResponseEntity<Result> selectByOntidAndHash(@RequestBody LinkedHashMap<String, Object> obj) {
 
         //
@@ -684,7 +684,7 @@ public class ContractController {
 
     }
 
-    @PostMapping("/contract/hash/delete")
+    @PostMapping("/attestation/hash/delete")
     public ResponseEntity<Result> deleteByOntidAndHash(@RequestBody LinkedHashMap<String, Object> obj) {
 
         //
@@ -762,7 +762,7 @@ public class ContractController {
 
     }
 
-    @PostMapping("/contract/history")
+    @PostMapping("/attestation/history")
     public ResponseEntity<Result> getHistory(@RequestBody LinkedHashMap<String, Object> obj) {
 
         //
@@ -817,7 +817,7 @@ public class ContractController {
         return new ResponseEntity<>(rst, HttpStatus.OK);
     }
 
-    @PostMapping("/contract/count")
+    @PostMapping("/attestation/count")
     public ResponseEntity<Result> count(@RequestBody LinkedHashMap<String, Object> obj) {
 
         //
@@ -858,7 +858,7 @@ public class ContractController {
         return new ResponseEntity<>(rst, HttpStatus.OK);
     }
 
-    @PostMapping("/contract/explorer")
+    @PostMapping("/attestation/explorer")
     public ResponseEntity<Result> getExplorer(@RequestBody LinkedHashMap<String, Object> obj) {
 
         //
@@ -898,7 +898,7 @@ public class ContractController {
         return new ResponseEntity<>(rst, HttpStatus.OK);
     }
 
-    @PostMapping("/contract/explorer/hash")
+    @PostMapping("/attestation/explorer/hash")
     public ResponseEntity<Result> getExplorerHash(@RequestBody LinkedHashMap<String, Object> obj) {
 
         //
@@ -932,7 +932,7 @@ public class ContractController {
     }
 
 
-    @PostMapping("/contract/company/add")
+    @PostMapping("/attestation/company/add")
     public ResponseEntity<Result> addCompany(@RequestBody LinkedHashMap<String, Object> obj) {
 
         //
@@ -983,7 +983,7 @@ public class ContractController {
     }
 
 
-    @PostMapping("/contract/company/update")
+    @PostMapping("/attestation/company/update")
     public ResponseEntity<Result> updateCompany(@RequestBody LinkedHashMap<String, Object> obj) {
 
         //
@@ -1040,7 +1040,7 @@ public class ContractController {
         return new ResponseEntity<>(rst, HttpStatus.OK);
     }
 
-    @PostMapping("/contract/company/get")
+    @PostMapping("/attestation/company/get")
     public ResponseEntity<Result> getCompany(@RequestBody LinkedHashMap<String, Object> obj) {
 
         //

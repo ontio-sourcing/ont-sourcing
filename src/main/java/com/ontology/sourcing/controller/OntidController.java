@@ -2,7 +2,6 @@ package com.ontology.sourcing.controller;
 
 import ch.qos.logback.classic.Logger;
 import com.github.ontio.network.exception.RestfulException;
-import com.lambdaworks.crypto.SCryptUtil;
 import com.ontology.sourcing.dao.ddo.*;
 import com.ontology.sourcing.mapper.ddo.*;
 import com.ontology.sourcing.model.ddo.DDOPojo;
@@ -10,7 +9,6 @@ import com.ontology.sourcing.model.util.Result;
 import com.ontology.sourcing.service.OntidService;
 import com.ontology.sourcing.service.util.SyncService;
 import com.ontology.sourcing.service.util.ValidateService;
-import com.ontology.sourcing.util.GlobalVariable;
 import com.ontology.sourcing.util.exp.ErrorCode;
 import com.ontology.sourcing.util.exp.ExistedException;
 import org.slf4j.LoggerFactory;
@@ -89,25 +87,56 @@ public class OntidController {
 
         //
         try {
-            Map<String, String> map = ontidService.createOntid(password);
+            Map<String, String> map = ontidService.createOntid(username, password);
             //
             String keystore = map.get("keystore");
             String txhash = map.get("txhash");
             String ontid = map.get("ontid");
             //
             syncService.confirmTxAndDDO(ontid, txhash);
-            // 写入本地表
-            ActionOntid record = new ActionOntid();
-            record.setUsername(username);
-            record.setPassword(SCryptUtil.scrypt(password, GlobalVariable.scrypt_N, GlobalVariable.scrypt_r, GlobalVariable.scrypt_p));
-            record.setOntid(ontid);
-            record.setKeystore(keystore);
-            record.setTxhash(txhash);
-            record.setActionIndex(GlobalVariable.CURRENT_ACTION_TABLE_INDEX);
-            record.setCreateTime(new Date());
-            actionOntidMapper.save(record);
             //
             rst.setResult(ontid);
+            //
+            rst.setErrorAndDesc(ErrorCode.SUCCESSS);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<Result> login(@RequestBody LinkedHashMap<String, Object> obj) {
+
+        //
+        Result rst = new Result("login");
+
+        //
+        Set<String> required = new HashSet<>();
+        required.add("username");
+        required.add("password");
+
+        //
+        try {
+            validateService.validateParamsKeys(obj, required);
+            validateService.validateParamsValues(obj);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            rst.setErrorAndDesc(e);
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        }
+
+        //
+        String username = (String) obj.get("username");
+        String password = (String) obj.get("password");
+
+        //
+        try {
+            //
+            Map<String, String> map = ontidService.login(username, password);
+            //
+            rst.setResult(map);
             //
             rst.setErrorAndDesc(ErrorCode.SUCCESSS);
             return new ResponseEntity<>(rst, HttpStatus.OK);

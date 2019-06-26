@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 public interface ActionOntidMapper extends JpaRepository<ActionOntid, Integer> {
 
     ActionOntid findByOntid(String ontid);
+
+    ActionOntid findByUsername(String username);
 }

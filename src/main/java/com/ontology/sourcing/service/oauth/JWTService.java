@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+
 @Service
 public class JWTService {
 
@@ -23,11 +25,34 @@ public class JWTService {
 
     //
     String ontAuthJWTUrl;
+    String ontAuthJWTVerificationUrl;
 
     //
-    public JWTService(@Value("${ont.auth.jwt.url}") String ontAuthJWTUrl) {
+    public JWTService(@Value("${ont.auth.jwt.url}") String ontAuthJWTUrl, @Value("${ont.auth.jwt.verification.url}") String ontAuthJWTVerificationUrl) {
         this.ontAuthJWTUrl = ontAuthJWTUrl;
+        this.ontAuthJWTVerificationUrl = ontAuthJWTVerificationUrl;
     }
+
+    //
+    public Map<String,String> getAccessToken(String user_ontid) throws Exception {
+        //
+        JSONObject obj = new JSONObject();
+        obj.put("user_ontid", user_ontid);
+        //
+        HttpUtil.HttpInfo httpInfo = HttpUtil.doPost(ontAuthJWTUrl, HttpUtil.JSON, obj);
+        //
+        try {
+            ResponseBean response = gson.fromJson(httpInfo.responseBody, ResponseBean.class);
+            Map<String,String> rst = (Map<String,String>) response.getResult();
+            return rst;
+        } catch (Exception e) {
+            //
+            logger.error(e.getMessage());
+            //
+            throw new Exception(e.getMessage());
+        }
+    }
+
 
     //
     public void verify(String access_token) throws Exception {
@@ -35,7 +60,7 @@ public class JWTService {
         JSONObject obj = new JSONObject();
         obj.put("access_token", access_token);
         //
-        HttpUtil.HttpInfo httpInfo = HttpUtil.doPost(ontAuthJWTUrl, HttpUtil.JSON, obj);
+        HttpUtil.HttpInfo httpInfo = HttpUtil.doPost(ontAuthJWTVerificationUrl, HttpUtil.JSON, obj);
         //
        try {
            ResponseBean response = gson.fromJson(httpInfo.responseBody, ResponseBean.class);

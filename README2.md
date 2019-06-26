@@ -16,7 +16,7 @@
 ### 创建
 
 ```text
-url：/api/v1/contract/company/add
+url：/api/v1/attestation/company/add
 method：POST
 ```
 
@@ -62,7 +62,7 @@ method：POST
 ### 读取
 
 ```text
-url：/api/v1/contract/company/get
+url：/api/v1/attestation/company/get
 method：POST
 ```
 
@@ -109,11 +109,10 @@ method：POST
 | version    | String | 版本号                      |
 
 
-
 ### 更新
 
 ```text
-url：/api/v1/contract/company/update
+url：/api/v1/attestation/company/update
 method：POST
 ```
 

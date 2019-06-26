@@ -87,7 +87,53 @@ method：POST
 | action     | String | 动作标志                      |
 | desc       | String | 成功返回SUCCESS，失败返回错误描述 |
 | result     | String | 成功返回ontid，失败返回""     |
-| version    | String | 版本号                        |（）
+| version    | String | 版本号                        |
+
+
+### 登录
+
+```text
+url：/api/v1/ddo/login
+method：POST
+```
+
+- 请求：
+
+```json
+{
+    "username":"entity1",
+    "password":"888888"
+}
+```
+
+| Field_Name | Type   | Description |
+|:-----------|:-------|:------------|
+| username   | String | 用户名    |
+| password   | String | 密码    |
+
+- 响应：
+
+```json
+{
+    "action": "login",
+    "version": "1.0.0",
+    "result": {
+        "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJhdWQiOiJkaWQ6b250OkFWVVJNVFpwRmNkQkFZbm5NNWVKZ3JqZFlTV21FeUNEUmMiLCJpc3MiOiJkaWQ6b250OkFkajdXNVoyaFRlS0g3WXdKc2ZNekx1d2lENjcxbXZKNlgiLCJleHAiOjE1NjE2MTgyMjMsImlhdCI6MTU2MTUzMTgyMywianRpIjoiNjYzZDdiNTZlYjIxNDFmYWJmZTUwZGZhNDMzYzlhYjYiLCJjb250ZW50Ijp7InR5cGUiOiJhY2Nlc3NfdG9rZW4iLCJvbnRpZCI6ImRpZDpvbnQ6QVZVUk1UWnBGY2RCQVlubk01ZUpncmpkWVNXbUV5Q0RSYyJ9fQ.MDFmZDNkZTMwZDExM2M3ZWFhNjNkOWY5NDIxMzk3YjQ0N2Q3MzhlODU0M2EwMjUzOTRlZTU3OTQ3NDEyZjFkYjA5YWZlNmU2MzFkZWRmZGI5MmJkNzNkMjc3YTRkOWNjYTA2Yjg0N2VkMWFhNDJkZTNiYTcxMzBhODRmY2MyMmM5ZA",
+        "user_ontid": "did:ont:AVURMTZpFcdBAYnnM5eJgrjdYSWmEyCDRc"
+    },
+    "error": 0,
+    "desc": "SUCCESS"
+}
+```
+
+| Field_Name | Type   | Description                   |
+|:-----------|:-------|:------------------------------|
+| error      | int    | 错误码                        |
+| action     | String | 动作标志                      |
+| desc       | String | 成功返回SUCCESS，失败返回错误描述 |
+| result     | String | 成功返回结果，失败返回""     |
+| version    | String | 版本号                        |
+
 
 ### 获取ddo
 
@@ -841,7 +887,7 @@ method：POST
 ### 根据hash取证
 
 ```text
-url：/api/v1/contract/hash
+url：/api/v1/attestation/hash
 method：POST
 ```
 
@@ -923,7 +969,7 @@ method：POST
 ### 根据hash删除存证
 
 ```text
-url：/api/v1/contract/hash/delete
+url：/api/v1/attestation/hash/delete
 method：POST
 ```
 
@@ -962,11 +1008,10 @@ method：POST
 | version    | String | 版本号                        |
 
 
-
 ### 获取存证总条数
 
 ```text
-url：/api/v1/contract/count
+url：/api/v1/attestation/count
 method：POST
 ```
 
@@ -1005,10 +1050,11 @@ method：POST
 | result     | String | 成功返回总条数，失败返回""
 | version    | String | 版本号                     
 
+
 ### 获取存证历史记录
 
 ```text
-url：/api/v1/contract/history
+url：/api/v1/attestation/history
 method：POST
 ```
 
@@ -1095,7 +1141,7 @@ method：POST
 ### 浏览器存证历史记录
 
 ```text
-url：/api/v1/contract/explorer
+url：/api/v1/attestation/explorer
 method：POST
 ```
 
@@ -1177,7 +1223,7 @@ method：POST
 ### 浏览器根据hash取证
 
 ```text
-url：/api/v1/contract/explorer/hash
+url：/api/v1/attestation/explorer/hash
 method：POST
 ```
 
