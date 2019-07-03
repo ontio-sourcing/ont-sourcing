@@ -1,13 +1,13 @@
 package com.ontology.sourcing.mapper.ddo;
 
-import com.ontology.sourcing.dao.ddo.ActionOntid;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.ontology.sourcing.model.dao.ddo.ActionOntid;
 import org.springframework.stereotype.Repository;
+import tk.mybatis.mapper.common.Mapper;
 
 @Repository
-public interface ActionOntidMapper extends JpaRepository<ActionOntid, Integer> {
+public interface ActionOntidMapper extends Mapper<ActionOntid> {
 
-    ActionOntid findByOntid(String ontid);
+    // ActionOntid findByOntid(String ontid);
 
-    ActionOntid findByUsername(String username);
+    // ActionOntid findByUsername(String username);
 }

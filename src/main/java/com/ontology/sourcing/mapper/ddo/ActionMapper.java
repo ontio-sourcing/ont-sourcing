@@ -1,6 +1,6 @@
 package com.ontology.sourcing.mapper.ddo;
 
-import com.ontology.sourcing.dao.ddo.Action;
+import com.ontology.sourcing.model.common.ddo.Action;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 

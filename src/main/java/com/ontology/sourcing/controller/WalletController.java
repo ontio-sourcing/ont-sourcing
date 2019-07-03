@@ -2,8 +2,8 @@ package com.ontology.sourcing.controller;
 
 import ch.qos.logback.classic.Logger;
 import com.google.gson.Gson;
-import com.ontology.sourcing.model.util.ExceptionMsg;
-import com.ontology.sourcing.model.util.Result;
+import com.ontology.sourcing.model.common.ExceptionMsg;
+import com.ontology.sourcing.model.common.Result;
 import com.ontology.sourcing.service.WalletService;
 import com.ontology.sourcing.util.exp.ErrorCode;
 import org.slf4j.LoggerFactory;

@@ -1424,7 +1424,7 @@ method：POST
 | 61001      | INVALID_PARAMS | 参数错误 |
 | 71001      | ONTID_EXIST | ontid错误 |
 | 71002      | ONTID_NOT_EXIST | ontid错误 |
-| 80001      | BLOCKCHAIN_ERROR | 本体链错误 |
+| 80001      | BLOCKCHAIN_ERROR | 区块链错误 |
 | 90001      | SFL_ERROR | 司法链错误 |
 | 100000      | INTERNAL_SERVER_ERROR | 服务器内部错误 |
 

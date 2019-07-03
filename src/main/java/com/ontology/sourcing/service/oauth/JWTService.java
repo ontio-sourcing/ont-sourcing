@@ -5,7 +5,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.google.gson.Gson;
-import com.ontology.sourcing.model.common.ResponseBean;
+import com.ontology.sourcing.model.dto.ResponseBean;
 import com.ontology.sourcing.util.HttpUtil;
 import org.json.JSONObject;
 import org.slf4j.LoggerFactory;

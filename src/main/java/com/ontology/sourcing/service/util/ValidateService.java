@@ -1,8 +1,8 @@
 package com.ontology.sourcing.service.util;
 
 import com.google.gson.Gson;
-import com.ontology.sourcing.dao.contract.ContractTypes;
-import com.ontology.sourcing.dao.ddo.ActionOntid;
+import com.ontology.sourcing.model.dao.contract.ContractTypes;
+import com.ontology.sourcing.model.dao.ddo.ActionOntid;
 import com.ontology.sourcing.mapper.ddo.ActionOntidMapper;
 import com.ontology.sourcing.service.oauth.JWTService;
 import com.ontology.sourcing.util.exp.ErrorCode;

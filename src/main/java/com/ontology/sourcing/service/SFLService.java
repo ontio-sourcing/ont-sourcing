@@ -1,11 +1,11 @@
 package com.ontology.sourcing.service;
 
 import com.google.gson.Gson;
-import com.ontology.sourcing.dao.sfl.SFLIdentity;
-import com.ontology.sourcing.dao.sfl.SFLNotary;
+import com.ontology.sourcing.model.dao.sfl.SFLIdentity;
+import com.ontology.sourcing.model.dao.sfl.SFLNotary;
 import com.ontology.sourcing.mapper.sfl.SFLIdentityMapper;
 import com.ontology.sourcing.mapper.sfl.SFLNotaryMapper;
-import com.ontology.sourcing.model.sfl.SFLResponse;
+import com.ontology.sourcing.model.dto.sfl.SFLResponse;
 import com.ontology.sourcing.service.util.PropertiesService;
 import com.ontology.sourcing.service.util.SyncService;
 import com.ontology.sourcing.util.HttpUtil;

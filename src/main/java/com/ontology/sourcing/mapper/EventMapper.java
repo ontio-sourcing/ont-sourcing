@@ -1,13 +1,10 @@
 package com.ontology.sourcing.mapper;
 
-import com.ontology.sourcing.dao.Event;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.ontology.sourcing.model.dao.Event;
 import org.springframework.stereotype.Repository;
+import tk.mybatis.mapper.common.Mapper;
 
 @Repository
-public interface EventMapper extends JpaRepository<Event, Integer> {
-
-    // 根据规则自定义的
-    Event findByTxhash(String txhash);
+public interface EventMapper extends Mapper<Event> {
 
 }

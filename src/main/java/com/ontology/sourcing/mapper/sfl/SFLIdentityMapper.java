@@ -1,11 +1,11 @@
 package com.ontology.sourcing.mapper.sfl;
 
-import com.ontology.sourcing.dao.sfl.SFLIdentity;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.ontology.sourcing.model.dao.sfl.SFLIdentity;
 import org.springframework.stereotype.Repository;
+import tk.mybatis.mapper.common.Mapper;
 
 @Repository
-public interface SFLIdentityMapper extends JpaRepository<SFLIdentity, Integer> {
+public interface SFLIdentityMapper extends Mapper<SFLIdentity> {
 
-    SFLIdentity findByCertNo(String certNo);
+    // SFLIdentity findByCertNo(String certNo);
 }

@@ -2,9 +2,9 @@ package com.ontology.sourcing.controller;
 
 import ch.qos.logback.classic.Logger;
 import com.google.gson.Gson;
-import com.ontology.sourcing.dao.sfl.SFLIdentity;
-import com.ontology.sourcing.dao.sfl.SFLNotary;
-import com.ontology.sourcing.model.util.Result;
+import com.ontology.sourcing.model.dao.sfl.SFLIdentity;
+import com.ontology.sourcing.model.dao.sfl.SFLNotary;
+import com.ontology.sourcing.model.common.Result;
 import com.ontology.sourcing.service.SFLService;
 import com.ontology.sourcing.service.util.ValidateService;
 import com.ontology.sourcing.util.exp.ErrorCode;

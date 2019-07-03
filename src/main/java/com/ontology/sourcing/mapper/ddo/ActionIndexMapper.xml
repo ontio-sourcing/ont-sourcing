@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ontology.sourcing.mapper.ddo.ActionIndexMapper">
-	<resultMap id="BaseResultMap" type="com.ontology.sourcing.dao.ddo.ActionIndex">
+	<resultMap id="BaseResultMap" type="com.ontology.sourcing.model.dao.ddo.ActionIndex">
 		<id column="id" jdbcType="INTEGER" property="id"/>
 		<result column="name" jdbcType="VARCHAR" property="name"/>
 		<result column="flag" jdbcType="INTEGER" property="flag"/>
@@ -20,13 +20,13 @@
     delete from tbl_action_index
     where id = #{id,jdbcType=INTEGER}
   </delete>
-	<insert id="insert" parameterType="com.ontology.sourcing.dao.ddo.ActionIndex">
+	<insert id="insert" parameterType="com.ontology.sourcing.model.dao.ddo.ActionIndex">
     insert into tbl_action_index (id, name, flag
       )
     values (#{id,jdbcType=INTEGER}, #{name,jdbcType=VARCHAR}, #{flag,jdbcType=INTEGER}
       )
   </insert>
-	<insert id="insertSelective" parameterType="com.ontology.sourcing.dao.ddo.ActionIndex">
+	<insert id="insertSelective" parameterType="com.ontology.sourcing.model.dao.ddo.ActionIndex">
 		insert into tbl_action_index
 		<trim prefix="(" suffix=")" suffixOverrides=",">
 			<if test="id != null">
@@ -51,7 +51,7 @@
 			</if>
 		</trim>
 	</insert>
-	<update id="updateByPrimaryKeySelective" parameterType="com.ontology.sourcing.dao.ddo.ActionIndex">
+	<update id="updateByPrimaryKeySelective" parameterType="com.ontology.sourcing.model.dao.ddo.ActionIndex">
 		update tbl_action_index
 		<set>
 			<if test="name != null">
@@ -63,7 +63,7 @@
 		</set>
 		where id = #{id,jdbcType=INTEGER}
 	</update>
-	<update id="updateByPrimaryKey" parameterType="com.ontology.sourcing.dao.ddo.ActionIndex">
+	<update id="updateByPrimaryKey" parameterType="com.ontology.sourcing.model.dao.ddo.ActionIndex">
     update tbl_action_index
     set name = #{name,jdbcType=VARCHAR},
       flag = #{flag,jdbcType=INTEGER}

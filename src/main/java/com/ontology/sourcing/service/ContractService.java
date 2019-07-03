@@ -9,10 +9,11 @@ import com.github.ontio.core.transaction.Transaction;
 import com.github.ontio.network.exception.ConnectorException;
 import com.github.ontio.sdk.exception.SDKException;
 import com.github.ontio.smartcontract.neovm.abi.BuildParams;
-import com.ontology.sourcing.dao.Event;
-import com.ontology.sourcing.dao.contract.*;
+import com.ontology.sourcing.model.common.attestation.Attestation;
+import com.ontology.sourcing.model.dao.Event;
+import com.ontology.sourcing.model.dao.contract.*;
 import com.ontology.sourcing.mapper.EventMapper;
-import com.ontology.sourcing.mapper.contract.*;
+import com.ontology.sourcing.mapper.attestation.*;
 import com.ontology.sourcing.service.util.ChainService;
 import com.ontology.sourcing.service.util.PropertiesService;
 import com.ontology.sourcing.util.GlobalVariable;
@@ -69,23 +70,23 @@ public class ContractService {
         payer = GlobalVariable.getInstanceOfAccount(propertiesService.payerPrivateKey);
     }
 
-    public Map<String, String> putContract(Contract contract) throws Exception {
+    public Map<String, String> putContract(Attestation attestation) throws Exception {
 
         // 上链时，只把指定field的组合后的hash作为key
-        String c_key = contractToDigestForKey(contract);
+        String c_key = contractToDigestForKey(attestation);
         // 上链时，只把指定field的组合后的hash作为value
-        String c_value = contractToDigestForValue(contract);
+        String c_value = contractToDigestForValue(attestation);
 
         //
-        return putContract(contract, c_key, c_value);
+        return putContract(attestation, c_key, c_value);
     }
 
-    public Map<String, String> putContract(Contract contract,
+    public Map<String, String> putContract(Attestation attestation,
                                            String c_key,
                                            String c_value) throws Exception {
 
         // 先查询是不是项目方，有没有设置指定的payer地址和合约地址
-        String c_ontid = contract.getCompanyOntid();
+        String c_ontid = attestation.getCompanyOntid();
         ContractCompany contractCompany = contractCompanyMapper.findByOntid(c_ontid);
         if (contractCompany != null) {
             payer = GlobalVariable.getInstanceOfAccount(contractCompany.getPrikey());
@@ -127,20 +128,20 @@ public class ContractService {
         return map;
     }
 
-    public String getContract(Contract contract,
+    public String getContract(Attestation attestation,
                               Account payer) throws Exception {
 
         List paramList = new ArrayList<>();
         paramList.add("getRecord".getBytes());
 
         List args = new ArrayList();
-        args.add(contractToDigestForKey(contract));
+        args.add(contractToDigestForKey(attestation));
 
         paramList.add(args);
         byte[] params = BuildParams.createCodeParamsScript(paramList);
 
         // 先查询是不是项目方，有没有设置指定的payer地址和合约地址
-        ContractCompany contractCompany = contractCompanyMapper.findByOntid(contract.getCompanyOntid());
+        ContractCompany contractCompany = contractCompanyMapper.findByOntid(attestation.getCompanyOntid());
         if (contractCompany != null) {
             payer = GlobalVariable.getInstanceOfAccount(contractCompany.getPrikey());
             codeAddr = Address.AddressFromVmCode(contractCompany.getCodeAddr()).toHexString();
@@ -246,37 +247,37 @@ public class ContractService {
     }
 
     // 发到链上的key
-    public String contractToDigestForKey(Contract contract) {
-        String k = contract.getOntid() + contract.getCompanyOntid() + contract.getFilehash() + contract.getTimestamp();
+    public String contractToDigestForKey(Attestation attestation) {
+        String k = attestation.getOntid() + attestation.getCompanyOntid() + attestation.getFilehash() + attestation.getTimestamp();
         return Sha256Util.sha256(k);
     }
 
     // 发到链上的value
-    public String contractToDigestForValue(Contract contract) {
-        String v = contract.getOntid() + contract.getCompanyOntid() + contract.getDetail() + contract.getTimestamp() + contract.getTimestampSign();
+    public String contractToDigestForValue(Attestation attestation) {
+        String v = attestation.getOntid() + attestation.getCompanyOntid() + attestation.getDetail() + attestation.getTimestamp() + attestation.getTimestampSign();
         return Sha256Util.sha256(v);
     }
 
     // 后期如果需要验证
-    public boolean verifyContractOnBlockchain(Contract contract,
+    public boolean verifyContractOnBlockchain(Attestation attestation,
                                               Account payer) throws Exception {
-        String valueLocal = contractToDigestForValue(contract);
-        String valueOnBlockchain = getContract(contract, payer);
+        String valueLocal = contractToDigestForValue(attestation);
+        String valueOnBlockchain = getContract(attestation, payer);
         return valueOnBlockchain.equals(valueLocal);
     }
 
     //
-    public List<Contract> getHistoryByOntid(String ontid,
-                                            int pageNum,
-                                            int pageSize,
-                                            String type) throws Exception {
+    public List<Attestation> getHistoryByOntid(String ontid,
+                                               int pageNum,
+                                               int pageSize,
+                                               String type) throws Exception {
         //
         String tableName = getIndex(ontid).getName();
         //
         int start = (pageNum - 1) * pageSize;
         int offset = pageSize;
         //
-        List<Contract> list;
+        List<Attestation> list;
         if (StringUtils.isEmpty(type)) {
             list = contractMapper.selectByOntidAndPage(tableName, ontid, start, offset);
         } else {
@@ -286,28 +287,28 @@ public class ContractService {
     }
 
     //
-    public List<Contract> getExplorerHistory(String tableName,
-                                             int pageNum,
-                                             int pageSize) {
+    public List<Attestation> getExplorerHistory(String tableName,
+                                                int pageNum,
+                                                int pageSize) {
         int start = (pageNum - 1) * pageSize;
         int offset = pageSize;
-        List<Contract> list = contractMapper.selectByPage(tableName, start, offset);
+        List<Attestation> list = contractMapper.selectByPage(tableName, start, offset);
         return addHeight(list);
     }
 
     //
-    public List<Contract> selectByOntidAndTxHash(String ontid,
-                                                 String txhash) throws Exception {
+    public List<Attestation> selectByOntidAndTxHash(String ontid,
+                                                    String txhash) throws Exception {
         String tableName = getIndex(ontid).getName();
-        List<Contract> list = contractMapper.selectByOntidAndTxHash(tableName, ontid, txhash);
+        List<Attestation> list = contractMapper.selectByOntidAndTxHash(tableName, ontid, txhash);
         return addHeight(list);
     }
 
     //
-    public List<Contract> selectByOntidAndHash(String ontid,
-                                               String hash) throws Exception {
+    public List<Attestation> selectByOntidAndHash(String ontid,
+                                                  String hash) throws Exception {
         String tableName = getIndex(ontid).getName();
-        List<Contract> list = contractMapper.selectByOntidAndHash(tableName, ontid, hash);
+        List<Attestation> list = contractMapper.selectByOntidAndHash(tableName, ontid, hash);
         return addHeight(list);
     }
 
@@ -319,10 +320,10 @@ public class ContractService {
     }
 
     //
-    public List<Contract> selectByHash(String hash) {
+    public List<Attestation> selectByHash(String hash) {
 
         // TODO 目前只支持从当前表查询
-        List<Contract> list = contractMapper.selectByHash(GlobalVariable.CURRENT_CONTRACT_TABLE_NAME, hash);
+        List<Attestation> list = contractMapper.selectByHash(GlobalVariable.CURRENT_CONTRACT_TABLE_NAME, hash);
         return addHeight(list);
     }
 
@@ -342,13 +343,13 @@ public class ContractService {
     }
 
     // 跨表添加height信息
-    private List<Contract> addHeight(List<Contract> list) {
+    private List<Attestation> addHeight(List<Attestation> list) {
         //
         if (list == null || list.size() == 0)
             return list;
         //
-        List<Contract> newlist = new ArrayList<>();
-        for (Contract c : list) {
+        List<Attestation> newlist = new ArrayList<>();
+        for (Attestation c : list) {
             Event e = eventMapper.findByTxhash(c.getTxhash());
             if (e != null) {
                 Integer height = e.getHeight();
@@ -400,14 +401,14 @@ public class ContractService {
 
     // 写入数据库
     public void saveToLocal(String ontid,
-                            Contract contract) throws Exception {
-        contractMapper.insert(getIndex(ontid).getName(), contract);
+                            Attestation attestation) throws Exception {
+        contractMapper.insert(getIndex(ontid).getName(), attestation);
     }
 
     // 写入数据库，batch insert
     public void saveToLocalBatch(String ontid,
-                                 List<Contract> contractList) throws Exception {
-        contractMapper.insertBatch(getIndex(ontid).getName(), contractList);
+                                 List<Attestation> attestationList) throws Exception {
+        contractMapper.insertBatch(getIndex(ontid).getName(), attestationList);
     }
 
     //
