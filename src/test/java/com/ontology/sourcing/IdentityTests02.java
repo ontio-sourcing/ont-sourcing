@@ -36,6 +36,7 @@ public class IdentityTests02 {
         //
         Identity identity = chainService.ontSdk.getWalletMgr().createIdentityFromPriKey(passphrase, prikey);
         System.out.println(identity);
+
 /*
 {
     "controls":[

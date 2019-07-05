@@ -2,9 +2,10 @@ package com.ontology.sourcing.model.common;
 
 import com.github.ontio.network.exception.RestfulException;
 import com.google.gson.Gson;
+import com.ontology.sourcing.model.dto.RestfulExceptionMsg;
 import com.ontology.sourcing.util.GlobalVariable;
-import com.ontology.sourcing.util.exp.ErrorCode;
-import com.ontology.sourcing.util.exp.ONTSourcingException;
+import com.ontology.sourcing.exception.exp.ErrorCode;
+import com.ontology.sourcing.exception.exp.ONTSourcingException;
 import lombok.Data;
 import org.springframework.util.StringUtils;
 

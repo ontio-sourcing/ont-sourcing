@@ -6,6 +6,4 @@ import tk.mybatis.mapper.common.Mapper;
 
 @Repository
 public interface ContractCompanyMapper extends Mapper<ContractCompany> {
-
-    // ContractCompany findByOntid(String ontid);
 }

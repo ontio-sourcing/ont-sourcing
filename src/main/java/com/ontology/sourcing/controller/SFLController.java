@@ -2,13 +2,13 @@ package com.ontology.sourcing.controller;
 
 import ch.qos.logback.classic.Logger;
 import com.google.gson.Gson;
+import com.ontology.sourcing.exception.ErrorInfo;
+import com.ontology.sourcing.exception.exp.ErrorCode;
 import com.ontology.sourcing.model.dao.sfl.SFLIdentity;
 import com.ontology.sourcing.model.dao.sfl.SFLNotary;
-import com.ontology.sourcing.model.common.Result;
+import com.ontology.sourcing.model.dto.ResponseBean;
 import com.ontology.sourcing.service.SFLService;
 import com.ontology.sourcing.service.util.ValidateService;
-import com.ontology.sourcing.util.exp.ErrorCode;
-import com.ontology.sourcing.util.exp.ONTSourcingException;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -33,7 +33,8 @@ public class SFLController {
     private ValidateService validateService;
 
     @Autowired
-    public SFLController(SFLService sflService, ValidateService validateService) {
+    public SFLController(SFLService sflService,
+                         ValidateService validateService) {
         //
         this.sflService = sflService;
         this.validateService = validateService;
@@ -47,10 +48,10 @@ public class SFLController {
     }
 
     @PostMapping("/put")
-    public ResponseEntity<Result> putSFL(@RequestBody LinkedHashMap<String, Object> obj) {
+    public ResponseEntity<ResponseBean> putSFL(@RequestBody LinkedHashMap<String, Object> obj) throws Exception {
 
         //
-        Result rst = new Result("putSFL");
+        ResponseBean rst = new ResponseBean();
 
         //
         Set<String> required = new HashSet<>();
@@ -61,14 +62,8 @@ public class SFLController {
         required.add("filehash");
 
         //
-        try {
-            validateService.validateParamsKeys(obj, required);
-            validateService.validateParamsValues(obj);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        validateService.validateParamsKeys(obj, required);
+        validateService.validateParamsValues(obj);
 
         //
         String userType = (String) obj.get("userType");
@@ -116,31 +111,21 @@ public class SFLController {
         sflIdentity.setProperties(properties);
 
         //
-        String token = "";
-        try {
-            //
-            token = sflService.getToken(sflIdentity);
-            sflService.put(filehash, token, certNo);
-            //
-            rst.setResult(true);
-            rst.setErrorAndDesc(ErrorCode.SUCCESSS);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        } catch (ONTSourcingException e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        String token = sflService.getToken(sflIdentity);
+        sflService.put(filehash, token, certNo);
+        //
+        rst.setResult(true);
+        rst.setCode(ErrorInfo.SUCCESS.code());
+        rst.setMsg(ErrorInfo.SUCCESS.desc());
+        //
+        return new ResponseEntity<>(rst, HttpStatus.OK);
     }
 
     @PostMapping("/get")
-    public ResponseEntity<Result> getSFL(@RequestBody LinkedHashMap<String, Object> obj) {
+    public ResponseEntity<ResponseBean> getSFL(@RequestBody LinkedHashMap<String, Object> obj) throws Exception {
 
         //
-        Result rst = new Result("getSFL");
+        ResponseBean rst = new ResponseBean();
 
         //
         Set<String> required = new HashSet<>();
@@ -149,14 +134,8 @@ public class SFLController {
         required.add("pageSize");
 
         //
-        try {
-            validateService.validateParamsKeys(obj, required);
-            validateService.validateParamsValues(obj);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        validateService.validateParamsKeys(obj, required);
+        validateService.validateParamsValues(obj);
 
         //
         String certNo = (String) obj.get("certNo");
@@ -165,9 +144,13 @@ public class SFLController {
 
         //
         List<SFLNotary> list = sflService.getByCertNoPageable(certNo, pageNum, pageSize);
+
         //
         rst.setResult(list);
-        rst.setErrorAndDesc(ErrorCode.SUCCESSS);
+        rst.setCode(ErrorInfo.SUCCESS.code());
+        rst.setMsg(ErrorInfo.SUCCESS.desc());
+
+        //
         return new ResponseEntity<>(rst, HttpStatus.OK);
     }
 }

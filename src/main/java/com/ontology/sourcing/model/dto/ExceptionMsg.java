@@ -1,4 +1,4 @@
-package com.ontology.sourcing.model.common;
+package com.ontology.sourcing.model.dto;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;

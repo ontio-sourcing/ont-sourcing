@@ -2,10 +2,11 @@ package com.ontology.sourcing.controller;
 
 import ch.qos.logback.classic.Logger;
 import com.google.gson.Gson;
+import com.ontology.sourcing.exception.ErrorInfo;
 import com.ontology.sourcing.model.common.attestation.Attestation;
 import com.ontology.sourcing.model.dao.contract.ContractCompany;
+import com.ontology.sourcing.model.dto.ResponseBean;
 import com.ontology.sourcing.model.dto.attestation.input.InputWrapper;
-import com.ontology.sourcing.model.common.Result;
 import com.ontology.sourcing.service.ContractService;
 import com.ontology.sourcing.service.oauth.JWTService;
 import com.ontology.sourcing.service.ontid_server.OntidServerService;
@@ -13,7 +14,6 @@ import com.ontology.sourcing.service.time.bctsp.TspService;
 import com.ontology.sourcing.service.util.SyncService;
 import com.ontology.sourcing.service.util.ValidateService;
 import com.ontology.sourcing.util.GlobalVariable;
-import com.ontology.sourcing.util.exp.ErrorCode;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -87,35 +87,22 @@ public class AttestationController {
     }
 
     @PostMapping("/token/check")
-    public ResponseEntity<Result> checkToken(@RequestBody LinkedHashMap<String, Object> obj) {
+    public ResponseEntity<ResponseBean> checkToken(@RequestBody LinkedHashMap<String, Object> obj) throws Exception {
 
         //
-        Result rst = new Result("checkToken");
+        ResponseBean rst = new ResponseBean();
 
         //
         Set<String> required = new HashSet<>();
         required.add("access_token");
 
         //
-        try {
-            validateService.validateParamsKeys(obj, required);
-            validateService.validateParamsValues(obj);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        validateService.validateParamsKeys(obj, required);
+        validateService.validateParamsValues(obj);
 
         //
         String access_token = (String) obj.get("access_token");
-        String ontid = "";
-        try {
-            ontid = jwtService.getContentUser(access_token);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        String ontid = jwtService.getContentUser(access_token);
 
         //
         ContractCompany cc = contractService.getCompany(ontid);
@@ -124,9 +111,10 @@ public class AttestationController {
         } else {
             rst.setResult("2b");
         }
+        rst.setCode(ErrorInfo.SUCCESS.code());
+        rst.setMsg(ErrorInfo.SUCCESS.desc());
 
         //
-        rst.setErrorAndDesc(ErrorCode.SUCCESSS);
         return new ResponseEntity<>(rst, HttpStatus.OK);
     }
 
@@ -261,11 +249,10 @@ public class AttestationController {
 
 
     @PostMapping("/attestation/put")
-    public ResponseEntity<Result> putAttestation(@RequestBody LinkedHashMap<String, Object> obj) {
+    public ResponseEntity<ResponseBean> putAttestation(@RequestBody LinkedHashMap<String, Object> obj) throws Exception {
 
         //
-        Result rst = new Result("putAttestation");
-
+        ResponseBean rst = new ResponseBean();
         //
         Set<String> required = new HashSet<>();
         required.add("access_token");
@@ -276,14 +263,8 @@ public class AttestationController {
         required.add("context");
 
         //
-        try {
-            validateService.validateParamsKeys(obj, required);
-            validateService.validateParamsValues(obj);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        validateService.validateParamsKeys(obj, required);
+        validateService.validateParamsValues(obj);
 
         //
         InputWrapper iw = gson.fromJson(gson.toJson(obj), InputWrapper.class);
@@ -308,84 +289,72 @@ public class AttestationController {
         }
 
         //
-        String company_ontid = "";
-        try {
-            company_ontid = jwtService.getContentUser(access_token);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        String company_ontid = jwtService.getContentUser(access_token);
 
         // 查看项目有没有添加定制信息
-        try {
-            contractService.checkCompany(company_ontid);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        contractService.checkCompany(company_ontid);
 
         //
         if (StringUtils.isEmpty(user_ontid))
             user_ontid = company_ontid;
 
         //
-        try {
-            //
-            Attestation attestation = new Attestation();
-            attestation.setOntid(user_ontid);
-            attestation.setCompanyOntid(company_ontid);
-            attestation.setFilehash(filehash);
-            attestation.setDetail(detail);
-            attestation.setType(type);
-            attestation.setCreateTime(new Date());
-            //
-            if (async) {
-                //
-                kafkaTemplate.send(ontSourcingTopicPut, gson.toJson(attestation, Attestation.class));
-                //
-                rst.setResult(true);
-                rst.setErrorAndDesc(ErrorCode.SUCCESSS);
-                return new ResponseEntity<>(rst, HttpStatus.OK);
+        Attestation attestation = new Attestation();
+        attestation.setOntid(user_ontid);
+        attestation.setCompanyOntid(company_ontid);
+        attestation.setFilehash(filehash);
+        attestation.setDetail(detail);
+        attestation.setType(type);
+        attestation.setCreateTime(new Date());
 
-            } else {
-                //
-                Map<String, Object> map = tspService.getTimeStampMap(filehash);
-                //
-                long timestamp = (long) map.get("timestamp");
-                String timestampSign = map.get("timestampSign").toString();
-                //
-                attestation.setTimestamp(new Date(timestamp * 1000L));
-                attestation.setTimestampSign(timestampSign);
-                //
-                Map<String, String> map2 = contractService.putContract(attestation);
-                String txhash = map2.get("txhash");
-                attestation.setTxhash(txhash);
-                //
-                contractService.saveToLocal(company_ontid, attestation);
-                // 链同步
-                syncService.confirmTx(txhash);
-                //
-                Map<String, String> m = new HashMap<>();
-                m.put("txhash", txhash);
-                //
-                rst.setResult(m);
-                rst.setErrorAndDesc(ErrorCode.SUCCESSS);
-                return new ResponseEntity<>(rst, HttpStatus.OK);
-            }
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
+        //
+        if (async) {
+
+            //
+            kafkaTemplate.send(ontSourcingTopicPut, gson.toJson(attestation, Attestation.class));
+            //
+            rst.setResult(true);
+            rst.setCode(ErrorInfo.SUCCESS.code());
+            rst.setMsg(ErrorInfo.SUCCESS.desc());
+
+            //
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+
+        } else {
+
+            //
+            Map<String, Object> map = tspService.getTimeStampMap(filehash);
+            //
+            long timestamp = (long) map.get("timestamp");
+            String timestampSign = map.get("timestampSign").toString();
+            //
+            attestation.setTimestamp(new Date(timestamp * 1000L));
+            attestation.setTimestampSign(timestampSign);
+            //
+            Map<String, String> map2 = contractService.putContract(attestation);
+            String txhash = map2.get("txhash");
+            attestation.setTxhash(txhash);
+            //
+            contractService.saveToLocal(company_ontid, attestation);
+            // 链同步
+            syncService.confirmTx(txhash);
+            //
+            Map<String, String> m = new HashMap<>();
+            m.put("txhash", txhash);
+            //
+            rst.setResult(m);
+            rst.setCode(ErrorInfo.SUCCESS.code());
+            rst.setMsg(ErrorInfo.SUCCESS.desc());
+            //
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
     }
 
     @PostMapping("/attestations/put")
-    public ResponseEntity<Result> putAttestations(@RequestBody LinkedHashMap<String, Object> obj) {
+    public ResponseEntity<ResponseBean> putAttestations(@RequestBody LinkedHashMap<String, Object> obj) throws Exception {
 
         //
-        Result rst = new Result("putAttestations");
+        ResponseBean rst = new ResponseBean();
 
         //
         Set<String> required = new HashSet<>();
@@ -394,14 +363,8 @@ public class AttestationController {
         required.add("filelist");
 
         //
-        try {
-            validateService.validateParamsKeys(obj, required);
-            validateService.validateParamsValues(obj);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        validateService.validateParamsKeys(obj, required);
+        validateService.validateParamsValues(obj);
 
         //
         String access_token = (String) obj.get("access_token");
@@ -414,204 +377,67 @@ public class AttestationController {
         }
 
         //
-        String company_ontid = "";
-        try {
-            company_ontid = jwtService.getContentUser(access_token);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        String company_ontid = jwtService.getContentUser(access_token);
+
 
         // 查看项目有没有添加定制信息
-        try {
-            contractService.checkCompany(company_ontid);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        contractService.checkCompany(company_ontid);
 
         //
-        if (StringUtils.isEmpty(user_ontid))
+        if (StringUtils.isEmpty(user_ontid)) {
             user_ontid = company_ontid;
-
+        }
 
         // TODO
         ArrayList<Map<String, Object>> filelist = (ArrayList<Map<String, Object>>) obj.get("filelist");
 
         //
-        try {
+        List<Attestation> attestationList = new ArrayList<>();
+        //
+        List<Map<String, String>> txhashList = new ArrayList<>();
+        //
+        for (Map<String, Object> item : filelist) {
+
             //
-            List<Attestation> attestationList = new ArrayList<>();
+            InputWrapper iw = gson.fromJson(gson.toJson(item), InputWrapper.class);
+
             //
-            List<Map<String, String>> txhashList = new ArrayList<>();
+            String filehash = iw.getFilehash();
+            String type = iw.getType();
             //
-            for (Map<String, Object> item : filelist) {
+            com.alibaba.fastjson.JSONObject jsonObject = new com.alibaba.fastjson.JSONObject();
+            jsonObject.put("metadata", iw.getMetadata());
+            jsonObject.put("context", iw.getContext());
+            jsonObject.put("signature", iw.getSignature());
+            String detail = jsonObject.toJSONString();
 
-                //
-                InputWrapper iw = gson.fromJson(gson.toJson(item), InputWrapper.class);
+            //
+            // ArrayList<Object> detailList = (ArrayList<Object>) item.get("detail");
+            // String detail = gson.toJson(detailList);
+            // System.out.println(detail);
 
-                //
-                String filehash = iw.getFilehash();
-                String type = iw.getType();
-                //
-                com.alibaba.fastjson.JSONObject jsonObject = new com.alibaba.fastjson.JSONObject();
-                jsonObject.put("metadata", iw.getMetadata());
-                jsonObject.put("context", iw.getContext());
-                jsonObject.put("signature", iw.getSignature());
-                String detail = jsonObject.toJSONString();
+            //
+            Attestation attestation = new Attestation();
+            attestation.setCompanyOntid(company_ontid);
+            attestation.setOntid(user_ontid);
+            attestation.setFilehash(filehash);
+            attestation.setDetail(detail);
+            attestation.setType(type);
+            attestation.setCreateTime(new Date());
 
-                //
-                // ArrayList<Object> detailList = (ArrayList<Object>) item.get("detail");
-                // String detail = gson.toJson(detailList);
-                // System.out.println(detail);
-
-                //
-                Attestation attestation = new Attestation();
-                attestation.setCompanyOntid(company_ontid);
-                attestation.setOntid(user_ontid);
-                attestation.setFilehash(filehash);
-                attestation.setDetail(detail);
-                attestation.setType(type);
-                attestation.setCreateTime(new Date());
-
-                //
-                if (async) {
-                    //
-                    kafkaTemplate.send(ontSourcingTopicPut, gson.toJson(attestation, Attestation.class));
-
-                } else {
-                    try {
-
-                        //
-                        Map<String, Object> map = tspService.getTimeStampMap(filehash);
-                        //
-                        long timestamp = (long) map.get("timestamp");
-                        String timestampSign = map.get("timestampSign").toString();
-                        //
-                        attestation.setTimestamp(new Date(timestamp * 1000L));
-                        attestation.setTimestampSign(timestampSign);
-                        //
-                        Map<String, String> map2 = contractService.putContract(attestation);
-                        String txhash = map2.get("txhash");
-                        attestation.setTxhash(txhash);
-                        // 链同步
-                        syncService.confirmTx(txhash);
-                        //
-                        attestationList.add(attestation);
-                        //
-                        Map<String, String> m = new HashMap<>();
-                        m.put("txhash", txhash);
-                        txhashList.add(m);
-
-                    } catch (Exception e) {
-                        logger.error(e.getMessage());
-                        rst.setErrorAndDesc(e);
-                        return new ResponseEntity<>(rst, HttpStatus.OK);
-                    }
-                }
-            }
-
+            //
             if (async) {
-
                 //
-                rst.setResult(true);
-                rst.setErrorAndDesc(ErrorCode.SUCCESSS);
-                return new ResponseEntity<>(rst, HttpStatus.OK);
-
+                kafkaTemplate.send(ontSourcingTopicPut, gson.toJson(attestation, Attestation.class));
             } else {
-                // mybatis batch insert
-                // 单条长度大概 4KB，30条，一个sql语句size大概为120KB
-                // TODO 检查 max_allowed_packet
-                contractService.saveToLocalBatch(company_ontid, attestationList);
-                //
-                rst.setResult(txhashList);
-                rst.setErrorAndDesc(ErrorCode.SUCCESSS);
-                return new ResponseEntity<>(rst, HttpStatus.OK);
-            }
-
-
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
-    }
-
-    // 点晴定制
-    @PostMapping("/attestations/put/custom")
-    public ResponseEntity<Result> putAttestationsCustom(@RequestBody LinkedHashMap<String, Object> obj) {
-
-        //
-        Result rst = new Result("putAttestationsCustom");
-
-        //
-        Set<String> required = new HashSet<>();
-        required.add("access_token");
-        required.add("user_ontid");
-        required.add("filelist");
-
-        //
-        try {
-            validateService.validateParamsKeys(obj, required);
-            validateService.validateParamsValues(obj);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
-
-        //
-        String access_token = (String) obj.get("access_token");
-        String user_ontid = (String) obj.get("user_ontid");
-
-        //
-        String company_ontid = "";
-        try {
-            company_ontid = jwtService.getContentUser(access_token);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
-
-        //
-        if (StringUtils.isEmpty(user_ontid))
-            user_ontid = company_ontid;
-
-
-        // TODO
-        ArrayList<Map<String, Object>> filelist = (ArrayList<Map<String, Object>>) obj.get("filelist");
-
-        //
-        try {
-            //
-            List<Attestation> attestationList = new ArrayList<>();
-            //
-            for (Map<String, Object> item : filelist) {
-                //
-                String filehash = item.get("filehash").toString();
-                String type = item.get("type").toString();
-                ArrayList<Map<String, Object>> detailList = (ArrayList<Map<String, Object>>) item.get("detail");
-                String detail = gson.toJson(detailList);
-                // System.out.println(detail);
-
                 //
                 Map<String, Object> map = tspService.getTimeStampMap(filehash);
                 //
                 long timestamp = (long) map.get("timestamp");
                 String timestampSign = map.get("timestampSign").toString();
                 //
-                Attestation attestation = new Attestation();
-                attestation.setCompanyOntid(company_ontid);
-                attestation.setOntid(user_ontid);
-                attestation.setFilehash(filehash);
-                attestation.setDetail(detail);
-                attestation.setType(type);
                 attestation.setTimestamp(new Date(timestamp * 1000L));
                 attestation.setTimestampSign(timestampSign);
-                attestation.setCreateTime(new Date());
                 //
                 Map<String, String> map2 = contractService.putContract(attestation);
                 String txhash = map2.get("txhash");
@@ -620,27 +446,40 @@ public class AttestationController {
                 syncService.confirmTx(txhash);
                 //
                 attestationList.add(attestation);
+                //
+                Map<String, String> m = new HashMap<>();
+                m.put("txhash", txhash);
+                txhashList.add(m);
             }
+        }
+
+        //
+        if (async) {
+            //
+            rst.setResult(true);
+            rst.setCode(ErrorInfo.SUCCESS.code());
+            rst.setMsg(ErrorInfo.SUCCESS.desc());
+            //
+            return new ResponseEntity<>(rst, HttpStatus.OK);
+        } else {
             // mybatis batch insert
             // 单条长度大概 4KB，30条，一个sql语句size大概为120KB
             // TODO 检查 max_allowed_packet
             contractService.saveToLocalBatch(company_ontid, attestationList);
             //
-            rst.setResult(true);
-            rst.setErrorAndDesc(ErrorCode.SUCCESSS);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
+            rst.setResult(txhashList);
+            rst.setCode(ErrorInfo.SUCCESS.code());
+            rst.setMsg(ErrorInfo.SUCCESS.desc());
+            //
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
     }
 
     @PostMapping("/attestation/hash")
-    public ResponseEntity<Result> selectByOntidAndHash(@RequestBody LinkedHashMap<String, Object> obj) {
+    public ResponseEntity<ResponseBean> selectByOntidAndHash(@RequestBody LinkedHashMap<String, Object> obj) throws Exception {
 
         //
-        Result rst = new Result("selectByOntidAndHash");
+        ResponseBean rst = new ResponseBean();
 
         //
         Set<String> required = new HashSet<>();
@@ -648,126 +487,92 @@ public class AttestationController {
         required.add("access_token");
 
         //
-        try {
-            validateService.validateParamsKeys(obj, required);
-            validateService.validateParamsValues(obj);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        validateService.validateParamsKeys(obj, required);
+        validateService.validateParamsValues(obj);
 
         //
         String hash = (String) obj.get("hash");
         String accessToken = (String) obj.get("access_token");
 
         //
-        String ontid = "";
-        List<Attestation> list = new ArrayList<>();
+        String ontid = jwtService.getContentUser(accessToken);
 
-        //
-        try {
-            ontid = jwtService.getContentUser(accessToken);
-
-            // ontid 也要作为条件，否则查到别人的了
-            list = contractService.selectByOntidAndHash(ontid, hash);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        // ontid 也要作为条件，否则查到别人的了
+        List<Attestation> list = contractService.selectByOntidAndHash(ontid, hash);
 
         //
         rst.setResult(list);
-        rst.setErrorAndDesc(ErrorCode.SUCCESSS);
-        return new ResponseEntity<>(rst, HttpStatus.OK);
+        rst.setCode(ErrorInfo.SUCCESS.code());
+        rst.setMsg(ErrorInfo.SUCCESS.desc());
 
+        //
+        return new ResponseEntity<>(rst, HttpStatus.OK);
     }
 
     @PostMapping("/attestation/hash/delete")
-    public ResponseEntity<Result> deleteByOntidAndHash(@RequestBody LinkedHashMap<String, Object> obj) {
+    public ResponseEntity<ResponseBean> deleteByOntidAndHash(@RequestBody LinkedHashMap<String, Object> obj) throws Exception {
 
         //
-        Result rst = new Result("deleteByOntidAndHash");
-
+        ResponseBean rst = new ResponseBean();
         //
         Set<String> required = new HashSet<>();
         required.add("hash");
         required.add("access_token");
 
         //
-        try {
-            validateService.validateParamsKeys(obj, required);
-            validateService.validateParamsValues(obj);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        validateService.validateParamsKeys(obj, required);
+        validateService.validateParamsValues(obj);
 
         //
         String txhash = (String) obj.get("hash");
         String accessToken = (String) obj.get("access_token");
 
         //
-        String ontid = "";
-        try {
-            ontid = jwtService.getContentUser(accessToken);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        String ontid = jwtService.getContentUser(accessToken);
 
         // ontid 也要作为条件
-        try {
+        List<Attestation> exists = contractService.selectByOntidAndTxHash(ontid, txhash);
+        if (exists.size() != 0) {
+
             //
-            List<Attestation> exists = contractService.selectByOntidAndTxHash(ontid, txhash);
-            if (exists.size() != 0) {
+            int rt = contractService.updateStatusByOntidAndHash(ontid, txhash);
+            System.out.println(rt);
 
-                //
-                int rt = contractService.updateStatusByOntidAndHash(ontid, txhash);
-                System.out.println(rt);
+            //
+            Attestation exist = exists.get(0);
+            String c_key = "revoke" + contractService.contractToDigestForKey(exist);
+            String c_value = "";
+            Map<String, String> map2 = contractService.putContract(exist, c_key, c_value);
+            String revokeTx = map2.get("txhash");
 
-                //
-                Attestation exist = exists.get(0);
-                String c_key = "revoke" + contractService.contractToDigestForKey(exist);
-                String c_value = "";
-                Map<String, String> map2 = contractService.putContract(exist, c_key, c_value);
-                String revokeTx = map2.get("txhash");
+            //
+            contractService.updateRevokeTx(ontid, txhash, revokeTx);
 
-                //
-                contractService.updateRevokeTx(ontid, txhash, revokeTx);
+            // todo 保证一定从链上取到
+            syncService.confirmTx(revokeTx);
 
-                // todo 保证一定从链上取到
-                syncService.confirmTx(revokeTx);
-
-            } else {
-                //
-                rst.setResult(true);
-                rst.setErrorAndDesc(ErrorCode.TXHASH_NOT_EXIST);
-                return new ResponseEntity<>(rst, HttpStatus.OK);
-            }
-
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
+        } else {
+            //
+            rst.setResult(true);
+            rst.setCode(ErrorInfo.TXHASH_NOT_EXIST.code());
+            rst.setMsg(ErrorInfo.TXHASH_NOT_EXIST.desc());
+            //
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
 
         //
         rst.setResult(true);
-        rst.setErrorAndDesc(ErrorCode.SUCCESSS);
+        rst.setCode(ErrorInfo.SUCCESS.code());
+        rst.setMsg(ErrorInfo.SUCCESS.desc());
+        //
         return new ResponseEntity<>(rst, HttpStatus.OK);
-
     }
 
     @PostMapping("/attestation/history")
-    public ResponseEntity<Result> getHistory(@RequestBody LinkedHashMap<String, Object> obj) {
+    public ResponseEntity<ResponseBean> getHistory(@RequestBody LinkedHashMap<String, Object> obj) throws Exception {
 
         //
-        Result rst = new Result("getHistory");
-
+        ResponseBean rst = new ResponseBean();
         //
         Set<String> required = new HashSet<>();
         required.add("access_token");
@@ -778,14 +583,8 @@ public class AttestationController {
         }
 
         //
-        try {
-            validateService.validateParamsKeys(obj, required);
-            validateService.validateParamsValues(obj);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        validateService.validateParamsKeys(obj, required);
+        validateService.validateParamsValues(obj);
 
         //
         String accessToken = (String) obj.get("access_token");
@@ -798,71 +597,54 @@ public class AttestationController {
         }
 
         //
-        String ontid = "";
-        List<Attestation> list = new ArrayList<>();
-        try {
-            //
-            ontid = jwtService.getContentUser(accessToken);
-            //
-            list = contractService.getHistoryByOntid(ontid, pageNum, pageSize, type);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        String ontid = jwtService.getContentUser(accessToken);
+        //
+        List<Attestation> list = contractService.getHistoryByOntid(ontid, pageNum, pageSize, type);
 
         //
         rst.setResult(list);
-        rst.setErrorAndDesc(ErrorCode.SUCCESSS);
+        rst.setCode(ErrorInfo.SUCCESS.code());
+        rst.setMsg(ErrorInfo.SUCCESS.desc());
+
+        //
         return new ResponseEntity<>(rst, HttpStatus.OK);
     }
 
     @PostMapping("/attestation/count")
-    public ResponseEntity<Result> count(@RequestBody LinkedHashMap<String, Object> obj) {
+    public ResponseEntity<ResponseBean> count(@RequestBody LinkedHashMap<String, Object> obj) throws Exception {
 
         //
-        Result rst = new Result("count");
+        ResponseBean rst = new ResponseBean();
 
         //
         Set<String> required = new HashSet<>();
         required.add("access_token");
 
         //
-        try {
-            validateService.validateParamsKeys(obj, required);
-            validateService.validateParamsValues(obj);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        validateService.validateParamsKeys(obj, required);
+        validateService.validateParamsValues(obj);
 
         //
         String accessToken = (String) obj.get("access_token");
 
         //
-        String ontid = "";
-        Integer count;
-        try {
-            ontid = jwtService.getContentUser(accessToken);
-            count = contractService.count(ontid);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        String ontid = jwtService.getContentUser(accessToken);
+        Integer count = contractService.count(ontid);
 
         //
         rst.setResult(count);
-        rst.setErrorAndDesc(ErrorCode.SUCCESSS);
+        rst.setCode(ErrorInfo.SUCCESS.code());
+        rst.setMsg(ErrorInfo.SUCCESS.desc());
+
+        //
         return new ResponseEntity<>(rst, HttpStatus.OK);
     }
 
     @PostMapping("/attestation/explorer")
-    public ResponseEntity<Result> getExplorer(@RequestBody LinkedHashMap<String, Object> obj) {
+    public ResponseEntity<ResponseBean> getExplorer(@RequestBody LinkedHashMap<String, Object> obj) throws Exception {
 
         //
-        Result rst = new Result("getExplorer");
+        ResponseBean rst = new ResponseBean();
 
         //
         Set<String> required = new HashSet<>();
@@ -870,14 +652,8 @@ public class AttestationController {
         required.add("pageSize");
 
         //
-        try {
-            validateService.validateParamsKeys(obj, required);
-            validateService.validateParamsValues(obj);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        validateService.validateParamsKeys(obj, required);
+        validateService.validateParamsValues(obj);
 
         //
         int pageNum = Integer.parseInt(obj.get("pageNum").toString());
@@ -891,32 +667,26 @@ public class AttestationController {
 
         //
         rst.setResult(list);
-        //
-        rst.setErrorAndDesc(ErrorCode.SUCCESSS);
+        rst.setCode(ErrorInfo.SUCCESS.code());
+        rst.setMsg(ErrorInfo.SUCCESS.desc());
 
         //
         return new ResponseEntity<>(rst, HttpStatus.OK);
     }
 
     @PostMapping("/attestation/explorer/hash")
-    public ResponseEntity<Result> getExplorerHash(@RequestBody LinkedHashMap<String, Object> obj) {
+    public ResponseEntity<ResponseBean> getExplorerHash(@RequestBody LinkedHashMap<String, Object> obj) throws Exception {
 
         //
-        Result rst = new Result("getExplorerHash");
+        ResponseBean rst = new ResponseBean();
 
         //
         Set<String> required = new HashSet<>();
         required.add("hash");
 
         //
-        try {
-            validateService.validateParamsKeys(obj, required);
-            validateService.validateParamsValues(obj);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        validateService.validateParamsKeys(obj, required);
+        validateService.validateParamsValues(obj);
 
         //
         String hash = (String) obj.get("hash");
@@ -926,17 +696,19 @@ public class AttestationController {
 
         //
         rst.setResult(list);
-        rst.setErrorAndDesc(ErrorCode.SUCCESSS);
-        return new ResponseEntity<>(rst, HttpStatus.OK);
+        rst.setCode(ErrorInfo.SUCCESS.code());
+        rst.setMsg(ErrorInfo.SUCCESS.desc());
 
+        //
+        return new ResponseEntity<>(rst, HttpStatus.OK);
     }
 
 
     @PostMapping("/attestation/company/add")
-    public ResponseEntity<Result> addCompany(@RequestBody LinkedHashMap<String, Object> obj) {
+    public ResponseEntity<ResponseBean> addCompany(@RequestBody LinkedHashMap<String, Object> obj) throws Exception {
 
         //
-        Result rst = new Result("addCompany");
+        ResponseBean rst = new ResponseBean();
 
         //
         Set<String> required = new HashSet<>();
@@ -947,14 +719,8 @@ public class AttestationController {
         required.add("ont_password");
 
         //
-        try {
-            validateService.validateParamsKeys(obj, required);
-            validateService.validateParamsValues(obj);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        validateService.validateParamsKeys(obj, required);
+        validateService.validateParamsValues(obj);
 
         //
         String ontid = (String) obj.get("ontid");
@@ -964,7 +730,8 @@ public class AttestationController {
         //
         ContractCompany existed = contractService.getCompany(ontid);
         if (existed != null) {
-            rst.setErrorAndDesc(ErrorCode.ONTID_EXIST);
+            rst.setCode(ErrorInfo.ONTID_EXIST.code());
+            rst.setMsg(ErrorInfo.ONTID_EXIST.desc());
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
 
@@ -977,17 +744,18 @@ public class AttestationController {
         contractService.saveCompany(company);
 
         //
-        rst.setErrorAndDesc(ErrorCode.SUCCESSS);
+        rst.setResult(true);
+        rst.setCode(ErrorInfo.SUCCESS.code());
+        rst.setMsg(ErrorInfo.SUCCESS.desc());
         return new ResponseEntity<>(rst, HttpStatus.OK);
 
     }
 
-
     @PostMapping("/attestation/company/update")
-    public ResponseEntity<Result> updateCompany(@RequestBody LinkedHashMap<String, Object> obj) {
+    public ResponseEntity<ResponseBean> updateCompany(@RequestBody LinkedHashMap<String, Object> obj) throws Exception {
 
         //
-        Result rst = new Result("updateCompany");
+        ResponseBean rst = new ResponseBean();
 
         //
         Set<String> required = new HashSet<>();
@@ -996,14 +764,8 @@ public class AttestationController {
         required.add("ont_password");
 
         //
-        try {
-            validateService.validateParamsKeys(obj, required);
-            validateService.validateParamsValues(obj);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        validateService.validateParamsKeys(obj, required);
+        validateService.validateParamsValues(obj);
 
         //
         String ontid = (String) obj.get("ontid");
@@ -1021,7 +783,11 @@ public class AttestationController {
         //
         ContractCompany existed = contractService.getCompany(ontid);
         if (existed == null) {
-            rst.setErrorAndDesc(ErrorCode.ONTID_NOT_EXIST);
+            //
+            rst.setResult(true);
+            rst.setCode(ErrorInfo.ONTID_NOT_EXIST.code());
+            rst.setMsg(ErrorInfo.ONTID_NOT_EXIST.desc());
+            //
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
 
@@ -1036,31 +802,26 @@ public class AttestationController {
         contractService.saveCompany(existed);
 
         //
-        rst.setErrorAndDesc(ErrorCode.SUCCESSS);
+        rst.setResult(true);
+        rst.setCode(ErrorInfo.SUCCESS.code());
+        rst.setMsg(ErrorInfo.SUCCESS.desc());
         return new ResponseEntity<>(rst, HttpStatus.OK);
     }
 
     @PostMapping("/attestation/company/get")
-    public ResponseEntity<Result> getCompany(@RequestBody LinkedHashMap<String, Object> obj) {
+    public ResponseEntity<ResponseBean> getCompany(@RequestBody LinkedHashMap<String, Object> obj) throws Exception {
 
         //
-        Result rst = new Result("getCompany");
+        ResponseBean rst = new ResponseBean();
 
         //
         Set<String> required = new HashSet<>();
         required.add("ontid");
-        //
         required.add("ont_password");
 
         //
-        try {
-            validateService.validateParamsKeys(obj, required);
-            validateService.validateParamsValues(obj);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        validateService.validateParamsKeys(obj, required);
+        validateService.validateParamsValues(obj);
 
         //
         String ontid = (String) obj.get("ontid");
@@ -1070,15 +831,18 @@ public class AttestationController {
 
         //
         rst.setResult(company);
-        rst.setErrorAndDesc(ErrorCode.SUCCESSS);
+        rst.setCode(ErrorInfo.SUCCESS.code());
+        rst.setMsg(ErrorInfo.SUCCESS.desc());
+
+        //
         return new ResponseEntity<>(rst, HttpStatus.OK);
     }
 
     @PostMapping("/ontid/create")
-    public ResponseEntity<Result> createOntid(@RequestBody LinkedHashMap<String, Object> obj) {
+    public ResponseEntity<ResponseBean> createOntid(@RequestBody LinkedHashMap<String, Object> obj) throws Exception {
 
         //
-        Result rst = new Result("createOntid");
+        ResponseBean rst = new ResponseBean();
 
         //
         Set<String> required = new HashSet<>();
@@ -1086,34 +850,23 @@ public class AttestationController {
         // required.add("password");
 
         //
-        try {
-            validateService.validateParamsKeys(obj, required);
-            validateService.validateParamsValues(obj);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        validateService.validateParamsKeys(obj, required);
+        validateService.validateParamsValues(obj);
 
         //
         String user_phone = (String) obj.get("user_phone");
         // String password = (String) obj.get("password");
 
+        // String ontid = ontidServerService.registerPhoneWithoutCode(user_phone, password);
+        String ontid = ontidServerService.registerPhoneWithoutCode(user_phone);
         //
-        try {
-            // String ontid = ontidServerService.registerPhoneWithoutCode(user_phone, password);
-            String ontid = ontidServerService.registerPhoneWithoutCode(user_phone);
-            //
-            Map<String, String> m = new HashMap<>();
-            m.put("user_ontid", ontid);
-            //
-            rst.setResult(m);
-            rst.setErrorAndDesc(ErrorCode.SUCCESSS);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        Map<String, String> m = new HashMap<>();
+        m.put("user_ontid", ontid);
+        //
+        rst.setResult(m);
+        rst.setCode(ErrorInfo.SUCCESS.code());
+        rst.setMsg(ErrorInfo.SUCCESS.desc());
+        //
+        return new ResponseEntity<>(rst, HttpStatus.OK);
     }
 }

@@ -20,7 +20,7 @@ import com.ontology.sourcing.service.oauth.JWTService;
 import com.ontology.sourcing.service.util.ChainService;
 import com.ontology.sourcing.service.util.PropertiesService;
 import com.ontology.sourcing.util.GlobalVariable;
-import com.ontology.sourcing.util.exp.ExistedException;
+import com.ontology.sourcing.exception.exp.ExistedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

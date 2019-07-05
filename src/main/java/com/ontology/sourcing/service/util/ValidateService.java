@@ -5,7 +5,7 @@ import com.ontology.sourcing.model.dao.contract.ContractTypes;
 import com.ontology.sourcing.model.dao.ddo.ActionOntid;
 import com.ontology.sourcing.mapper.ddo.ActionOntidMapper;
 import com.ontology.sourcing.service.oauth.JWTService;
-import com.ontology.sourcing.util.exp.ErrorCode;
+import com.ontology.sourcing.exception.exp.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;

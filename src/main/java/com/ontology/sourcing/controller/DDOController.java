@@ -1,23 +1,23 @@
 package com.ontology.sourcing.controller;
 
 import ch.qos.logback.classic.Logger;
-import com.github.ontio.network.exception.RestfulException;
+import com.ontology.sourcing.exception.ErrorInfo;
+import com.ontology.sourcing.exception.exp.ExistedException;
 import com.ontology.sourcing.mapper.ddo.*;
 import com.ontology.sourcing.model.common.ddo.Action;
 import com.ontology.sourcing.model.common.ddo.ActionTypes;
 import com.ontology.sourcing.model.dao.ddo.*;
+import com.ontology.sourcing.model.dto.ResponseBean;
 import com.ontology.sourcing.model.dto.ddo.DDOPojo;
-import com.ontology.sourcing.model.common.Result;
 import com.ontology.sourcing.service.OntidService;
 import com.ontology.sourcing.service.util.SyncService;
 import com.ontology.sourcing.service.util.ValidateService;
-import com.ontology.sourcing.util.exp.ErrorCode;
-import com.ontology.sourcing.util.exp.ExistedException;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
@@ -63,10 +63,10 @@ public class DDOController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Result> createOntid(@RequestBody LinkedHashMap<String, Object> obj) {
+    public ResponseEntity<ResponseBean> createOntid(@RequestBody LinkedHashMap<String, Object> obj) throws Exception {
 
         //
-        Result rst = new Result("createOntid");
+        ResponseBean rst = new ResponseBean();
 
         //
         Set<String> required = new HashSet<>();
@@ -74,45 +74,35 @@ public class DDOController {
         required.add("password");
 
         //
-        try {
-            validateService.validateParamsKeys(obj, required);
-            validateService.validateParamsValues(obj);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        validateService.validateParamsKeys(obj, required);
+        validateService.validateParamsValues(obj);
 
         //
         String username = (String) obj.get("username");
         String password = (String) obj.get("password");
 
         //
-        try {
-            Map<String, String> map = ontidService.createOntid(username, password);
-            //
-            String keystore = map.get("keystore");
-            String txhash = map.get("txhash");
-            String ontid = map.get("ontid");
-            //
-            syncService.confirmTxAndDDO(ontid, txhash);
-            //
-            rst.setResult(ontid);
-            //
-            rst.setErrorAndDesc(ErrorCode.SUCCESSS);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        Map<String, String> map = ontidService.createOntid(username, password);
+        //
+        String keystore = map.get("keystore");
+        String txhash = map.get("txhash");
+        String ontid = map.get("ontid");
+        //
+        syncService.confirmTxAndDDO(ontid, txhash);
+
+        //
+        rst.setResult(ontid);
+        rst.setCode(ErrorInfo.SUCCESS.code());
+        rst.setMsg(ErrorInfo.SUCCESS.desc());
+        //
+        return new ResponseEntity<>(rst, HttpStatus.OK);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Result> login(@RequestBody LinkedHashMap<String, Object> obj) {
+    public ResponseEntity<ResponseBean> login(@RequestBody LinkedHashMap<String, Object> obj) throws Exception {
 
         //
-        Result rst = new Result("login");
+        ResponseBean rst = new ResponseBean();
 
         //
         Set<String> required = new HashSet<>();
@@ -120,40 +110,29 @@ public class DDOController {
         required.add("password");
 
         //
-        try {
-            validateService.validateParamsKeys(obj, required);
-            validateService.validateParamsValues(obj);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        validateService.validateParamsKeys(obj, required);
+        validateService.validateParamsValues(obj);
 
         //
         String username = (String) obj.get("username");
         String password = (String) obj.get("password");
 
         //
-        try {
-            //
-            Map<String, String> map = ontidService.login(username, password);
-            //
-            rst.setResult(map);
-            //
-            rst.setErrorAndDesc(ErrorCode.SUCCESSS);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        Map<String, String> map = ontidService.login(username, password);
+
+        //
+        rst.setResult(map);
+        rst.setCode(ErrorInfo.SUCCESS.code());
+        rst.setMsg(ErrorInfo.SUCCESS.desc());
+        //
+        return new ResponseEntity<>(rst, HttpStatus.OK);
     }
 
     @PostMapping("/update/attribute")
-    public ResponseEntity<Result> updateOntidAttribute(@RequestBody LinkedHashMap<String, Object> obj) {
+    public ResponseEntity<ResponseBean> updateOntidAttribute(@RequestBody LinkedHashMap<String, Object> obj) throws Exception {
 
         //
-        Result rst = new Result("updateOntidAttribute");
+        ResponseBean rst = new ResponseBean();
 
         //
         Set<String> required = new HashSet<>();
@@ -162,14 +141,8 @@ public class DDOController {
         required.add("attribute");
 
         //
-        try {
-            validateService.validateParamsKeys(obj, required);
-            validateService.validateParamsValues(obj);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        validateService.validateParamsKeys(obj, required);
+        validateService.validateParamsValues(obj);
 
         //
         String ontid = (String) obj.get("ontid");
@@ -177,38 +150,28 @@ public class DDOController {
         String attributeJson = obj.get("attribute").toString();
 
         //
-        try {
-            validateService.isExistedOntid(ontid);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        validateService.isExistedOntid(ontid);
 
         //
-        try {
-            //
-            Map<String, String> map = ontidService.updateOntidAttribute(ontid, password, attributeJson);
-            String txhash = map.get("txhash");
-            //
-            ontidService.save(ontid, ontid, txhash, ActionTypes.ADD.getId(), attributeJson);
-            syncService.confirmTxAndDDO(ontid, txhash);
-            //
-            rst.setResult(true);
-            rst.setErrorAndDesc(ErrorCode.SUCCESSS);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        Map<String, String> map = ontidService.updateOntidAttribute(ontid, password, attributeJson);
+        String txhash = map.get("txhash");
+        //
+        ontidService.save(ontid, ontid, txhash, ActionTypes.ADD.getId(), attributeJson);
+        syncService.confirmTxAndDDO(ontid, txhash);
+
+        //
+        rst.setResult(true);
+        rst.setCode(ErrorInfo.SUCCESS.code());
+        rst.setMsg(ErrorInfo.SUCCESS.desc());
+        //
+        return new ResponseEntity<>(rst, HttpStatus.OK);
     }
 
     @PostMapping("/delete/attribute")
-    public ResponseEntity<Result> deleteOntidAttribute(@RequestBody LinkedHashMap<String, Object> obj) {
+    public ResponseEntity<ResponseBean> deleteOntidAttribute(@RequestBody LinkedHashMap<String, Object> obj) throws Exception {
 
         //
-        Result rst = new Result("deleteOntidAttribute");
+        ResponseBean rst = new ResponseBean();
 
         //
         Set<String> required = new HashSet<>();
@@ -217,52 +180,36 @@ public class DDOController {
         required.add("path_key");
 
         //
-        try {
-            validateService.validateParamsKeys(obj, required);
-            validateService.validateParamsValues(obj);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        validateService.validateParamsKeys(obj, required);
+        validateService.validateParamsValues(obj);
 
         //
         String ontid = (String) obj.get("ontid");
         String password = (String) obj.get("password");
-        String path_key = (String) obj.get("path_key");
+        String pathKey = (String) obj.get("path_key");
 
         //
-        try {
-            validateService.isExistedOntid(ontid);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        validateService.isExistedOntid(ontid);
 
         //
-        try {
-            Map<String, String> map = ontidService.deleteEntityIdentityAttribute(ontid, password, path_key);
-            String txhash = map.get("txhash");
-            //
-            ontidService.save(ontid, ontid, txhash, ActionTypes.DELETE.getId(), path_key);
-            syncService.confirmTxAndDDO(ontid, txhash);
-            //
-            rst.setResult(true);
-            rst.setErrorAndDesc(ErrorCode.SUCCESSS);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        Map<String, String> map = ontidService.deleteEntityIdentityAttribute(ontid, password, pathKey);
+        String txhash = map.get("txhash");
+        //
+        ontidService.save(ontid, ontid, txhash, ActionTypes.DELETE.getId(), pathKey);
+        syncService.confirmTxAndDDO(ontid, txhash);
+        //
+        rst.setResult(true);
+        rst.setCode(ErrorInfo.SUCCESS.code());
+        rst.setMsg(ErrorInfo.SUCCESS.desc());
+        //
+        return new ResponseEntity<>(rst, HttpStatus.OK);
     }
 
     @PostMapping("/update/control")
-    public ResponseEntity<Result> updateOntidControl(@RequestBody LinkedHashMap<String, Object> obj) {
+    public ResponseEntity<ResponseBean> updateOntidControl(@RequestBody LinkedHashMap<String, Object> obj) throws Exception {
 
         //
-        Result rst = new Result("updateOntidControl");
+        ResponseBean rst = new ResponseBean();
 
         //
         Set<String> required = new HashSet<>();
@@ -271,14 +218,8 @@ public class DDOController {
         required.add("controlOntid");
 
         //
-        try {
-            validateService.validateParamsKeys(obj, required);
-            validateService.validateParamsValues(obj);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        validateService.validateParamsKeys(obj, required);
+        validateService.validateParamsValues(obj);
 
         //
         String ontid = (String) obj.get("ontid");
@@ -286,14 +227,8 @@ public class DDOController {
         String controlOntid = (String) obj.get("controlOntid");
 
         //
-        try {
-            validateService.isExistedOntid(ontid);
-            validateService.isExistedOntid(controlOntid);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        validateService.isExistedOntid(ontid);
+        validateService.isExistedOntid(controlOntid);
 
         //
         try {
@@ -310,28 +245,24 @@ public class DDOController {
             syncService.confirmTxAndDDO(ontid, txhash);
             //
             rst.setResult(true);
-            rst.setErrorAndDesc(ErrorCode.SUCCESSS);
+            rst.setCode(ErrorInfo.SUCCESS.code());
+            rst.setMsg(ErrorInfo.SUCCESS.desc());
+            //
             return new ResponseEntity<>(rst, HttpStatus.OK);
         } catch (ExistedException e) {
             logger.error(e.getMessage());
-            rst.setError(ErrorCode.ONTID_PubKey_EXIST.getId());
-            rst.setDesc(ErrorCode.ONTID_PubKey_EXIST.getMessage());
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        } catch (RestfulException e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
+            //
+            rst.setCode(ErrorInfo.ONTID_PubKey_EXIST.code());
+            rst.setMsg(ErrorInfo.ONTID_PubKey_EXIST.desc());
+            //
             return new ResponseEntity<>(rst, HttpStatus.OK);
         }
     }
 
     @PostMapping("/update/attribute/control")
-    public ResponseEntity<Result> updateOntidAttributeByControl(@RequestBody LinkedHashMap<String, Object> obj) {
+    public ResponseEntity<ResponseBean> updateOntidAttributeByControl(@RequestBody LinkedHashMap<String, Object> obj) throws Exception {
         //
-        Result rst = new Result("updateOntidAttributeByControl");
+        ResponseBean rst = new ResponseBean();
 
         //
         Set<String> required = new HashSet<>();
@@ -341,14 +272,8 @@ public class DDOController {
         required.add("controlPassword");
 
         //
-        try {
-            validateService.validateParamsKeys(obj, required);
-            validateService.validateParamsValues(obj);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        validateService.validateParamsKeys(obj, required);
+        validateService.validateParamsValues(obj);
 
         //
         String ontid = (String) obj.get("ontid");
@@ -357,37 +282,28 @@ public class DDOController {
         String controlPassword = (String) obj.get("controlPassword");
 
         //
-        try {
-            validateService.isExistedOntid(ontid);
-            validateService.isExistedOntid(controlOntid);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        validateService.isExistedOntid(ontid);
+        validateService.isExistedOntid(controlOntid);
 
         //
-        try {
-            Map<String, String> map = ontidService.updateOntidAttributeByControl(ontid, attributeJson, controlOntid, controlPassword);
-            String txhash = map.get("txhash");
-            //
-            ontidService.save(ontid, controlOntid, txhash, ActionTypes.ADD.getId(), attributeJson);
-            syncService.confirmTxAndDDO(ontid, txhash);
-            //
-            rst.setResult(true);
-            rst.setErrorAndDesc(ErrorCode.SUCCESSS);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        Map<String, String> map = ontidService.updateOntidAttributeByControl(ontid, attributeJson, controlOntid, controlPassword);
+        String txhash = map.get("txhash");
+        //
+        ontidService.save(ontid, controlOntid, txhash, ActionTypes.ADD.getId(), attributeJson);
+        syncService.confirmTxAndDDO(ontid, txhash);
+
+        //
+        rst.setResult(true);
+        rst.setCode(ErrorInfo.SUCCESS.code());
+        rst.setMsg(ErrorInfo.SUCCESS.desc());
+        //
+        return new ResponseEntity<>(rst, HttpStatus.OK);
     }
 
     @PostMapping("/delete/attribute/control")
-    public ResponseEntity<Result> deleteOntidAttributeByControl(@RequestBody LinkedHashMap<String, Object> obj) {
+    public ResponseEntity<ResponseBean> deleteOntidAttributeByControl(@RequestBody LinkedHashMap<String, Object> obj) throws Exception {
         //
-        Result rst = new Result("updateOntidAttributeByControl");
+        ResponseBean rst = new ResponseBean();
 
         //
         Set<String> required = new HashSet<>();
@@ -397,146 +313,104 @@ public class DDOController {
         required.add("controlPassword");
 
         //
-        try {
-            validateService.validateParamsKeys(obj, required);
-            validateService.validateParamsValues(obj);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        validateService.validateParamsKeys(obj, required);
+        validateService.validateParamsValues(obj);
 
         //
         String ontid = (String) obj.get("ontid");
-        String path_key = (String) obj.get("path_key");
+        String pathKey = (String) obj.get("path_key");
         String controlOntid = (String) obj.get("controlOntid");
         String controlPassword = (String) obj.get("controlPassword");
 
         //
-        try {
-            validateService.isExistedOntid(ontid);
-            validateService.isExistedOntid(controlOntid);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        validateService.isExistedOntid(ontid);
+        validateService.isExistedOntid(controlOntid);
 
         //
-        try {
-            Map<String, String> map = ontidService.deleteEntityIdentityAttributeByControl(ontid, path_key, controlOntid, controlPassword);
-            String txhash = map.get("txhash");
-            //
-            ontidService.save(ontid, controlOntid, txhash, ActionTypes.DELETE.getId(), path_key);
-            syncService.confirmTxAndDDO(ontid, txhash);
-            //
-            rst.setResult(true);
-            rst.setErrorAndDesc(ErrorCode.SUCCESSS);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        Map<String, String> map = ontidService.deleteEntityIdentityAttributeByControl(ontid, pathKey, controlOntid, controlPassword);
+        String txhash = map.get("txhash");
+        //
+        ontidService.save(ontid, controlOntid, txhash, ActionTypes.DELETE.getId(), pathKey);
+        syncService.confirmTxAndDDO(ontid, txhash);
+        //
+        rst.setResult(true);
+        rst.setCode(ErrorInfo.SUCCESS.code());
+        rst.setMsg(ErrorInfo.SUCCESS.desc());
+        //
+        return new ResponseEntity<>(rst, HttpStatus.OK);
     }
 
     @PostMapping("/getddo")
-    public ResponseEntity<Result> getDDO(@RequestBody LinkedHashMap<String, Object> obj) {
+    public ResponseEntity<ResponseBean> getDDO(@RequestBody LinkedHashMap<String, Object> obj) throws Exception {
 
         //
-        Result rst = new Result("getDDO");
+        ResponseBean rst = new ResponseBean();
 
         //
         Set<String> required = new HashSet<>();
         required.add("ontid");
 
         //
-        try {
-            validateService.validateParamsKeys(obj, required);
-            validateService.validateParamsValues(obj);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        validateService.validateParamsKeys(obj, required);
+        validateService.validateParamsValues(obj);
 
         //
         String ontid = (String) obj.get("ontid");
 
         //
-        try {
-            validateService.isExistedOntid(ontid);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        validateService.isExistedOntid(ontid);
 
         //
-        try {
-            //
-            DDOPojo ddoPojo = ontidService.getDDO(ontid);
-            //
-            rst.setResult(ddoPojo);
-            //
-            rst.setErrorAndDesc(ErrorCode.SUCCESSS);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        DDOPojo ddoPojo = ontidService.getDDO(ontid);
+        //
+        rst.setResult(ddoPojo);
+        rst.setCode(ErrorInfo.SUCCESS.code());
+        rst.setMsg(ErrorInfo.SUCCESS.desc());
+        //
+        return new ResponseEntity<>(rst, HttpStatus.OK);
     }
 
     @PostMapping("/count")
-    public ResponseEntity<Result> count(@RequestBody LinkedHashMap<String, Object> obj) {
+    public ResponseEntity<ResponseBean> count(@RequestBody LinkedHashMap<String, Object> obj) throws Exception {
 
         //
-        Result rst = new Result("count");
+        ResponseBean rst = new ResponseBean();
 
         //
         Set<String> required = new HashSet<>();
         required.add("ontid");
 
         //
-        try {
-            validateService.validateParamsKeys(obj, required);
-            validateService.validateParamsValues(obj);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        validateService.validateParamsKeys(obj, required);
+        validateService.validateParamsValues(obj);
 
         //
         String ontid = (String) obj.get("ontid");
 
         //
-        try {
-            validateService.isExistedOntid(ontid);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        validateService.isExistedOntid(ontid);
 
         //
-        ActionOntid actionOntidRecord = actionOntidMapper.findByOntid(ontid);
+        Example example = new Example(ActionOntid.class);
+        example.createCriteria().andCondition("ontid=", ontid);
+        ActionOntid actionOntidRecord = actionOntidMapper.selectOneByExample(ontid);
+
         // 所在的表索引
         ActionIndex index = actionIndexMapper.selectByPrimaryKey(actionOntidRecord.getActionIndex());
         //
         Integer count = ontidService.count(index.getName(), ontid);
         //
         rst.setResult(count);
-        rst.setErrorAndDesc(ErrorCode.SUCCESSS);
+        rst.setCode(ErrorInfo.SUCCESS.code());
+        rst.setMsg(ErrorInfo.SUCCESS.desc());
+        //
         return new ResponseEntity<>(rst, HttpStatus.OK);
     }
 
     @PostMapping("/history")
-    public ResponseEntity<Result> getHistory(@RequestBody LinkedHashMap<String, Object> obj) {
-
+    public ResponseEntity<ResponseBean> getHistory(@RequestBody LinkedHashMap<String, Object> obj) throws Exception {
         //
-        Result rst = new Result("getExplorerHistory");
+        ResponseBean rst = new ResponseBean();
 
         //
         Set<String> required = new HashSet<>();
@@ -545,14 +419,8 @@ public class DDOController {
         required.add("pageSize");
 
         //
-        try {
-            validateService.validateParamsKeys(obj, required);
-            validateService.validateParamsValues(obj);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        validateService.validateParamsKeys(obj, required);
+        validateService.validateParamsValues(obj);
 
         //
         String ontid = (String) obj.get("ontid");
@@ -560,23 +428,21 @@ public class DDOController {
         int pageSize = Integer.parseInt(obj.get("pageSize").toString());
 
         //
-        try {
-            validateService.isExistedOntid(ontid);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            rst.setErrorAndDesc(e);
-            return new ResponseEntity<>(rst, HttpStatus.OK);
-        }
+        validateService.isExistedOntid(ontid);
 
         //
-        ActionOntid actionOntidRecord = actionOntidMapper.findByOntid(ontid);
+        Example example = new Example(ActionOntid.class);
+        example.createCriteria().andCondition("ontid=", ontid);
+        ActionOntid actionOntidRecord = actionOntidMapper.selectOneByExample(example);
         // 所在的表索引
         ActionIndex index = actionIndexMapper.selectByPrimaryKey(actionOntidRecord.getActionIndex());
         //
         List<Action> list = ontidService.getActionHistory(index.getName(), ontid, pageNum, pageSize);
         //
         rst.setResult(list);
-        rst.setErrorAndDesc(ErrorCode.SUCCESSS);
+        rst.setCode(ErrorInfo.SUCCESS.code());
+        rst.setMsg(ErrorInfo.SUCCESS.desc());
+        //
         return new ResponseEntity<>(rst, HttpStatus.OK);
     }
 }

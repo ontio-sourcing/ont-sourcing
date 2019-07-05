@@ -1,6 +1,9 @@
-package com.ontology.sourcing.util.exp;
+package com.ontology.sourcing.exception;
 
-public enum ErrorCode {
+
+public enum ErrorInfo {
+
+    SUCCESS(0, "SUCCESS"),
 
     //
     SUCCESSS(0, "SUCCESS"),
@@ -17,22 +20,27 @@ public enum ErrorCode {
     //
     SFL_ERROR(90001, "司法链接口调用失败"),
     //
-    INTERNAL_SERVER_ERROR(100000, "");
+    INTERNAL_SERVER_ERROR(100000, ""),
 
     //
-    private final int id;
-    private final String message;
+    EXCEPTION(63002, "FAIL, exception.");
 
-    ErrorCode(int id, String message) {
-        this.id = id;
-        this.message = message;
+    private Integer code;
+    private String msg;
+
+    ErrorInfo(Integer code,
+              String msg) {
+        this.code = code;
+        this.msg = msg;
     }
 
-    public int getId() {
-        return id;
+    public Integer code() {
+        return code;
     }
 
-    public String getMessage() {
-        return message;
+    public String desc() {
+        return msg;
     }
+
+
 }

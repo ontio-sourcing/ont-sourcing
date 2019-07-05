@@ -69,7 +69,6 @@ public class AttestationTests01 {
         // 736f6d65206d657373616765202e2e2e
 
         byte[] s2 = Helper.hexToBytes(s1);
-
         String s3 = new String(s2);
         System.out.println(s3);
         // some message ...

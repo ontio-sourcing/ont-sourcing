@@ -2,10 +2,9 @@ package com.ontology.sourcing.controller;
 
 import ch.qos.logback.classic.Logger;
 import com.google.gson.Gson;
-import com.ontology.sourcing.model.common.ExceptionMsg;
-import com.ontology.sourcing.model.common.Result;
+import com.ontology.sourcing.exception.ErrorInfo;
+import com.ontology.sourcing.model.dto.ResponseBean;
 import com.ontology.sourcing.service.WalletService;
-import com.ontology.sourcing.util.exp.ErrorCode;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -43,49 +42,37 @@ public class WalletController {
     }
 
     @GetMapping("/test")
-    public ResponseEntity<Result> test() {
+    public ResponseEntity<ResponseBean> test() {
 
         //
-        Result rst = new Result();
-        rst.setAction("test");
-        rst.setVersion("1.0.0");
-        rst.setError(0);
-        rst.setDesc("hello world.");
+        ResponseBean rst = new ResponseBean();
+
+        //
+        rst.setCode(0);
+        rst.setMsg("hello world.");
         rst.setResult("");
         return new ResponseEntity<>(rst, HttpStatus.OK);
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Result> createWallet(@RequestBody LinkedHashMap<String, Object> obj) {
+    public ResponseEntity<ResponseBean> createWallet(@RequestBody LinkedHashMap<String, Object> obj) throws Exception {
 
         //
-        Result rst = new Result();
-        rst.setAction("createWallet");
-        rst.setVersion("1.0.0");
-        rst.setResult("");
+        ResponseBean rst = new ResponseBean();
 
         //
         String pwd = (String) obj.get("password");
         if (StringUtils.isEmpty(pwd)) {
-            rst.setError(ErrorCode.PARAMS.getId());
-            rst.setDesc(ErrorCode.PARAMS.getMessage());
+            rst.setCode(ErrorInfo.PARAMS.code());
+            rst.setMsg(ErrorInfo.PARAMS.desc());
         } else {
-            String addr;
-            try {
-                addr = walletService.createWallet(pwd);
-                rst.setError(ErrorCode.SUCCESSS.getId());
-                rst.setDesc(ErrorCode.SUCCESSS.getMessage());
-                rst.setResult(addr);
-            } catch (Exception e) {
-                logger.error(e.getMessage());
-                ExceptionMsg msg = gson.fromJson(e.getMessage(), ExceptionMsg.class);
-                rst.setError(msg.getError());
-                rst.setDesc(msg.getDesc());
-            }
+            String addr = walletService.createWallet(pwd);
+            rst.setCode(ErrorInfo.SUCCESS.code());
+            rst.setMsg(ErrorInfo.SUCCESS.desc());
+            rst.setResult(addr);
         }
 
         //
         return new ResponseEntity<>(rst, HttpStatus.OK);
     }
-
 }

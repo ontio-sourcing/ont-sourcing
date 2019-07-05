@@ -1,4 +1,4 @@
-package com.ontology.sourcing.util.exp;
+package com.ontology.sourcing.exception.exp;
 
 import lombok.*;
 
