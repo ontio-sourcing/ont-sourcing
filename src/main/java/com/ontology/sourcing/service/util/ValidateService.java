@@ -1,14 +1,15 @@
 package com.ontology.sourcing.service.util;
 
 import com.google.gson.Gson;
-import com.ontology.sourcing.model.dao.contract.ContractTypes;
-import com.ontology.sourcing.model.dao.ddo.ActionOntid;
-import com.ontology.sourcing.mapper.ddo.ActionOntidMapper;
-import com.ontology.sourcing.service.oauth.JWTService;
 import com.ontology.sourcing.exception.exp.ErrorCode;
+import com.ontology.sourcing.mapper.ddo.ActionOntidMapper;
+import com.ontology.sourcing.model.dao.attestation.ContractTypes;
+import com.ontology.sourcing.model.dao.ddo.ActionOntid;
+import com.ontology.sourcing.service.oauth.JWTService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import tk.mybatis.mapper.entity.Example;
 
 import java.util.*;
 
@@ -39,7 +40,11 @@ public class ValidateService {
 
     // TODO 只有ontid账户托管才需要检查
     public void isExistedOntid(String ontid) throws Exception {
-        ActionOntid actionOntidRecord = actionOntidMapper.findByOntid(ontid);
+        //
+        Example example = new Example(ActionOntid.class);
+        example.createCriteria().andCondition("ontid=", ontid);
+        ActionOntid actionOntidRecord = actionOntidMapper.selectOneByExample(example);
+        //
         if (actionOntidRecord == null) {
             throw new Exception(ErrorCode.ONTID_NOT_EXIST.getMessage());
         }

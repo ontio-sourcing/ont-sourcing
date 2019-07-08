@@ -36,8 +36,4 @@ public class ActionOntid {
 
     @Column(name = "update_time")
     private Date updateTime;
-
-    @Column(name = "action_index")
-    private Integer actionIndex;
-
 }

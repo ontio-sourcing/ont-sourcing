@@ -7,11 +7,14 @@ import com.github.ontio.crypto.SignatureScheme;
 import com.github.ontio.network.exception.RestfulException;
 import com.github.ontio.sdk.info.IdentityInfo;
 import com.github.ontio.sdk.wallet.Identity;
+import com.github.pagehelper.PageHelper;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.lambdaworks.crypto.SCryptUtil;
-import com.ontology.sourcing.mapper.ddo.*;
-import com.ontology.sourcing.model.common.ddo.Action;
+import com.ontology.sourcing.exception.exp.ExistedException;
+import com.ontology.sourcing.mapper.ddo.ActionMapper;
+import com.ontology.sourcing.mapper.ddo.ActionOntidMapper;
+import com.ontology.sourcing.model.dao.ddo.Action;
 import com.ontology.sourcing.model.dao.ddo.ActionOntid;
 import com.ontology.sourcing.model.dto.ddo.DDOPojo;
 import com.ontology.sourcing.model.dto.ddo.Owner;
@@ -20,15 +23,15 @@ import com.ontology.sourcing.service.oauth.JWTService;
 import com.ontology.sourcing.service.util.ChainService;
 import com.ontology.sourcing.service.util.PropertiesService;
 import com.ontology.sourcing.util.GlobalVariable;
-import com.ontology.sourcing.exception.exp.ExistedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import tk.mybatis.mapper.entity.Example;
 
 import java.lang.reflect.Type;
 import java.util.*;
 
 @Service
-public class OntidService {
+public class DDOService {
 
     private Gson gson = new Gson();
 
@@ -42,20 +45,17 @@ public class OntidService {
     //
     private ActionOntidMapper actionOntidMapper;
     private ActionMapper actionMapper;
-    private ActionIndexMapper actionIndexMapper;
 
     //
     @Autowired
-    public OntidService(ActionOntidMapper actionOntidMapper,
-                        ActionMapper actionMapper,
-                        ActionIndexMapper actionIndexMapper,
-                        PropertiesService propertiesService,
-                        ChainService chainService,
-                        JWTService jwtService) {
+    public DDOService(ActionOntidMapper actionOntidMapper,
+                      ActionMapper actionMapper,
+                      PropertiesService propertiesService,
+                      ChainService chainService,
+                      JWTService jwtService) {
         //
         this.actionOntidMapper = actionOntidMapper;
         this.actionMapper = actionMapper;
-        this.actionIndexMapper = actionIndexMapper;
         //
         this.propertiesService = propertiesService;
         this.chainService = chainService;
@@ -70,7 +70,10 @@ public class OntidService {
                                            String password) throws Exception {
 
         // 先检查username是否已注册
-        ActionOntid existed = actionOntidMapper.findByUsername(username);
+        Example example = new Example(ActionOntid.class);
+        example.createCriteria().andCondition("username=", username);
+        ActionOntid existed = actionOntidMapper.selectOneByExample(example);
+        //
         if (existed != null) {
             throw new Exception("username existed.");
         }
@@ -108,9 +111,8 @@ public class OntidService {
         record.setOntid(ontid);
         record.setKeystore(keystore);
         record.setTxhash(rsp);
-        record.setActionIndex(GlobalVariable.CURRENT_ACTION_TABLE_INDEX);
         record.setCreateTime(new Date());
-        actionOntidMapper.save(record);
+        actionOntidMapper.insertSelective(record);
 
         //
         return map;
@@ -121,7 +123,10 @@ public class OntidService {
                                      String password) throws Exception {
 
         // 先检查username是否已注册
-        ActionOntid existed = actionOntidMapper.findByUsername(username);
+        Example example = new Example(ActionOntid.class);
+        example.createCriteria().andCondition("username=", username);
+        ActionOntid existed = actionOntidMapper.selectOneByExample(example);
+        //
         if (existed == null) {
             throw new Exception("username not exist.");
         }
@@ -288,19 +293,31 @@ public class OntidService {
     }
 
     //
-    public Integer count(String tableName,
-                         String ontid) {
-        return actionMapper.count(tableName, ontid);
+    public Integer count(String ontid) {
+        //
+        Example example = new Example(Action.class);
+        //
+        Example.Criteria c1 = example.createCriteria();
+        c1.andCondition("ontid=", ontid);
+        //
+        example.and(c1);
+        //
+        return actionMapper.selectCountByExample(example);
     }
 
     //
-    public List<Action> getActionHistory(String tableName,
-                                         String ontid,
+    public List<Action> getActionHistory(String ontid,
                                          int pageNum,
                                          int pageSize) {
-        int start = (pageNum - 1) * pageSize;
-        int offset = pageSize;
-        return actionMapper.selectByPageNumSize(tableName, ontid, start, offset);
+        //
+        PageHelper.startPage(pageNum, pageSize);
+        //
+        Example example = new Example(Action.class);
+        example.createCriteria().andCondition("ontid=", ontid);
+        example.setOrderByClause("id desc");
+        List<Action> list = actionMapper.selectByExample(example);
+        //
+        return list;
     }
 
     //
@@ -329,7 +346,11 @@ public class OntidService {
 
     //
     private OntidPojo getPojoByOntid(String ontid) {
-        ActionOntid record = actionOntidMapper.findByOntid(ontid);
+        //
+        Example example = new Example(ActionOntid.class);
+        example.createCriteria().andCondition("ontid=", ontid);
+        ActionOntid record = actionOntidMapper.selectOneByExample(example);
+        //
         String keystore = record.getKeystore();
         OntidPojo ontidPojo = gson.fromJson(keystore, OntidPojo.class);
         return ontidPojo;
@@ -356,11 +377,11 @@ public class OntidService {
         return account;
     }
 
-    public void save(String ontid,
-                     String control,
-                     String txhash,
-                     Integer type,
-                     String detail) {
+    public void saveToLocal(String ontid,
+                            String control,
+                            String txhash,
+                            Integer type,
+                            String detail) {
         // 写入本地表
         Action record = new Action();
         record.setOntid(ontid);
@@ -369,9 +390,7 @@ public class OntidService {
         record.setType(type);
         record.setDetail(detail);
         record.setCreateTime(new Date());
-        // 应该要写入该ontid对应的action_index，而不是CURRENT_ACTION_TABLE，否则查询时就可能会跨表了
-        ActionOntid actionOntidRecord = actionOntidMapper.findByOntid(ontid);
-        ActionIndex actionIndex = actionIndexMapper.selectByPrimaryKey(actionOntidRecord.getActionIndex());
-        actionMapper.insert(actionIndex.getName(), record);
+        //
+        actionMapper.insertSelective(record);
     }
 }

@@ -9,11 +9,13 @@ import com.github.ontio.core.transaction.Transaction;
 import com.github.ontio.network.exception.ConnectorException;
 import com.github.ontio.sdk.exception.SDKException;
 import com.github.ontio.smartcontract.neovm.abi.BuildParams;
-import com.ontology.sourcing.model.common.attestation.Attestation;
-import com.ontology.sourcing.model.dao.Event;
-import com.ontology.sourcing.model.dao.contract.*;
+import com.github.pagehelper.PageHelper;
 import com.ontology.sourcing.mapper.EventMapper;
-import com.ontology.sourcing.mapper.attestation.*;
+import com.ontology.sourcing.mapper.attestation.AttestationCompanyMapper;
+import com.ontology.sourcing.mapper.attestation.AttestationMapper;
+import com.ontology.sourcing.model.dao.Event;
+import com.ontology.sourcing.model.dao.attestation.Attestation;
+import com.ontology.sourcing.model.dao.attestation.AttestationCompany;
 import com.ontology.sourcing.service.util.ChainService;
 import com.ontology.sourcing.service.util.PropertiesService;
 import com.ontology.sourcing.util.GlobalVariable;
@@ -22,48 +24,44 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import tk.mybatis.mapper.entity.Example;
 
 import java.io.IOException;
 import java.util.*;
 
 @Service
-public class ContractService {
+public class AttestationService {
 
     //
-    private Logger logger = (Logger) LoggerFactory.getLogger(ContractService.class);
+    private Logger logger = (Logger) LoggerFactory.getLogger(AttestationService.class);
 
     //
     private PropertiesService propertiesService;
     private ChainService chainService;
     //
-    private ContractMapper contractMapper;
-    private ContractIndexMapper contractIndexMapper;
-    private ContractOntidMapper contractOntidMapper;
+    private AttestationMapper attestationMapper;
+    private AttestationCompanyMapper attestationCompanyMapper;
+    //
     private EventMapper eventMapper;
-    private ContractCompanyMapper contractCompanyMapper;
 
     // 公共payer和公共合约
     private String codeAddr;
     private Account payer;
 
     @Autowired
-    public ContractService(PropertiesService propertiesService,
-                           ChainService chainService,
-                           ContractMapper contractMapper,
-                           ContractIndexMapper contractIndexMapper,
-                           ContractOntidMapper contractOntidMapper,
-                           EventMapper eventMapper,
-                           ContractCompanyMapper contractCompanyMapper) {
+    public AttestationService(PropertiesService propertiesService,
+                              ChainService chainService,
+                              AttestationMapper attestationMapper,
+                              EventMapper eventMapper,
+                              AttestationCompanyMapper attestationCompanyMapper) {
         //
         this.propertiesService = propertiesService;
         this.chainService = chainService;
 
         //
-        this.contractMapper = contractMapper;
-        this.contractIndexMapper = contractIndexMapper;
-        this.contractOntidMapper = contractOntidMapper;
+        this.attestationMapper = attestationMapper;
         this.eventMapper = eventMapper;
-        this.contractCompanyMapper = contractCompanyMapper;
+        this.attestationCompanyMapper = attestationCompanyMapper;
 
         // 合约哈希/合约地址/contract codeAddr
         codeAddr = propertiesService.codeAddr;
@@ -87,10 +85,14 @@ public class ContractService {
 
         // 先查询是不是项目方，有没有设置指定的payer地址和合约地址
         String c_ontid = attestation.getCompanyOntid();
-        ContractCompany contractCompany = contractCompanyMapper.findByOntid(c_ontid);
-        if (contractCompany != null) {
-            payer = GlobalVariable.getInstanceOfAccount(contractCompany.getPrikey());
-            codeAddr = contractCompany.getCodeAddr();
+        //
+        Example example = new Example(AttestationCompany.class);
+        example.createCriteria().andCondition("ontid=", c_ontid);
+        AttestationCompany attestationCompany = attestationCompanyMapper.selectOneByExample(example);
+        //
+        if (attestationCompany != null) {
+            payer = GlobalVariable.getInstanceOfAccount(attestationCompany.getPrikey());
+            codeAddr = attestationCompany.getCodeAddr();
             // String s1 = payer.getAddressU160().toBase58();
         } else {
             // TODO
@@ -141,10 +143,13 @@ public class ContractService {
         byte[] params = BuildParams.createCodeParamsScript(paramList);
 
         // 先查询是不是项目方，有没有设置指定的payer地址和合约地址
-        ContractCompany contractCompany = contractCompanyMapper.findByOntid(attestation.getCompanyOntid());
-        if (contractCompany != null) {
-            payer = GlobalVariable.getInstanceOfAccount(contractCompany.getPrikey());
-            codeAddr = Address.AddressFromVmCode(contractCompany.getCodeAddr()).toHexString();
+        Example example = new Example(AttestationCompany.class);
+        example.createCriteria().andCondition("ontid=", attestation.getCompanyOntid());
+        AttestationCompany attestationCompany = attestationCompanyMapper.selectOneByExample(example);
+        //
+        if (attestationCompany != null) {
+            payer = GlobalVariable.getInstanceOfAccount(attestationCompany.getPrikey());
+            codeAddr = Address.AddressFromVmCode(attestationCompany.getCodeAddr()).toHexString();
         }
 
         //
@@ -272,74 +277,150 @@ public class ContractService {
                                                int pageSize,
                                                String type) throws Exception {
         //
-        String tableName = getIndex(ontid).getName();
+        Example example = new Example(Attestation.class);
         //
-        int start = (pageNum - 1) * pageSize;
-        int offset = pageSize;
-        //
-        List<Attestation> list;
-        if (StringUtils.isEmpty(type)) {
-            list = contractMapper.selectByOntidAndPage(tableName, ontid, start, offset);
-        } else {
-            list = contractMapper.selectByOntidAndPageAndType(tableName, ontid, start, offset, type);
+        Example.Criteria c1 = example.createCriteria();
+        c1.andCondition("dnaid=", ontid);
+        c1.andCondition("status=", 0);
+        if (!StringUtils.isEmpty(type)) {
+            c1.andCondition("type=", type);
         }
+        //
+        example.setOrderByClause("id desc");
+        example.and(c1);
+        //
+        PageHelper.startPage(pageNum, pageSize, false);
+        List<Attestation> list = attestationMapper.selectByExample(example);
+
+        //
         return addHeight(list);
     }
 
     //
-    public List<Attestation> getExplorerHistory(String tableName,
-                                                int pageNum,
+    public List<Attestation> getExplorerHistory(int pageNum,
                                                 int pageSize) {
-        int start = (pageNum - 1) * pageSize;
-        int offset = pageSize;
-        List<Attestation> list = contractMapper.selectByPage(tableName, start, offset);
+        //
+        PageHelper.startPage(pageNum, pageSize);
+        //
+        Example example = new Example(Attestation.class);
+        example.createCriteria().andCondition("status=", 0);
+        example.setOrderByClause("id desc");
+        List<Attestation> list = attestationMapper.selectByExample(example);
+        //
         return addHeight(list);
     }
 
     //
     public List<Attestation> selectByOntidAndTxHash(String ontid,
                                                     String txhash) throws Exception {
-        String tableName = getIndex(ontid).getName();
-        List<Attestation> list = contractMapper.selectByOntidAndTxHash(tableName, ontid, txhash);
+        //
+        Example example = new Example(Attestation.class);
+        //
+        Example.Criteria criteria = example.createCriteria();
+        //
+        Example.Criteria c1 = example.createCriteria();
+        c1.andCondition("dnaid=", ontid);
+        c1.andCondition("txhash=", txhash);
+        c1.andCondition("status=", 0);
+        //
+        example.and(c1);
+        //
+        List<Attestation> list = attestationMapper.selectByExample(example);
+        //
         return addHeight(list);
     }
 
     //
     public List<Attestation> selectByOntidAndHash(String ontid,
                                                   String hash) throws Exception {
-        String tableName = getIndex(ontid).getName();
-        List<Attestation> list = contractMapper.selectByOntidAndHash(tableName, ontid, hash);
+        //
+        Example example = new Example(Attestation.class);
+        //
+        Example.Criteria c1 = example.createCriteria();
+        c1.andCondition("dnaid=", ontid);
+        c1.andCondition("status=", 0);
+        //
+        Example.Criteria c2 = example.createCriteria();
+        c2.orEqualTo("txhash", hash).orEqualTo("filehash", hash);
+        //
+        example.and(c1);
+        example.and(c2);
+        //
+        List<Attestation> list = attestationMapper.selectByExample(example);
+        //
         return addHeight(list);
     }
 
     //
     public int updateStatusByOntidAndHash(String ontid,
                                           String hash) throws Exception {
-        String tableName = getIndex(ontid).getName();
-        return contractMapper.updateStatusByOntidAndHash(tableName, ontid, hash);
+        //
+        Example example = new Example(Attestation.class);
+        //
+        Example.Criteria c1 = example.createCriteria();
+        c1.andCondition("dnaid=", ontid);
+        //
+        Example.Criteria c2 = example.createCriteria();
+        c2.orEqualTo("txhash", hash).orEqualTo("filehash", hash);
+        //
+        example.and(c1);
+        example.and(c2);
+        //
+        Attestation c = new Attestation();
+        c.setStatus(1);
+        return attestationMapper.updateByExampleSelective(c, example);
     }
 
     //
     public List<Attestation> selectByHash(String hash) {
 
-        // TODO 目前只支持从当前表查询
-        List<Attestation> list = contractMapper.selectByHash(GlobalVariable.CURRENT_CONTRACT_TABLE_NAME, hash);
+        //
+        Example example = new Example(Attestation.class);
+        //
+        Example.Criteria c1 = example.createCriteria();
+        c1.andCondition("txhash=", hash);
+        //
+        Example.Criteria c2 = example.createCriteria();
+        c2.andCondition("filehash=", hash);
+        //
+        example.and(c1);
+        example.or(c2);
+        //
+        List<Attestation> list = attestationMapper.selectByExample(example);
+        //
         return addHeight(list);
     }
 
     //
-    public int updateRevokeTx(String ontid,
-                              String txhash,
-                              String revokeTx) throws Exception {
-        String tableName = getIndex(ontid).getName();
-        return contractMapper.updateRevokeTx(tableName, txhash, revokeTx, new Date());
+    public void updateRevokeTx(String ontid,
+                               String txhash,
+                               String revokeTx) throws Exception {
+        //
+        Example example = new Example(Attestation.class);
+        //
+        Example.Criteria c1 = example.createCriteria();
+        c1.andCondition("txhash=", txhash);
+        //
+        example.and(c1);
+        //
+        Attestation c = new Attestation();
+        c.setRevokeTx(revokeTx);
+        attestationMapper.updateByExampleSelective(c, example);
     }
 
 
     //
     public Integer count(String ontid) throws Exception {
-        String tableName = getIndex(ontid).getName();
-        return contractMapper.count(tableName, ontid);
+        //
+        Example example = new Example(Attestation.class);
+        //
+        Example.Criteria c1 = example.createCriteria();
+        c1.andCondition("dnaid=", ontid);
+        c1.andCondition("status=", 0);
+        //
+        example.and(c1);
+        //
+        return attestationMapper.selectCountByExample(example);
     }
 
     // 跨表添加height信息
@@ -350,7 +431,16 @@ public class ContractService {
         //
         List<Attestation> newlist = new ArrayList<>();
         for (Attestation c : list) {
-            Event e = eventMapper.findByTxhash(c.getTxhash());
+            //
+            Example example = new Example(Event.class);
+            //
+            Example.Criteria c1 = example.createCriteria();
+            c1.andCondition("txhash=", c.getTxhash());
+            //
+            example.and(c1);
+            //
+            Event e = eventMapper.selectOneByExample(example);
+            //
             if (e != null) {
                 Integer height = e.getHeight();
                 c.setHeight(height);
@@ -362,70 +452,33 @@ public class ContractService {
         return newlist;
     }
 
-    // TODO @Transactional  ??
-    private ContractOntid getRecord(String ontid) {
-
-        //
-        ContractOntid existed = contractOntidMapper.findFirstByOntidOrderByCreateTimeAsc(ontid);
-
-        //
-        if (existed != null) {
-            return existed;
-        }
-        //
-        ContractOntid record = new ContractOntid();
-        record.setOntid(ontid);
-        record.setCreateTime(new Date());
-        record.setContractIndex(GlobalVariable.CURRENT_CONTRACT_TABLE_INDEX);
-
-        // TODO 这里存在一个很大bug，若同一时间一个ontid发来多个请求，在数据库记录任何一个之前，都会返回null，于是后面都会创建并写入数据库，同一个ontid就会有多条记录
-        //        ContractOntid existed = contractOntidMapper.findByOntid(ontid);
-        // contractOntidMapper.save(record);
-        contractOntidMapper.saveIfIgnore(ontid, record.getContractIndex(), record.getCreateTime());
-        //
-        return record;
-    }
-
-    private ContractIndex getIndex(String ontid) throws Exception {
-        ContractOntid record = getRecord(ontid);
-        // ContractIndex contractIndex = contractIndexMapper.findById(record.getContractIndex());
-
-        Optional<ContractIndex> ci_opt = contractIndexMapper.findById(record.getContractIndex());
-        if (ci_opt.isPresent()) {
-            ContractIndex ci = ci_opt.get();
-            return ci;
-        } else {
-            throw new Exception("can not find index for ontid:" + ontid);
-        }
-    }
-
     // 写入数据库
-    public void saveToLocal(String ontid,
-                            Attestation attestation) throws Exception {
-        contractMapper.insert(getIndex(ontid).getName(), attestation);
+    public void saveToLocal(Attestation attestation) throws Exception {
+        attestationMapper.insertSelective(attestation);
     }
 
     // 写入数据库，batch insert
-    public void saveToLocalBatch(String ontid,
-                                 List<Attestation> attestationList) throws Exception {
-        contractMapper.insertBatch(getIndex(ontid).getName(), attestationList);
+    public void saveToLocalBatch(List<Attestation> attestationList) throws Exception {
+        attestationMapper.insertBatch(attestationList);
     }
 
     //
-    public void saveCompany(ContractCompany company) {
-        contractCompanyMapper.save(company);
+    public void saveCompany(AttestationCompany company) {
+        attestationCompanyMapper.insertSelective(company);
     }
 
     //
-    public ContractCompany getCompany(String ontid) {
-        ContractCompany company = contractCompanyMapper.findByOntid(ontid);
+    public AttestationCompany getCompany(String ontid) {
+        Example example = new Example(AttestationCompany.class);
+        example.createCriteria().andCondition("ontid=", ontid);
+        AttestationCompany company = attestationCompanyMapper.selectOneByExample(example);
         return company;
     }
 
     // 先查询是不是项目方，有没有设置指定的payer地址和合约地址
     public void checkCompany(String company_ontid) throws Exception {
-        ContractCompany contractCompany = getCompany(company_ontid);
-        if (contractCompany == null) {
+        AttestationCompany attestationCompany = getCompany(company_ontid);
+        if (attestationCompany == null) {
             // TODO
             throw new Exception("项目方地址列表中找不到该ontid..." + company_ontid);
         }

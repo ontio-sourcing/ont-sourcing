@@ -7,7 +7,7 @@ import com.github.ontio.smartcontract.neovm.abi.BuildParams;
 import com.google.gson.Gson;
 import com.ontology.sourcing.model.dto.event.EventPojo;
 import com.ontology.sourcing.model.dto.event.Notify;
-import com.ontology.sourcing.service.ContractService;
+import com.ontology.sourcing.service.AttestationService;
 import com.ontology.sourcing.service.util.ChainService;
 import com.ontology.sourcing.util.GlobalVariable;
 import org.apache.commons.codec.DecoderException;
@@ -33,7 +33,7 @@ public class AttestationTests04 {
     @Autowired
     ChainService chainService;
     @Autowired
-    ContractService contractService;
+    AttestationService attestationService;
 
     // 付款的数字钱包
     private Account payerAccount = GlobalVariable.getInstanceOfAccount("6a62d116e416246f974229eee7d1b0894d8c2ab70446856e85e35b7f5d37adef");
@@ -55,7 +55,7 @@ public class AttestationTests04 {
         byte[] params = BuildParams.createCodeParamsScript(paramList);
 
         //
-        Map<String, String> map = contractService.invokeContract(Helper.reverse(codeAddr), null, params, payerAccount, 76220L, GlobalVariable.DEFAULT_GAS_PRICE, false);
+        Map<String, String> map = attestationService.invokeContract(Helper.reverse(codeAddr), null, params, payerAccount, 76220L, GlobalVariable.DEFAULT_GAS_PRICE, false);
 
         //
         String txhash = map.get("txhash");

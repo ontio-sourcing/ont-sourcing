@@ -1,6 +1,6 @@
 package com.ontology.sourcing;
 
-import com.ontology.sourcing.model.dao.contract.ContractTypes;
+import com.ontology.sourcing.model.dao.attestation.ContractTypes;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import org.apache.commons.collections4.CollectionUtils;

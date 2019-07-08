@@ -3,13 +3,13 @@ package com.ontology.sourcing.controller;
 import ch.qos.logback.classic.Logger;
 import com.ontology.sourcing.exception.ErrorInfo;
 import com.ontology.sourcing.exception.exp.ExistedException;
-import com.ontology.sourcing.mapper.ddo.*;
-import com.ontology.sourcing.model.common.ddo.Action;
+import com.ontology.sourcing.mapper.ddo.ActionOntidControlMapper;
+import com.ontology.sourcing.mapper.ddo.ActionOntidMapper;
 import com.ontology.sourcing.model.common.ddo.ActionTypes;
 import com.ontology.sourcing.model.dao.ddo.*;
 import com.ontology.sourcing.model.dto.ResponseBean;
 import com.ontology.sourcing.model.dto.ddo.DDOPojo;
-import com.ontology.sourcing.service.OntidService;
+import com.ontology.sourcing.service.DDOService;
 import com.ontology.sourcing.service.util.SyncService;
 import com.ontology.sourcing.service.util.ValidateService;
 import org.slf4j.LoggerFactory;
@@ -24,33 +24,30 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/v1/ddo")
-public class DDOController {
+public class ActionController {
 
     //
-    private Logger logger = (Logger) LoggerFactory.getLogger(DDOController.class);
+    private Logger logger = (Logger) LoggerFactory.getLogger(ActionController.class);
 
     //
-    private OntidService ontidService;
+    private DDOService DDOService;
     private ValidateService validateService;
     private SyncService syncService;
     //
-    private ActionIndexMapper actionIndexMapper;
     private ActionOntidMapper actionOntidMapper;
     private ActionOntidControlMapper actionOntidControlMapper;
 
     @Autowired
-    public DDOController(OntidService ontidService,
-                         ValidateService validateService,
-                         SyncService syncService,
-                         ActionIndexMapper actionIndexMapper,
-                         ActionOntidMapper actionOntidMapper,
-                         ActionOntidControlMapper actionOntidControlMapper) {
+    public ActionController(DDOService DDOService,
+                            ValidateService validateService,
+                            SyncService syncService,
+                            ActionOntidMapper actionOntidMapper,
+                            ActionOntidControlMapper actionOntidControlMapper) {
         //
-        this.ontidService = ontidService;
+        this.DDOService = DDOService;
         this.validateService = validateService;
         this.syncService = syncService;
         //
-        this.actionIndexMapper = actionIndexMapper;
         this.actionOntidMapper = actionOntidMapper;
         this.actionOntidControlMapper = actionOntidControlMapper;
     }
@@ -82,7 +79,7 @@ public class DDOController {
         String password = (String) obj.get("password");
 
         //
-        Map<String, String> map = ontidService.createOntid(username, password);
+        Map<String, String> map = DDOService.createOntid(username, password);
         //
         String keystore = map.get("keystore");
         String txhash = map.get("txhash");
@@ -118,7 +115,7 @@ public class DDOController {
         String password = (String) obj.get("password");
 
         //
-        Map<String, String> map = ontidService.login(username, password);
+        Map<String, String> map = DDOService.login(username, password);
 
         //
         rst.setResult(map);
@@ -153,10 +150,10 @@ public class DDOController {
         validateService.isExistedOntid(ontid);
 
         //
-        Map<String, String> map = ontidService.updateOntidAttribute(ontid, password, attributeJson);
+        Map<String, String> map = DDOService.updateOntidAttribute(ontid, password, attributeJson);
         String txhash = map.get("txhash");
         //
-        ontidService.save(ontid, ontid, txhash, ActionTypes.ADD.getId(), attributeJson);
+        DDOService.saveToLocal(ontid, ontid, txhash, ActionTypes.ADD.getId(), attributeJson);
         syncService.confirmTxAndDDO(ontid, txhash);
 
         //
@@ -192,10 +189,10 @@ public class DDOController {
         validateService.isExistedOntid(ontid);
 
         //
-        Map<String, String> map = ontidService.deleteEntityIdentityAttribute(ontid, password, pathKey);
+        Map<String, String> map = DDOService.deleteEntityIdentityAttribute(ontid, password, pathKey);
         String txhash = map.get("txhash");
         //
-        ontidService.save(ontid, ontid, txhash, ActionTypes.DELETE.getId(), pathKey);
+        DDOService.saveToLocal(ontid, ontid, txhash, ActionTypes.DELETE.getId(), pathKey);
         syncService.confirmTxAndDDO(ontid, txhash);
         //
         rst.setResult(true);
@@ -232,7 +229,7 @@ public class DDOController {
 
         //
         try {
-            Map<String, String> map = ontidService.updateOntidControl(ontid, password, controlOntid);
+            Map<String, String> map = DDOService.updateOntidControl(ontid, password, controlOntid);
             String txhash = map.get("txhash");
             // 写入本地表
             ActionOntidControl record = new ActionOntidControl();
@@ -286,10 +283,10 @@ public class DDOController {
         validateService.isExistedOntid(controlOntid);
 
         //
-        Map<String, String> map = ontidService.updateOntidAttributeByControl(ontid, attributeJson, controlOntid, controlPassword);
+        Map<String, String> map = DDOService.updateOntidAttributeByControl(ontid, attributeJson, controlOntid, controlPassword);
         String txhash = map.get("txhash");
         //
-        ontidService.save(ontid, controlOntid, txhash, ActionTypes.ADD.getId(), attributeJson);
+        DDOService.saveToLocal(ontid, controlOntid, txhash, ActionTypes.ADD.getId(), attributeJson);
         syncService.confirmTxAndDDO(ontid, txhash);
 
         //
@@ -327,10 +324,10 @@ public class DDOController {
         validateService.isExistedOntid(controlOntid);
 
         //
-        Map<String, String> map = ontidService.deleteEntityIdentityAttributeByControl(ontid, pathKey, controlOntid, controlPassword);
+        Map<String, String> map = DDOService.deleteEntityIdentityAttributeByControl(ontid, pathKey, controlOntid, controlPassword);
         String txhash = map.get("txhash");
         //
-        ontidService.save(ontid, controlOntid, txhash, ActionTypes.DELETE.getId(), pathKey);
+        DDOService.saveToLocal(ontid, controlOntid, txhash, ActionTypes.DELETE.getId(), pathKey);
         syncService.confirmTxAndDDO(ontid, txhash);
         //
         rst.setResult(true);
@@ -361,7 +358,7 @@ public class DDOController {
         validateService.isExistedOntid(ontid);
 
         //
-        DDOPojo ddoPojo = ontidService.getDDO(ontid);
+        DDOPojo ddoPojo = DDOService.getDDO(ontid);
         //
         rst.setResult(ddoPojo);
         rst.setCode(ErrorInfo.SUCCESS.code());
@@ -394,11 +391,8 @@ public class DDOController {
         Example example = new Example(ActionOntid.class);
         example.createCriteria().andCondition("ontid=", ontid);
         ActionOntid actionOntidRecord = actionOntidMapper.selectOneByExample(ontid);
-
-        // 所在的表索引
-        ActionIndex index = actionIndexMapper.selectByPrimaryKey(actionOntidRecord.getActionIndex());
         //
-        Integer count = ontidService.count(index.getName(), ontid);
+        Integer count = DDOService.count(ontid);
         //
         rst.setResult(count);
         rst.setCode(ErrorInfo.SUCCESS.code());
@@ -434,10 +428,8 @@ public class DDOController {
         Example example = new Example(ActionOntid.class);
         example.createCriteria().andCondition("ontid=", ontid);
         ActionOntid actionOntidRecord = actionOntidMapper.selectOneByExample(example);
-        // 所在的表索引
-        ActionIndex index = actionIndexMapper.selectByPrimaryKey(actionOntidRecord.getActionIndex());
         //
-        List<Action> list = ontidService.getActionHistory(index.getName(), ontid, pageNum, pageSize);
+        List<Action> list = DDOService.getActionHistory(ontid, pageNum, pageSize);
         //
         rst.setResult(list);
         rst.setCode(ErrorInfo.SUCCESS.code());

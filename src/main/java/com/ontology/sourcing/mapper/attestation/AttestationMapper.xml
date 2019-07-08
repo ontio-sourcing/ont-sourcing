@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ontology.sourcing.mapper.attestation.AttestationMapper">
+
+	<resultMap id="BaseResultMap" type="com.ontology.sourcing.model.dao.attestation.Attestation">
+		<result column="ontid" jdbcType="VARCHAR" property="ontid"/>
+		<result column="company_ontid" jdbcType="VARCHAR" property="companyOntid"/>
+		<result column="txhash" jdbcType="VARCHAR" property="txhash"/>
+		<result column="filehash" jdbcType="VARCHAR" property="filehash"/>
+		<result column="type" jdbcType="VARCHAR" property="type"/>
+		<result column="timestamp" jdbcType="TIMESTAMP" property="timestamp"/>
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+		<result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+		<result column="status" jdbcType="INTEGER" property="status"/>
+		<result column="revoke_tx" jdbcType="VARCHAR" property="revokeTx"/>
+	</resultMap>
+
+	<resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="com.ontology.sourcing.model.dao.attestation.Attestation">
+		<result column="detail" jdbcType="LONGVARCHAR" property="detail"/>
+		<result column="timestamp_sign" jdbcType="LONGVARCHAR" property="timestampSign"/>
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		ontid, company_ontid, txhash, filehash, type, timestamp, create_time, update_time, status, revoke_tx
+	</sql>
+
+	<sql id="Blob_Column_List">
+		detail, timestamp_sign
+	</sql>
+
+	<insert id="insertBatch">
+		INSERT INTO t_attestation (ontid, company_ontid, txhash, filehash, type,
+		timestamp, create_time, update_time,
+		detail, timestamp_sign)
+		VALUES
+		<foreach collection="contractList" item="record" separator=",">
+			(#{record.ontid,jdbcType=VARCHAR}, #{record.companyOntid,jdbcType=VARCHAR}, #{record.txhash,jdbcType=VARCHAR}, #{record.filehash,jdbcType=VARCHAR},
+			#{record.type,jdbcType=VARCHAR},
+			#{record.timestamp,jdbcType=TIMESTAMP}, #{record.createTime,jdbcType=TIMESTAMP}, #{record.updateTime,jdbcType=TIMESTAMP},
+			#{record.detail,jdbcType=LONGVARCHAR}, #{record.timestampSign,jdbcType=LONGVARCHAR})
+		</foreach>
+	</insert>
+
+</mapper>

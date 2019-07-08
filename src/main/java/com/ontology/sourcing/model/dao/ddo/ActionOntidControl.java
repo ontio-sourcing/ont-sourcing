@@ -14,7 +14,7 @@ public class ActionOntidControl {
     private Integer id;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)    private String ontid;
+    private String ontid;
 
     @Column
     private String control;

@@ -10,7 +10,7 @@ import com.ontology.sourcing.mapper.EventMapper;
 import com.ontology.sourcing.mapper.ddo.ActionOntidMapper;
 import com.ontology.sourcing.mapper.sfl.SFLNotaryMapper;
 import com.ontology.sourcing.model.dto.ddo.DDOPojo;
-import com.ontology.sourcing.service.OntidService;
+import com.ontology.sourcing.service.DDOService;
 import com.ontology.sourcing.util.HttpUtil;
 import com.ontology.sourcing.util.ThreadUtil;
 import org.json.JSONObject;
@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import tk.mybatis.mapper.entity.Example;
 
 import java.io.IOException;
 import java.util.Date;
@@ -34,17 +35,17 @@ public class SyncService {
     //
     private SFLNotaryMapper sflNotaryMapper;
     //
-    private OntidService ontidService;
+    private DDOService DDOService;
     private ChainService chainService;
 
     @Autowired
-    public SyncService(EventMapper eventMapper, ActionOntidMapper actionOntidMapper, SFLNotaryMapper sflNotaryMapper, OntidService ontidService, ChainService chainService) {
+    public SyncService(EventMapper eventMapper, ActionOntidMapper actionOntidMapper, SFLNotaryMapper sflNotaryMapper, DDOService DDOService, ChainService chainService) {
         this.eventMapper = eventMapper;
         this.actionOntidMapper = actionOntidMapper;
         //
         this.sflNotaryMapper = sflNotaryMapper;
         //
-        this.ontidService = ontidService;
+        this.DDOService = DDOService;
         this.chainService = chainService;
     }
 
@@ -74,14 +75,17 @@ public class SyncService {
                         record.setEvent(eventStr);
                         record.setHeight(height);
                         record.setCreateTime(new Date());
-                        eventMapper.save(record);
+                        eventMapper.insertSelective(record);
                         //
-                        DDOPojo ddoPojo = ontidService.getDDO(ontid);
+                        DDOPojo ddoPojo = DDOService.getDDO(ontid);
                         // 更新本地的DDO
-                        ActionOntid actionOntidRecord = actionOntidMapper.findByOntid(ontid);
+                        Example example = new Example(ActionOntid.class);
+                        example.createCriteria().andCondition("ontid=", ontid);
+                        ActionOntid actionOntidRecord = actionOntidMapper.selectOneByExample(example);
+                        //
                         actionOntidRecord.setDdo(JSON.toJSONString(ddoPojo));
                         actionOntidRecord.setUpdateTime(new Date());
-                        actionOntidMapper.save(actionOntidRecord);
+                        actionOntidMapper.insertSelective(actionOntidRecord);
                         //
                         break;
                     } catch (ConnectorException | IOException e) {
@@ -128,7 +132,7 @@ public class SyncService {
                         record.setEvent(eventStr);
                         record.setHeight(height);
                         record.setCreateTime(new Date());
-                        eventMapper.save(record);
+                        eventMapper.insertSelective(record);
                         //
                         break;
                     } catch (ConnectorException | IOException e) {
@@ -179,10 +183,13 @@ public class SyncService {
                         System.out.println(data);
                         if (data.contains("数据未被篡改")) { // TODO
                             //
-                            SFLNotary notary = sflNotaryMapper.findByTxhash(txhash);
+                            Example example = new Example(SFLNotary.class);
+                            example.createCriteria().andCondition("txhash=", txhash);
+                            SFLNotary notary = sflNotaryMapper.selectOneByExample(example);
+                            //
                             notary.setConfirm(1);
                             notary.setUpdateTime(new Date());
-                            sflNotaryMapper.save(notary);
+                            sflNotaryMapper.insertSelective(notary);
                             //
                             break;
                         }

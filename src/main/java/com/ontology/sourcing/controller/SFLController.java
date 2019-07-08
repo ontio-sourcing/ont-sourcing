@@ -3,7 +3,6 @@ package com.ontology.sourcing.controller;
 import ch.qos.logback.classic.Logger;
 import com.google.gson.Gson;
 import com.ontology.sourcing.exception.ErrorInfo;
-import com.ontology.sourcing.exception.exp.ErrorCode;
 import com.ontology.sourcing.model.dao.sfl.SFLIdentity;
 import com.ontology.sourcing.model.dao.sfl.SFLNotary;
 import com.ontology.sourcing.model.dto.ResponseBean;
@@ -143,7 +142,7 @@ public class SFLController {
         int pageSize = Integer.parseInt(obj.get("pageSize").toString());
 
         //
-        List<SFLNotary> list = sflService.getByCertNoPageable(certNo, pageNum, pageSize);
+        List<SFLNotary> list = sflService.getHistoryByCertNo(certNo, pageNum, pageSize);
 
         //
         rst.setResult(list);

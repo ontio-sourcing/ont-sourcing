@@ -1,4 +1,4 @@
-package com.ontology.sourcing.model.dao.contract;
+package com.ontology.sourcing.model.dao.attestation;
 
 import lombok.Data;
 
@@ -6,8 +6,8 @@ import javax.persistence.*;
 import java.util.Date;
 
 @Data
-@Table(name = "tbl_contract_company")
-public class ContractCompany {
+@Table(name = "tbl_attestation_company")
+public class AttestationCompany {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;

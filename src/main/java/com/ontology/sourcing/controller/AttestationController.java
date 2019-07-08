@@ -3,11 +3,11 @@ package com.ontology.sourcing.controller;
 import ch.qos.logback.classic.Logger;
 import com.google.gson.Gson;
 import com.ontology.sourcing.exception.ErrorInfo;
-import com.ontology.sourcing.model.common.attestation.Attestation;
-import com.ontology.sourcing.model.dao.contract.ContractCompany;
+import com.ontology.sourcing.model.dao.attestation.Attestation;
+import com.ontology.sourcing.model.dao.attestation.AttestationCompany;
 import com.ontology.sourcing.model.dto.ResponseBean;
 import com.ontology.sourcing.model.dto.attestation.input.InputWrapper;
-import com.ontology.sourcing.service.ContractService;
+import com.ontology.sourcing.service.AttestationService;
 import com.ontology.sourcing.service.oauth.JWTService;
 import com.ontology.sourcing.service.ontid_server.OntidServerService;
 import com.ontology.sourcing.service.time.bctsp.TspService;
@@ -47,7 +47,7 @@ public class AttestationController {
 
     //
     private JWTService jwtService;
-    private ContractService contractService;
+    private AttestationService attestationService;
     private OntidServerService ontidServerService;
 
     //
@@ -61,7 +61,7 @@ public class AttestationController {
                                  SyncService syncService,
                                  ValidateService validateService,
                                  JWTService jwtService,
-                                 ContractService contractService,
+                                 AttestationService attestationService,
                                  OntidServerService ontidServerService,
                                  KafkaTemplate<String, Object> kafkaTemplate,
                                  @Value("${com.ontology.sourcing.kafka.topic.put}") String ontSourcingTopicPut) {
@@ -71,7 +71,7 @@ public class AttestationController {
         this.validateService = validateService;
         //
         this.jwtService = jwtService;
-        this.contractService = contractService;
+        this.attestationService = attestationService;
         this.ontidServerService = ontidServerService;
         //
         this.kafkaTemplate = kafkaTemplate;
@@ -105,7 +105,7 @@ public class AttestationController {
         String ontid = jwtService.getContentUser(access_token);
 
         //
-        ContractCompany cc = contractService.getCompany(ontid);
+        AttestationCompany cc = attestationService.getCompany(ontid);
         if (cc == null) {
             rst.setResult("2c");
         } else {
@@ -203,7 +203,7 @@ public class AttestationController {
                 attestation.setTimestamp(new Date(timestamp * 1000L));
                 attestation.setTimestampSign(timestampSign);
                 //
-                Map<String, String> map2 = contractService.putContract(attestation);
+                Map<String, String> map2 = attestationService.putContract(attestation);
                 String txhash = map2.get("txhash");
                 attestation.setTxhash(txhash);
                 //
@@ -227,7 +227,7 @@ public class AttestationController {
 
         //
         try {
-            contractService.saveToLocalBatch(first_ontid, c_list);
+            attestationService.saveToLocalBatch(c_list);
         } catch (Exception e) {
             logger.error(e.getMessage());
             return;
@@ -236,7 +236,7 @@ public class AttestationController {
         //
         for (Attestation c : other_list) {
             try {
-                contractService.saveToLocal(c.getCompanyOntid(), c);
+                attestationService.saveToLocal(c);
             } catch (Exception e) {
                 logger.error(e.getMessage());
                 return;
@@ -292,7 +292,7 @@ public class AttestationController {
         String company_ontid = jwtService.getContentUser(access_token);
 
         // 查看项目有没有添加定制信息
-        contractService.checkCompany(company_ontid);
+        attestationService.checkCompany(company_ontid);
 
         //
         if (StringUtils.isEmpty(user_ontid))
@@ -331,11 +331,11 @@ public class AttestationController {
             attestation.setTimestamp(new Date(timestamp * 1000L));
             attestation.setTimestampSign(timestampSign);
             //
-            Map<String, String> map2 = contractService.putContract(attestation);
+            Map<String, String> map2 = attestationService.putContract(attestation);
             String txhash = map2.get("txhash");
             attestation.setTxhash(txhash);
             //
-            contractService.saveToLocal(company_ontid, attestation);
+            attestationService.saveToLocal(attestation);
             // 链同步
             syncService.confirmTx(txhash);
             //
@@ -381,7 +381,7 @@ public class AttestationController {
 
 
         // 查看项目有没有添加定制信息
-        contractService.checkCompany(company_ontid);
+        attestationService.checkCompany(company_ontid);
 
         //
         if (StringUtils.isEmpty(user_ontid)) {
@@ -439,7 +439,7 @@ public class AttestationController {
                 attestation.setTimestamp(new Date(timestamp * 1000L));
                 attestation.setTimestampSign(timestampSign);
                 //
-                Map<String, String> map2 = contractService.putContract(attestation);
+                Map<String, String> map2 = attestationService.putContract(attestation);
                 String txhash = map2.get("txhash");
                 attestation.setTxhash(txhash);
                 // 链同步
@@ -465,7 +465,7 @@ public class AttestationController {
             // mybatis batch insert
             // 单条长度大概 4KB，30条，一个sql语句size大概为120KB
             // TODO 检查 max_allowed_packet
-            contractService.saveToLocalBatch(company_ontid, attestationList);
+            attestationService.saveToLocalBatch(attestationList);
             //
             rst.setResult(txhashList);
             rst.setCode(ErrorInfo.SUCCESS.code());
@@ -498,7 +498,7 @@ public class AttestationController {
         String ontid = jwtService.getContentUser(accessToken);
 
         // ontid 也要作为条件，否则查到别人的了
-        List<Attestation> list = contractService.selectByOntidAndHash(ontid, hash);
+        List<Attestation> list = attestationService.selectByOntidAndHash(ontid, hash);
 
         //
         rst.setResult(list);
@@ -531,22 +531,22 @@ public class AttestationController {
         String ontid = jwtService.getContentUser(accessToken);
 
         // ontid 也要作为条件
-        List<Attestation> exists = contractService.selectByOntidAndTxHash(ontid, txhash);
+        List<Attestation> exists = attestationService.selectByOntidAndTxHash(ontid, txhash);
         if (exists.size() != 0) {
 
             //
-            int rt = contractService.updateStatusByOntidAndHash(ontid, txhash);
+            int rt = attestationService.updateStatusByOntidAndHash(ontid, txhash);
             System.out.println(rt);
 
             //
             Attestation exist = exists.get(0);
-            String c_key = "revoke" + contractService.contractToDigestForKey(exist);
+            String c_key = "revoke" + attestationService.contractToDigestForKey(exist);
             String c_value = "";
-            Map<String, String> map2 = contractService.putContract(exist, c_key, c_value);
+            Map<String, String> map2 = attestationService.putContract(exist, c_key, c_value);
             String revokeTx = map2.get("txhash");
 
             //
-            contractService.updateRevokeTx(ontid, txhash, revokeTx);
+            attestationService.updateRevokeTx(ontid, txhash, revokeTx);
 
             // todo 保证一定从链上取到
             syncService.confirmTx(revokeTx);
@@ -599,7 +599,7 @@ public class AttestationController {
         //
         String ontid = jwtService.getContentUser(accessToken);
         //
-        List<Attestation> list = contractService.getHistoryByOntid(ontid, pageNum, pageSize, type);
+        List<Attestation> list = attestationService.getHistoryByOntid(ontid, pageNum, pageSize, type);
 
         //
         rst.setResult(list);
@@ -629,7 +629,7 @@ public class AttestationController {
 
         //
         String ontid = jwtService.getContentUser(accessToken);
-        Integer count = contractService.count(ontid);
+        Integer count = attestationService.count(ontid);
 
         //
         rst.setResult(count);
@@ -662,7 +662,7 @@ public class AttestationController {
         //
         List<Attestation> list = new ArrayList<>();
         if (!StringUtils.isEmpty(GlobalVariable.CURRENT_CONTRACT_TABLE_NAME)) {
-            list = contractService.getExplorerHistory(GlobalVariable.CURRENT_CONTRACT_TABLE_NAME, pageNum, pageSize);
+            list = attestationService.getExplorerHistory(pageNum, pageSize);
         }
 
         //
@@ -692,7 +692,7 @@ public class AttestationController {
         String hash = (String) obj.get("hash");
 
         // ontid 也要作为条件，否则查到别人的了
-        List<Attestation> list = contractService.selectByHash(hash);
+        List<Attestation> list = attestationService.selectByHash(hash);
 
         //
         rst.setResult(list);
@@ -728,7 +728,7 @@ public class AttestationController {
         String code_addr = (String) obj.get("code_addr");
 
         //
-        ContractCompany existed = contractService.getCompany(ontid);
+        AttestationCompany existed = attestationService.getCompany(ontid);
         if (existed != null) {
             rst.setCode(ErrorInfo.ONTID_EXIST.code());
             rst.setMsg(ErrorInfo.ONTID_EXIST.desc());
@@ -736,12 +736,12 @@ public class AttestationController {
         }
 
         //
-        ContractCompany company = new ContractCompany();
+        AttestationCompany company = new AttestationCompany();
         company.setOntid(ontid);
         company.setPrikey(prikey);
         company.setCodeAddr(code_addr);
         company.setCreateTime(new Date());
-        contractService.saveCompany(company);
+        attestationService.saveCompany(company);
 
         //
         rst.setResult(true);
@@ -781,7 +781,7 @@ public class AttestationController {
         }
 
         //
-        ContractCompany existed = contractService.getCompany(ontid);
+        AttestationCompany existed = attestationService.getCompany(ontid);
         if (existed == null) {
             //
             rst.setResult(true);
@@ -799,7 +799,7 @@ public class AttestationController {
         existed.setUpdateTime(new Date());
 
         //
-        contractService.saveCompany(existed);
+        attestationService.saveCompany(existed);
 
         //
         rst.setResult(true);
@@ -827,7 +827,7 @@ public class AttestationController {
         String ontid = (String) obj.get("ontid");
 
         //
-        ContractCompany company = contractService.getCompany(ontid);
+        AttestationCompany company = attestationService.getCompany(ontid);
 
         //
         rst.setResult(company);

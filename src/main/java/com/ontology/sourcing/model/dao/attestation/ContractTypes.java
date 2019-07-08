@@ -1,4 +1,4 @@
-package com.ontology.sourcing.model.dao.contract;
+package com.ontology.sourcing.model.dao.attestation;
 
 public enum ContractTypes {
 

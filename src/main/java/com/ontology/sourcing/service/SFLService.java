@@ -1,20 +1,22 @@
 package com.ontology.sourcing.service;
 
+import com.github.pagehelper.PageHelper;
 import com.google.gson.Gson;
-import com.ontology.sourcing.model.dao.sfl.SFLIdentity;
-import com.ontology.sourcing.model.dao.sfl.SFLNotary;
+import com.ontology.sourcing.exception.exp.ErrorCode;
+import com.ontology.sourcing.exception.exp.ONTSourcingException;
 import com.ontology.sourcing.mapper.sfl.SFLIdentityMapper;
 import com.ontology.sourcing.mapper.sfl.SFLNotaryMapper;
+import com.ontology.sourcing.model.dao.sfl.SFLIdentity;
+import com.ontology.sourcing.model.dao.sfl.SFLNotary;
 import com.ontology.sourcing.model.dto.sfl.SFLResponse;
 import com.ontology.sourcing.service.util.PropertiesService;
 import com.ontology.sourcing.service.util.SyncService;
 import com.ontology.sourcing.util.HttpUtil;
-import com.ontology.sourcing.exception.exp.ErrorCode;
-import com.ontology.sourcing.exception.exp.ONTSourcingException;
 import com.ontology.sourcing.util.sfl.CertUtil;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import tk.mybatis.mapper.entity.Example;
 
 import java.util.Date;
 import java.util.List;
@@ -40,7 +42,10 @@ public class SFLService {
 
     //
     @Autowired
-    public SFLService(PropertiesService propertiesService, SyncService syncService, SFLIdentityMapper sflIdentityMapper, SFLNotaryMapper sflNotaryMapper) {
+    public SFLService(PropertiesService propertiesService,
+                      SyncService syncService,
+                      SFLIdentityMapper sflIdentityMapper,
+                      SFLNotaryMapper sflNotaryMapper) {
         //
         this.propertiesService = propertiesService;
         this.syncService = syncService;
@@ -53,11 +58,13 @@ public class SFLService {
     public String getToken(SFLIdentity sflIdentity) throws Exception {
 
         //
-        SFLIdentity existed = sflIdentityMapper.findByCertNo(sflIdentity.getCertNo());
+        Example example = new Example(SFLIdentity.class);
+        example.createCriteria().andCondition("cert_no=", sflIdentity.getCertNo());
+        SFLIdentity existed = sflIdentityMapper.selectOneByExample(example);
+        //
         if (existed != null) {  // TODO 以后token可能会失效
             return existed.getToken();
         }
-
         //
         String timestamp = String.valueOf(System.currentTimeMillis());
 
@@ -103,14 +110,16 @@ public class SFLService {
         //
         sflIdentity.setToken(token);
         sflIdentity.setCreateTime(new Date());
-        sflIdentityMapper.save(sflIdentity);
+        sflIdentityMapper.insertSelective(sflIdentity);
 
         //
         return token;
     }
 
     //
-    public void put(String filehash, String token, String certNo) throws Exception {
+    public void put(String filehash,
+                    String token,
+                    String certNo) throws Exception {
 
         String timestamp = String.valueOf(System.currentTimeMillis());
 
@@ -145,19 +154,23 @@ public class SFLService {
         notary.setCertNo(certNo);
         notary.setCertUrl(certUrl);
         notary.setCreateTime(new Date());
-        sflNotaryMapper.save(notary);
+        sflNotaryMapper.insertSelective(notary);
 
         //
         syncService.confirmTxSFL(txhash, filehash);
     }
 
-    public List<SFLNotary> getByCertNoPageable(String certNo, Integer start, Integer offset) {
-        return sflNotaryMapper.findByCertNoPageable(certNo, start, offset);
+    public List<SFLNotary> getHistoryByCertNo(String certNo,
+                                               int pageNum,
+                                               int pageSize) {
+        //
+        PageHelper.startPage(pageNum, pageSize);
+        //
+        Example example = new Example(SFLNotary.class);
+        example.createCriteria().andCondition("cert_no=", certNo);
+        example.setOrderByClause("id desc");
+        List<SFLNotary> list = sflNotaryMapper.selectByExample(example);
+        //
+        return list;
     }
-
-    //    public Page<SFLNotary> getEntryByParams(Integer page, Integer size) {
-    //        Sort sort = new Sort(Sort.Direction.DESC, "id");
-    //        Pageable pageable = new PageRequest(page, size, sort);
-    //        return sflNotaryMapper.findAll(pageable);
-    //    }
 }
