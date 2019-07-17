@@ -22,6 +22,9 @@ SET time_zone = "+00:00";
 -- Database: `ont-sourcing-v2`
 --
 
+create database `ont-sourcing-v2`;
+use `ont-sourcing-v2`;
+
 -- --------------------------------------------------------
 
 --
