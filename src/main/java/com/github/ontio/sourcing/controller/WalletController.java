@@ -7,6 +7,7 @@ import com.github.ontio.sourcing.model.dto.ResponseBean;
 import com.github.ontio.sourcing.service.WalletService;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
@@ -46,6 +47,9 @@ public class WalletController {
 
         //
         ResponseBean rst = new ResponseBean();
+
+        //
+        walletService.testFeign();
 
         //
         rst.setCode(0);

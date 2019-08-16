@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class WalletService {
+public class WalletService implements IWalletService {
 
     //
     private ChainService chainService;
@@ -33,6 +33,11 @@ public class WalletService {
 
         //
         return walletAccount.address;
+    }
+
+    @Override
+    public void testFeign() {
+        System.out.println("testFeign");
     }
 
     //    public String createIdentityAndRegister(String addr, String pwd) throws Exception {
