@@ -117,25 +117,52 @@
 		<appender-ref ref="FILE_ERROR"/>
 	</appender>
 
+	<!-- This is the kafkaAppender -->
+	<appender name="kafkaAppender" class="com.github.danielwegener.logback.kafka.KafkaAppender">
+		<encoder>
+			<!--<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>-->
+			<pattern>{"theme":"aaa","thread":"%thread","level":"%-5level","msg":"%msg"}</pattern>
+		</encoder>
+
+		<topic>ont_sourcing_test</topic>
+
+		<keyingStrategy class="com.github.danielwegener.logback.kafka.keying.NoKeyKeyingStrategy" />
+		<deliveryStrategy class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy" />
+
+		<!-- Optional parameter to use a fixed partition -->
+		 <partition>0</partition>
+
+		<!-- Optional parameter to include log timestamps into the kafka message -->
+		<!-- <appendTimestamp>true</appendTimestamp> -->
+
+		<!-- each <producerConfig> translates to regular kafka-client config (format: key=value) -->
+		<!-- producer configs are documented here: https://kafka.apache.org/documentation.html#newproducerconfigs -->
+		<!-- bootstrap.servers is the only mandatory producerConfig -->
+		<producerConfig>bootstrap.servers=139.219.135.12:9092</producerConfig>
+
+		<!-- this is the fallback appender if kafka is not available. -->
+<!--		<appender-ref ref="ASYNC_FILE_ALL" />-->
+	</appender>
+
 
 	<!-- ==============  =================== -->
 
 	<!-- 设置某一个包或者具体的某一个类的日志 -->
 	<!-- additivity 设为false，则logger内容不附加至root -->
-	<logger name="org.apache.kafka" level="WARN" additivity="false">
+<!--	<logger name="org.apache.kafka" level="WARN" additivity="false">-->
 
-		<!-- additivity 设为 false，则表示不附加到 root，只会附加到这里的appender -->
-		<!-- 这样就保证 level="WARN" -->
-		<!--  -->
-		<appender-ref ref="ASYNC_CONSOLE"/>
+<!--		&lt;!&ndash; additivity 设为 false，则表示不附加到 root，只会附加到这里的appender &ndash;&gt;-->
+<!--		&lt;!&ndash; 这样就保证 level="WARN" &ndash;&gt;-->
+<!--		&lt;!&ndash;  &ndash;&gt;-->
+<!--		<appender-ref ref="ASYNC_CONSOLE"/>-->
 
-		<!--  -->
-		<appender-ref ref="ASYNC_FILE_ALL"/>
+<!--		&lt;!&ndash;  &ndash;&gt;-->
+<!--		<appender-ref ref="ASYNC_FILE_ALL"/>-->
 
-		<!--  -->
-		<appender-ref ref="ASYNC_FILE_ERROR"/>
+<!--		&lt;!&ndash;  &ndash;&gt;-->
+<!--		<appender-ref ref="ASYNC_FILE_ERROR"/>-->
 
-	</logger>
+<!--	</logger>-->
 
 	<!-- 貌似不支持通配符 -->
 	<!-- <logger name="*" level="${LCCL}" additivity="false">-->
@@ -155,6 +182,9 @@
 
 		<!--  -->
 		<appender-ref ref="ASYNC_FILE_ERROR"/>
+
+		<!--  -->
+		<appender-ref ref="kafkaAppender"/>
 	</root>
 
 </configuration>
